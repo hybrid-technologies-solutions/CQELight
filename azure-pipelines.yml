@@ -5,7 +5,7 @@ variables:
   buildConfiguration: 'Debug'
 
 steps:
-- task : DotNetCoreInstaller@0
+- task : DotNetCoreInstaller@1
   inputs: 
    packageType: 'sdk'
    version: 3.0.100

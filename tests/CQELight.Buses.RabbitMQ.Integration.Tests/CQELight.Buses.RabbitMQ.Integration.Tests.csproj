@@ -27,10 +27,4 @@
     <ProjectReference Include="..\..\src\CQELight.TestFramework\CQELight.TestFramework.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="test-config.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
 </Project>

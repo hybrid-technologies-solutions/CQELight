@@ -38,24 +38,27 @@ namespace CQELight.Buses.RabbitMQ.Integration.Tests
         }
 
         private readonly ILoggerFactory _loggerFactory;
-        private readonly IConfiguration _configuration;
         private IModel _channel;
 
-        const string subscriberName = "subscriber_test";
+        const string subscriber1Name = "sub1";
+        const string subscriber2Name = "sub2";
 
         const string publisher1Name = "prod1";
         const string publisher2Name = "prod2";
 
         const string firstProducerEventExchangeName = publisher1Name + "_events";
-        const string firstProducerCommandExchangeName = publisher1Name + "_commands";
         const string secondProducerEventExchangeName = publisher2Name + "_events";
-        const string secondProducerCommandExchangeName = publisher2Name + "_commands";
-        private const string QueueName = "subscriber_test_queue";
-        private const string QueueNameAckStrategy = "subscriber_test_queue_ack_strategy";
+
+        const string publisher1QueueName = publisher1Name + "_queue";
+        const string publisher2QueueName = publisher2Name + "_queue";
+        const string publisher1AckQueueName = publisher1Name + "_ack_queue";
+        const string publisher2AckQueueName = publisher2Name + "_ack_queue";
+
+        const string subscriber1QueueName = subscriber1Name + "_queue";
+        const string subscriber2QueueName = subscriber2Name + "_queue";
 
         public RabbitMQSubscriberTests()
         {
-            _configuration = new ConfigurationBuilder().AddJsonFile("test-config.json").Build();
             _loggerFactory = new LoggerFactory();
             _loggerFactory.AddProvider(new DebugLoggerProvider());
             CleanQueues();
@@ -67,12 +70,14 @@ namespace CQELight.Buses.RabbitMQ.Integration.Tests
             try
             {
                 _channel.ExchangeDelete(firstProducerEventExchangeName);
-                _channel.ExchangeDelete(firstProducerCommandExchangeName);
                 _channel.ExchangeDelete(secondProducerEventExchangeName);
-                _channel.ExchangeDelete(secondProducerCommandExchangeName);
                 _channel.ExchangeDelete(Consts.CONST_DEAD_LETTER_EXCHANGE_NAME);
-                _channel.QueueDelete(QueueName);
-                _channel.QueueDelete(QueueNameAckStrategy);
+                _channel.QueueDelete(publisher1QueueName);
+                _channel.QueueDelete(publisher2QueueName);
+                _channel.QueueDelete(subscriber1QueueName);
+                _channel.QueueDelete(subscriber2QueueName);
+                _channel.QueueDelete(publisher1AckQueueName);
+                _channel.QueueDelete(publisher2AckQueueName);
                 _channel.QueueDelete(Consts.CONST_DEAD_LETTER_QUEUE_NAME);
             }
             catch { }
@@ -81,9 +86,9 @@ namespace CQELight.Buses.RabbitMQ.Integration.Tests
         private ConnectionFactory GetConnectionFactory()
             => new ConnectionFactory()
             {
-                HostName = _configuration["host"],
-                UserName = _configuration["user"],
-                Password = _configuration["password"]
+                HostName = "localhost",
+                UserName = "guest",
+                Password = "guest"
             };
 
         private void CleanQueues()
@@ -127,13 +132,13 @@ namespace CQELight.Buses.RabbitMQ.Integration.Tests
             {
                 CreateExchanges();
                 var messages = new List<object>();
-                var config = RabbitSubscriberConfiguration.GetDefault(subscriberName, GetConnectionFactory());
+                var config = RabbitSubscriberConfiguration.GetDefault(subscriber1Name, GetConnectionFactory());
                 config.ExchangeConfigurations.DoForEach(e =>
-                    e.QueueConfiguration = new QueueConfiguration(new JsonDispatcherSerializer(), QueueName, callback: (e) => messages.Add(e)));
+                    e.QueueConfiguration = new QueueConfiguration(new JsonDispatcherSerializer(), subscriber1QueueName, callback: (e) => messages.Add(e)));
 
                 var subscriber = new RabbitMQSubscriber(
                     _loggerFactory,
-                    new RabbitMQSubscriberClientConfiguration(subscriberName, GetConnectionFactory(), config));
+                    new RabbitMQSubscriberClientConfiguration(subscriber1Name, GetConnectionFactory(), config));
 
                 subscriber.Start();
 
@@ -144,8 +149,8 @@ namespace CQELight.Buses.RabbitMQ.Integration.Tests
 
                 _channel.BasicPublish(firstProducerEventExchangeName, "", body: eventFromOne);
                 _channel.BasicPublish(secondProducerEventExchangeName, "", body: eventFromTwo);
-                _channel.BasicPublish(firstProducerCommandExchangeName, subscriberName, body: cmdFromOne);
-                _channel.BasicPublish(secondProducerCommandExchangeName, subscriberName, body: cmdFromTwo);
+                _channel.BasicPublish(firstProducerCommandExchangeName, subscriber1Name, body: cmdFromOne);
+                _channel.BasicPublish(secondProducerCommandExchangeName, subscriber1Name, body: cmdFromTwo);
 
                 uint spentTime = 0;
                 while (messages.Count < 4 && spentTime < 2000)
@@ -182,17 +187,17 @@ namespace CQELight.Buses.RabbitMQ.Integration.Tests
             {
                 CreateExchanges();
                 var messages = new List<object>();
-                var config = RabbitSubscriberConfiguration.GetDefault(subscriberName, GetConnectionFactory());
+                var config = RabbitSubscriberConfiguration.GetDefault(subscriber1Name, GetConnectionFactory());
                 config.ExchangeConfigurations.DoForEach(e =>
                     e.QueueConfiguration =
                         new QueueConfiguration(
-                            new JsonDispatcherSerializer(), QueueName,
+                            new JsonDispatcherSerializer(), subscriber1QueueName,
                             dispatchInMemory: true,
                             callback: (e) => messages.Add(e)));
 
                 var subscriber = new RabbitMQSubscriber(
                     _loggerFactory,
-                    new RabbitMQSubscriberClientConfiguration(subscriberName, GetConnectionFactory(), config),
+                    new RabbitMQSubscriberClientConfiguration(subscriber1Name, GetConnectionFactory(), config),
                     () => new InMemory.Events.InMemoryEventBus());
 
                 subscriber.Start();
@@ -253,11 +258,11 @@ namespace CQELight.Buses.RabbitMQ.Integration.Tests
             {
                 CreateExchanges();
                 var messages = new List<object>();
-                var config = RabbitSubscriberConfiguration.GetDefault(subscriberName, GetConnectionFactory());
+                var config = RabbitSubscriberConfiguration.GetDefault(subscriber1Name, GetConnectionFactory());
                 config.ExchangeConfigurations.DoForEach(e =>
                     e.QueueConfiguration =
                         new QueueConfiguration(
-                            new JsonDispatcherSerializer(), QueueNameAckStrategy,
+                            new JsonDispatcherSerializer(), publisher1AckQueueName,
                             dispatchInMemory: true,
                             callback: (e) => messages.Add(e),
                             createAndUseDeadLetterQueue: true));
@@ -269,7 +274,7 @@ namespace CQELight.Buses.RabbitMQ.Integration.Tests
 
                 var subscriber = new RabbitMQSubscriber(
                     _loggerFactory,
-                    new RabbitMQSubscriberClientConfiguration(subscriberName, GetConnectionFactory(), config),
+                    new RabbitMQSubscriberClientConfiguration(subscriber1Name, GetConnectionFactory(), config),
                     () => bus);
 
                 subscriber.Start();
@@ -300,11 +305,11 @@ namespace CQELight.Buses.RabbitMQ.Integration.Tests
             {
                 CreateExchanges();
                 var messages = new List<object>();
-                var config = RabbitSubscriberConfiguration.GetDefault(subscriberName, GetConnectionFactory());
+                var config = RabbitSubscriberConfiguration.GetDefault(subscriber1Name, GetConnectionFactory());
                 config.ExchangeConfigurations.DoForEach(e =>
                     e.QueueConfiguration =
                         new QueueConfiguration(
-                            new JsonDispatcherSerializer(), QueueNameAckStrategy,
+                            new JsonDispatcherSerializer(), publisher1AckQueueName,
                             dispatchInMemory: true,
                             callback: (e) => messages.Add(e),
                             createAndUseDeadLetterQueue: true));
@@ -317,7 +322,7 @@ namespace CQELight.Buses.RabbitMQ.Integration.Tests
 
                 var subscriber = new RabbitMQSubscriber(
                     _loggerFactory,
-                    new RabbitMQSubscriberClientConfiguration(subscriberName, GetConnectionFactory(), config),
+                    new RabbitMQSubscriberClientConfiguration(subscriber1Name, GetConnectionFactory(), config),
                     () => bus);
 
                 subscriber.Start();
@@ -348,11 +353,11 @@ namespace CQELight.Buses.RabbitMQ.Integration.Tests
             {
                 CreateExchanges();
                 var messages = new List<object>();
-                var config = RabbitSubscriberConfiguration.GetDefault(subscriberName, GetConnectionFactory());
+                var config = RabbitSubscriberConfiguration.GetDefault(subscriber1Name, GetConnectionFactory());
                 config.ExchangeConfigurations.DoForEach(e =>
                     e.QueueConfiguration =
                         new QueueConfiguration(
-                            new JsonDispatcherSerializer(), QueueNameAckStrategy,
+                            new JsonDispatcherSerializer(), publisher1AckQueueName,
                             dispatchInMemory: true,
                             callback: (e) => messages.Add(e),
                             createAndUseDeadLetterQueue: true));
@@ -363,7 +368,7 @@ namespace CQELight.Buses.RabbitMQ.Integration.Tests
                 });
                 var subscriber = new RabbitMQSubscriber(
                     _loggerFactory,
-                    new RabbitMQSubscriberClientConfiguration(subscriberName, GetConnectionFactory(), config),
+                    new RabbitMQSubscriberClientConfiguration(subscriber1Name, GetConnectionFactory(), config),
                     () => bus);
 
                 subscriber.Start();

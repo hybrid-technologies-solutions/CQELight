@@ -24,7 +24,7 @@ namespace CQELight.Buses
         /// <summary>
         /// Configuration for events lifetimes. 
         /// </summary>
-        public IEnumerable<EventLifeTimeConfiguration> EventsLifetime { get; private set; }
+        public IEnumerable<EventLifeTimeConfiguration> EventsLifetime { get; }
         /// <summary>
         /// Collection of event's types that allow parallel dispatch (meaning that when dispatching a collection of same events of this type, they're dispatch in parallel).
         /// </summary>

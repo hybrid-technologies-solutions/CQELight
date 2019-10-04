@@ -1,6 +1,8 @@
 ﻿using CQELight.Abstractions.Events.Interfaces;
 using CQELight.Buses.RabbitMQ;
+using CQELight.Buses.RabbitMQ.Common;
 using CQELight.Buses.RabbitMQ.Configuration;
+using CQELight.Buses.RabbitMQ.Network;
 using CQELight.Buses.RabbitMQ.Publisher;
 using CQELight.Buses.RabbitMQ.Server;
 using CQELight.Buses.RabbitMQ.Subscriber;
@@ -15,11 +17,31 @@ namespace CQELight
         #region Public static methods
 
         /// <summary>
+        /// Use RabbitMQ as Pub/Sub system.
+        /// </summary>
+        /// <param name="bootstrapper">Bootstrapper instance to configure</param>
+        /// <returns>Configured bootstrapper instance</returns>
+        public static Bootstrapper UseRabbitMQ(
+            this Bootstrapper bootstrapper,
+
+            RabbitNetworkInfos networkInfos,
+            RabbitMQConnectionInfos connectionInfos)
+        {
+            var service = RabbitMQBootstrappService.Instance;
+            service.BootstrappAction += (ctx) =>
+            {
+
+            };
+            return bootstrapper;
+        }
+
+        /// <summary>
         /// Use RabbitMQ client to publish events and commands to a rabbitMQ instance.
         /// </summary>
         /// <param name="bootstrapper">Bootstrapper instance.</param>
         /// <param name="configuration">Configuration to use RabbitMQ.</param>
         /// <returns>Bootstrapper instance.</returns>
+        [Obsolete("Use UseRabbitMQ instead")]
         public static Bootstrapper UseRabbitMQClientBus(this Bootstrapper bootstrapper,
                                                         RabbitPublisherBusConfiguration configuration = null)
         {
@@ -51,6 +73,7 @@ namespace CQELight
         /// <param name="bootstrapper">Bootstrapper instance.</param>
         /// <param name="configuration">Configuration to use RabbitMQ</param>
         /// <returns>Bootstrapper instance</returns>
+        [Obsolete("Use UseRabbitMQ instead")]
         public static Bootstrapper UseRabbitMQServer(this Bootstrapper bootstrapper,
                                                      RabbitMQServerConfiguration configuration = null)
         {

@@ -9,7 +9,7 @@ namespace CQELight.Buses.RabbitMQ
 
         #region Consts
 
-        internal static readonly string CONST_CQE_EXCHANGE_NAME = "cqelight_exchange";
+        internal static readonly string CONST_CQE_EXCHANGE_NAME = "cqelight_global_exchange";
 
         internal static readonly string CONST_DEAD_LETTER_QUEUE_PREFIX = "cqe_dlq_";
 

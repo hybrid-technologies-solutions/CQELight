@@ -25,12 +25,19 @@ namespace CQELight
             this Bootstrapper bootstrapper,
 
             RabbitNetworkInfos networkInfos,
-            RabbitConnectionInfos connectionInfos)
+            RabbitConnectionInfos connectionInfos,
+            bool useDeadLetterQueue = true)
         {
             var service = RabbitMQBootstrappService.Instance;
             service.BootstrappAction += (ctx) =>
             {
-
+                var subscriberConf = new RabbitSubscriberConfiguration
+                {
+                    ConnectionInfos = connectionInfos,
+                    NetworkInfos = networkInfos,
+                    UseDeadLetterQueue = useDeadLetterQueue
+                };
+                bootstrapper.AddIoCRegistration(new InstanceTypeRegistration(subscriberConf, typeof(RabbitSubscriberConfiguration)));
             };
             return bootstrapper;
         }

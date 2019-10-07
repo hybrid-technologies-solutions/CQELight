@@ -1,5 +1,7 @@
 ﻿using CQELight.Abstractions.CQS.Interfaces;
+using CQELight.Abstractions.DDD;
 using CQELight.Abstractions.Events;
+using CQELight.Abstractions.Events.Interfaces;
 using CQELight.Buses.InMemory.Commands;
 using CQELight.Buses.InMemory.Events;
 using CQELight.Buses.RabbitMQ.Common;
@@ -11,6 +13,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Debug;
 using Newtonsoft.Json;
 using RabbitMQ.Client;
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -136,15 +140,7 @@ namespace CQELight.Buses.RabbitMQ.Integration.Tests
                 var config = new RabbitSubscriberConfiguration
                 {
                     UseDeadLetterQueue = false,
-                    ConnectionInfos = RabbitConnectionInfos.FromConnectionFactory(
-                        new ConnectionFactory
-                        {
-                            HostName = "localhost",
-                            UserName = "guest",
-                            Password = "guest"
-                        },
-                        "sub1"
-                    ),
+                    ConnectionInfos = GetConnectionInfos(),
                     NetworkInfos = networkInfos
                 };
                 var subscriber = new RabbitSubscriber(
@@ -199,15 +195,7 @@ namespace CQELight.Buses.RabbitMQ.Integration.Tests
                 var config = new RabbitSubscriberConfiguration
                 {
                     UseDeadLetterQueue = false,
-                    ConnectionInfos = RabbitConnectionInfos.FromConnectionFactory(
-                        new ConnectionFactory
-                        {
-                            HostName = "localhost",
-                            UserName = "guest",
-                            Password = "guest"
-                        },
-                        "sub1"
-                    ),
+                    ConnectionInfos = GetConnectionInfos(),
                     NetworkInfos = networkInfos
                 };
                 var subscriber = new RabbitSubscriber(
@@ -267,15 +255,7 @@ namespace CQELight.Buses.RabbitMQ.Integration.Tests
                 var config = new RabbitSubscriberConfiguration
                 {
                     UseDeadLetterQueue = false,
-                    ConnectionInfos = RabbitConnectionInfos.FromConnectionFactory(
-                        new ConnectionFactory
-                        {
-                            HostName = "localhost",
-                            UserName = "guest",
-                            Password = "guest"
-                        },
-                        "sub1"
-                    ),
+                    ConnectionInfos = GetConnectionInfos(),
                     NetworkInfos = networkInfos
                 };
                 var subscriber = new RabbitSubscriber(
@@ -330,15 +310,7 @@ namespace CQELight.Buses.RabbitMQ.Integration.Tests
                 var config = new RabbitSubscriberConfiguration
                 {
                     UseDeadLetterQueue = false,
-                    ConnectionInfos = RabbitConnectionInfos.FromConnectionFactory(
-                        new ConnectionFactory
-                        {
-                            HostName = "localhost",
-                            UserName = "guest",
-                            Password = "guest"
-                        },
-                        "sub1"
-                    ),
+                    ConnectionInfos = GetConnectionInfos(),
                     NetworkInfos = networkInfos
                 };
                 var subscriber = new RabbitSubscriber(
@@ -373,287 +345,180 @@ namespace CQELight.Buses.RabbitMQ.Integration.Tests
             }
         }
 
+        private static RabbitConnectionInfos GetConnectionInfos()
+        {
+            return RabbitConnectionInfos.FromConnectionFactory(
+                                    new ConnectionFactory
+                                    {
+                                        HostName = "localhost",
+                                        UserName = "guest",
+                                        Password = "guest"
+                                    },
+                                    "sub1"
+                                );
+        }
+
+        #endregion
+
+        #region AckStrategy
+
+        private class AutoAckEvent : BaseDomainEvent { }
+        private class ExceptionEvent : BaseDomainEvent { }
+
+        [Fact]
+        public async Task RabbitSubscriber_Should_Consider_AckStrategy_Ack_On_Success_CallbackExc()
+        {
+            try
+            {
+                bool eventReceived = false;
+                var messages = new List<object>();
+                var networkInfos = RabbitNetworkInfos.GetConfigurationFor("sub1", RabbitMQExchangeStrategy.SingleExchange);
+                var serviceQueue = networkInfos.ServiceQueueDescriptions[0];
+                serviceQueue.EventCustomCallback = (e) => { messages.Add(e); eventReceived = true; };
+                serviceQueue.DispatchInMemory = false;
+
+                var config = new RabbitSubscriberConfiguration
+                {
+                    UseDeadLetterQueue = true,
+                    ConnectionInfos = GetConnectionInfos(),
+                    NetworkInfos = networkInfos
+                };
+
+                var subscriber = new RabbitSubscriber(
+                    _loggerFactory,
+                    config);
+
+                subscriber.Start();
+
+                var evt = new AutoAckEvent();
+
+                _channel.BasicPublish(
+                    Consts.CONST_CQE_EXCHANGE_NAME,
+                    "",
+                    body: Encoding.UTF8.GetBytes(
+                            JsonConvert.SerializeObject(
+                                new Enveloppe(
+                                    JsonConvert.SerializeObject(evt), typeof(AutoAckEvent), publisher1Name))));
+                int awaitedTime = 0;
+                while (awaitedTime <= 2000)
+                {
+                    if (eventReceived) break;
+                    await Task.Delay(10);
+                    awaitedTime += 10;
+                }
+                eventReceived.Should().BeTrue();
+                var result = _channel.BasicGet(Consts.CONST_DEAD_LETTER_QUEUE_NAME, true);
+                result.Should().BeNull();
+            }
+            finally
+            {
+                DeleteData();
+            }
+        }
+
+        [Fact]
+        public async Task RabbitMQSubscriber_Should_Consider_AckStrategy_Ack_On_Success_Fail_Should_Move_To_DLQ_CallbackExc()
+        {
+            try
+            {
+                var networkInfos = RabbitNetworkInfos.GetConfigurationFor("sub1", RabbitMQExchangeStrategy.SingleExchange);
+                var serviceQueue = networkInfos.ServiceQueueDescriptions[0];
+                serviceQueue.EventCustomCallback += (_) => throw new InvalidOperationException();
+
+                var config = new RabbitSubscriberConfiguration
+                {
+                    UseDeadLetterQueue = true,
+                    ConnectionInfos = GetConnectionInfos(),
+                    NetworkInfos = networkInfos
+                };
+
+                var subscriber = new RabbitSubscriber(
+                    _loggerFactory,
+                    config);
+
+                subscriber.Start();
+
+                var evt = new ExceptionEvent();
+
+                _channel.BasicPublish(
+                    Consts.CONST_CQE_EXCHANGE_NAME,
+                    "",
+                    body: Encoding.UTF8.GetBytes(
+                            JsonConvert.SerializeObject(
+                                new Enveloppe(
+                                    JsonConvert.SerializeObject(evt), typeof(ExceptionEvent), publisher1Name))));
+                int awaitedTime = 0;
+                BasicGetResult result = null;
+                while (awaitedTime <= 2000)
+                {
+                    result = _channel.BasicGet(Consts.CONST_DEAD_LETTER_QUEUE_NAME, true);
+                    if (result != null) break;
+                    await Task.Delay(10);
+                    awaitedTime += 10;
+                }
+                result.Should().NotBeNull();
+            }
+            finally
+            {
+                DeleteData();
+            }
+        }
+
+        [Fact]
+        public async Task RabbitMQSubscriber_Should_Consider_AckStrategy_Ack_On_Receive_Fail_Should_Remove_MessageFromQueue_CallbackExc()
+        {
+            try
+            {
+                var networkInfos = RabbitNetworkInfos.GetConfigurationFor("sub1", RabbitMQExchangeStrategy.SingleExchange);
+                var serviceQueue = networkInfos.ServiceQueueDescriptions[0];
+                serviceQueue.EventCustomCallback += (_) => throw new InvalidOperationException();
+                serviceQueue.AckStrategy = AckStrategy.AckOnReceive;
+
+                var config = new RabbitSubscriberConfiguration
+                {
+                    UseDeadLetterQueue = true,
+                    ConnectionInfos = GetConnectionInfos(),
+                    NetworkInfos = networkInfos
+                };
+
+                var subscriber = new RabbitSubscriber(
+                    _loggerFactory,
+                    config);
+
+                subscriber.Start();
+
+                var evt = new ExceptionEvent();
+
+                _channel.BasicPublish(
+                    Consts.CONST_CQE_EXCHANGE_NAME,
+                    "",
+                    body: Encoding.UTF8.GetBytes(
+                            JsonConvert.SerializeObject(
+                                new Enveloppe(
+                                    JsonConvert.SerializeObject(evt), typeof(ExceptionEvent), publisher1Name))));
+                await Task.Delay(250);
+                int awaitedTime = 0;
+                BasicGetResult result = null;
+                while (awaitedTime <= 750)
+                {
+                    result = _channel.BasicGet(Consts.CONST_DEAD_LETTER_QUEUE_NAME, true);
+                    if (result != null) break;
+                    await Task.Delay(10);
+                    awaitedTime += 10;
+                }
+                result.Should().BeNull();
+            }
+            finally
+            {
+                DeleteData();
+            }
+        }
+
         #endregion
 
         #endregion
 
     }
-
-    //    #region Start
-
-    //    [Fact]
-    //    public async Task RabbitMQSubscriber_Should_Listen_To_AllExistingExchange_WithDefaultConfiguration()
-    //    {
-    //        try
-    //        {
-    //            CreateExchanges();
-    //            var messages = new List<object>();
-    //            var config = RabbitSubscriberConfiguration.GetDefault(subscriber1Name, GetConnectionFactory());
-    //            config.ExchangeConfigurations.DoForEach(e =>
-    //                e.QueueConfiguration = new QueueConfiguration(new JsonDispatcherSerializer(), subscriber1QueueName, callback: (e) => messages.Add(e)));
-
-    //            var subscriber = new RabbitMQSubscriber(
-    //                _loggerFactory,
-    //                new RabbitMQSubscriberClientConfiguration(subscriber1Name, GetConnectionFactory(), config));
-
-    //            subscriber.Start();
-
-    //            var eventFromOne = GetEnveloppeDataForEvent(publisher1Name, "test 1 evt");
-    //            var cmdFromOne = GetEnveloppeDataForCommand(publisher1Name, "test 1 cmd");
-    //            var eventFromTwo = GetEnveloppeDataForEvent(publisher2Name, "test 2 evt");
-    //            var cmdFromTwo = GetEnveloppeDataForCommand(publisher2Name, "test 2 cmd");
-
-    //            _channel.BasicPublish(firstProducerEventExchangeName, "", body: eventFromOne);
-    //            _channel.BasicPublish(secondProducerEventExchangeName, "", body: eventFromTwo);
-    //            _channel.BasicPublish(firstProducerCommandExchangeName, subscriber1Name, body: cmdFromOne);
-    //            _channel.BasicPublish(secondProducerCommandExchangeName, subscriber1Name, body: cmdFromTwo);
-
-    //            uint spentTime = 0;
-    //            while (messages.Count < 4 && spentTime < 2000)
-    //            {
-    //                spentTime += 50;
-    //                await Task.Delay(50);
-    //            }
-
-    //            messages.Should().HaveCount(4);
-    //            messages.Count(e => e.GetType() == typeof(RabbitEvent)).Should().Be(2);
-    //            messages.Count(e => e.GetType() == typeof(RabbitCommand)).Should().Be(2);
-
-    //        }
-    //        finally
-    //        {
-    //            DeleteData();
-    //        }
-    //    }
-
-    //    private class RabbitHandler : IDomainEventHandler<RabbitEvent>, IAutoRegisterType
-    //    {
-    //        public static event Action<RabbitEvent> OnEventArrived;
-    //        public Task<Result> HandleAsync(RabbitEvent domainEvent, IEventContext context = null)
-    //        {
-    //            OnEventArrived?.Invoke(domainEvent);
-    //            return Result.Ok();
-    //        }
-    //    }
-
-    //    [Fact]
-    //    public async Task RabbitMQSubscriber_Should_Listen_To_Configuration_Defined_Exchanges_And_Dispatch_InMemory()
-    //    {
-    //        try
-    //        {
-    //            CreateExchanges();
-    //            var messages = new List<object>();
-    //            var config = RabbitSubscriberConfiguration.GetDefault(subscriber1Name, GetConnectionFactory());
-    //            config.ExchangeConfigurations.DoForEach(e =>
-    //                e.QueueConfiguration =
-    //                    new QueueConfiguration(
-    //                        new JsonDispatcherSerializer(), subscriber1QueueName,
-    //                        dispatchInMemory: true,
-    //                        callback: (e) => messages.Add(e)));
-
-    //            var subscriber = new RabbitMQSubscriber(
-    //                _loggerFactory,
-    //                new RabbitMQSubscriberClientConfiguration(subscriber1Name, GetConnectionFactory(), config),
-    //                () => new InMemory.Events.InMemoryEventBus());
-
-    //            subscriber.Start();
-
-    //            var evt = new RabbitEvent { Data = "data" };
-
-    //            _channel.BasicPublish(
-    //                firstProducerEventExchangeName,
-    //                "",
-    //                body: Encoding.UTF8.GetBytes(
-    //                        JsonConvert.SerializeObject(
-    //                            new Enveloppe(
-    //                                JsonConvert.SerializeObject(evt), typeof(RabbitEvent), publisher1Name))));
-
-    //            bool isFired = false;
-    //            string data = "";
-    //            RabbitHandler.OnEventArrived += (e) =>
-    //            {
-    //                isFired = true;
-    //                data = e.Data;
-    //            };
-    //            ushort spentTime = 0;
-    //            while (!isFired && spentTime < 2000)
-    //            {
-    //                spentTime += 50;
-    //                await Task.Delay(50);
-    //            }
-    //            isFired.Should().BeTrue();
-    //            data.Should().Be("data");
-    //        }
-    //        finally
-    //        {
-    //            DeleteData();
-    //        }
-    //    }
-
-    //    #region AckStrategy
-
-    //    private class AutoAckEvent : BaseDomainEvent { }
-    //    private class ExceptionEvent : BaseDomainEvent { }
-    //    private class AutoAckEventHandler : IDomainEventHandler<AutoAckEvent>
-    //    {
-    //        public Task<Result> HandleAsync(AutoAckEvent domainEvent, IEventContext context = null)
-    //            => Result.Ok();
-    //    }
-    //    private class ExceptionEventHandler : IDomainEventHandler<ExceptionEvent>
-    //    {
-    //        public Task<Result> HandleAsync(ExceptionEvent domainEvent, IEventContext context = null)
-    //        {
-    //            throw new NotImplementedException();
-    //        }
-    //    }
-
-    //    [Fact]
-    //    public async Task RabbitMQSubscriber_Should_Consider_AckStrategy_Ack_On_Success()
-    //    {
-    //        try
-    //        {
-    //            CreateExchanges();
-    //            var messages = new List<object>();
-    //            var config = RabbitSubscriberConfiguration.GetDefault(subscriber1Name, GetConnectionFactory());
-    //            config.ExchangeConfigurations.DoForEach(e =>
-    //                e.QueueConfiguration =
-    //                    new QueueConfiguration(
-    //                        new JsonDispatcherSerializer(), publisher1AckQueueName,
-    //                        dispatchInMemory: true,
-    //                        callback: (e) => messages.Add(e),
-    //                        createAndUseDeadLetterQueue: true));
-    //            config.AckStrategy = AckStrategy.AckOnSucces;
-    //            var bus = new InMemory.Events.InMemoryEventBus(new InMemory.Events.InMemoryEventBusConfiguration
-    //            {
-    //                NbRetries = 0
-    //            });
-
-    //            var subscriber = new RabbitMQSubscriber(
-    //                _loggerFactory,
-    //                new RabbitMQSubscriberClientConfiguration(subscriber1Name, GetConnectionFactory(), config),
-    //                () => bus);
-
-    //            subscriber.Start();
-
-    //            var evt = new AutoAckEvent();
-
-    //            _channel.BasicPublish(
-    //                firstProducerEventExchangeName,
-    //                "",
-    //                body: Encoding.UTF8.GetBytes(
-    //                        JsonConvert.SerializeObject(
-    //                            new Enveloppe(
-    //                                JsonConvert.SerializeObject(evt), typeof(AutoAckEvent), publisher1Name))));
-    //            await Task.Delay(100);
-    //            var result = _channel.BasicGet(Consts.CONST_DEAD_LETTER_QUEUE_NAME, true);
-    //            result.Should().BeNull();
-    //        }
-    //        finally
-    //        {
-    //            DeleteData();
-    //        }
-    //    }
-
-    //    [Fact]
-    //    public async Task RabbitMQSubscriber_Should_Consider_AckStrategy_Ack_On_Success_Fail_Should_Move_To_DLQ()
-    //    {
-    //        try
-    //        {
-    //            CreateExchanges();
-    //            var messages = new List<object>();
-    //            var config = RabbitSubscriberConfiguration.GetDefault(subscriber1Name, GetConnectionFactory());
-    //            config.ExchangeConfigurations.DoForEach(e =>
-    //                e.QueueConfiguration =
-    //                    new QueueConfiguration(
-    //                        new JsonDispatcherSerializer(), publisher1AckQueueName,
-    //                        dispatchInMemory: true,
-    //                        callback: (e) => messages.Add(e),
-    //                        createAndUseDeadLetterQueue: true));
-    //            config.AckStrategy = AckStrategy.AckOnSucces;
-
-    //            var bus = new InMemory.Events.InMemoryEventBus(new InMemory.Events.InMemoryEventBusConfiguration
-    //            {
-    //                NbRetries = 0
-    //            });
-
-    //            var subscriber = new RabbitMQSubscriber(
-    //                _loggerFactory,
-    //                new RabbitMQSubscriberClientConfiguration(subscriber1Name, GetConnectionFactory(), config),
-    //                () => bus);
-
-    //            subscriber.Start();
-
-    //            var evt = new ExceptionEvent();
-
-    //            _channel.BasicPublish(
-    //                firstProducerEventExchangeName,
-    //                "",
-    //                body: Encoding.UTF8.GetBytes(
-    //                        JsonConvert.SerializeObject(
-    //                            new Enveloppe(
-    //                                JsonConvert.SerializeObject(evt), typeof(ExceptionEvent), publisher1Name))));
-    //            await Task.Delay(250);
-    //            var result = _channel.BasicGet(Consts.CONST_DEAD_LETTER_QUEUE_NAME, true);
-    //            result.Should().NotBeNull();
-    //        }
-    //        finally
-    //        {
-    //            DeleteData();
-    //        }
-    //    }
-
-    //    [Fact]
-    //    public async Task RabbitMQSubscriber_Should_Consider_AckStrategy_Ack_On_Receive_Fail_Should_Remove_MessageFromQueue()
-    //    {
-    //        try
-    //        {
-    //            CreateExchanges();
-    //            var messages = new List<object>();
-    //            var config = RabbitSubscriberConfiguration.GetDefault(subscriber1Name, GetConnectionFactory());
-    //            config.ExchangeConfigurations.DoForEach(e =>
-    //                e.QueueConfiguration =
-    //                    new QueueConfiguration(
-    //                        new JsonDispatcherSerializer(), publisher1AckQueueName,
-    //                        dispatchInMemory: true,
-    //                        callback: (e) => messages.Add(e),
-    //                        createAndUseDeadLetterQueue: true));
-    //            config.AckStrategy = AckStrategy.AckOnReceive;
-    //            var bus = new InMemory.Events.InMemoryEventBus(new InMemory.Events.InMemoryEventBusConfiguration
-    //            {
-    //                NbRetries = 0
-    //            });
-    //            var subscriber = new RabbitMQSubscriber(
-    //                _loggerFactory,
-    //                new RabbitMQSubscriberClientConfiguration(subscriber1Name, GetConnectionFactory(), config),
-    //                () => bus);
-
-    //            subscriber.Start();
-
-    //            var evt = new ExceptionEvent();
-
-    //            _channel.BasicPublish(
-    //                firstProducerEventExchangeName,
-    //                "",
-    //                body: Encoding.UTF8.GetBytes(
-    //                        JsonConvert.SerializeObject(
-    //                            new Enveloppe(
-    //                                JsonConvert.SerializeObject(evt), typeof(ExceptionEvent), publisher1Name))));
-    //            await Task.Delay(250);
-    //            var result = _channel.BasicGet(Consts.CONST_DEAD_LETTER_QUEUE_NAME, true);
-    //            result.Should().BeNull();
-    //        }
-    //        finally
-    //        {
-    //            DeleteData();
-    //        }
-    //    }
-
-    //    #endregion
-
-    //}
-
-    //#endregion
-
 }
 
 

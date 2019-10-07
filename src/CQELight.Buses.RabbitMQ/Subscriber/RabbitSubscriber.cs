@@ -70,6 +70,13 @@ namespace CQELight.Buses.RabbitMQ.Subscriber
             _connection = GetConnection();
             _channel = GetChannel(_connection);
 
+            if(_config.UseDeadLetterQueue)
+            {
+                _channel.ExchangeDeclare(Consts.CONST_DEAD_LETTER_EXCHANGE_NAME, "fanout", true, false, null);
+                _channel.QueueDeclare(Consts.CONST_DEAD_LETTER_QUEUE_NAME, true, false, false, null);
+                _channel.QueueBind(Consts.CONST_DEAD_LETTER_QUEUE_NAME, Consts.CONST_DEAD_LETTER_EXCHANGE_NAME, "", null);
+            }
+
             foreach (var exchangeDescription in _config.NetworkInfos.ServiceExchangeDescriptions)
             {
                 _channel.ExchangeDeclare(exchangeDescription);
@@ -117,46 +124,6 @@ namespace CQELight.Buses.RabbitMQ.Subscriber
                     consumer: consumer);
                 _consumers.Add(consumer);
             }
-
-            //foreach (var exchangeConfig in _config.NetworkInfos.DistantExchangeDescriptions)
-            //{
-            //    if (exchangeConfig.QueueConfiguration.CreateAndUseDeadLetterQueue)
-            //    {
-            //        _channel.ExchangeDeclare(
-            //            Consts.CONST_DEAD_LETTER_EXCHANGE_NAME,
-            //            ExchangeType.Fanout,
-            //            true,
-            //            false
-            //            );
-            //        _channel.QueueDeclare(
-            //            Consts.CONST_DEAD_LETTER_QUEUE_NAME,
-            //            durable: true,
-            //            exclusive: false,
-            //            autoDelete: false
-            //            );
-            //        _channel.QueueBind(Consts.CONST_DEAD_LETTER_QUEUE_NAME, Consts.CONST_DEAD_LETTER_EXCHANGE_NAME, "");
-            //    }
-            //    _channel.ExchangeDeclare(
-            //        exchangeConfig.ExchangeDetails.ExchangeName,
-            //        exchangeConfig.ExchangeDetails.ExchangeType,
-            //        exchangeConfig.ExchangeDetails.Durable,
-            //        exchangeConfig.ExchangeDetails.AutoDelete
-            //        );
-            //    _channel.QueueDeclare(
-            //        exchangeConfig.QueueName,
-            //        durable: true,
-            //        exclusive: false,
-            //        autoDelete: false,
-            //        exchangeConfig.QueueConfiguration.CreateAndUseDeadLetterQueue
-            //                    ? new Dictionary<string, object> { ["x-dead-letter-exchange"] = Consts.CONST_DEAD_LETTER_EXCHANGE_NAME }
-            //                    : null);
-            //    _channel.QueueBind(exchangeConfig.QueueName, exchangeConfig.ExchangeDetails.ExchangeName, exchangeConfig.RoutingKey ?? "");
-
-            //    var consumer = new EventingBasicConsumer(_channel);
-            //    consumer.Received += OnEventReceived;
-            //    _channel.BasicConsume(exchangeConfig.QueueName, autoAck: false, consumer);
-            //    _consumers.Add(consumer);
-            //}
         }
 
         /// <summary>
@@ -197,7 +164,16 @@ namespace CQELight.Buses.RabbitMQ.Subscriber
                                 if (typeof(IDomainEvent).IsAssignableFrom(objType))
                                 {
                                     var evt = config.EventSerializer.DeserializeEvent(enveloppe.Data, objType);
-                                    config.EventCustomCallback?.Invoke(evt);
+                                    try
+                                    {
+                                        config.EventCustomCallback?.Invoke(evt);
+                                    }
+                                    catch(Exception e)
+                                    {
+                                        _logger.LogError(
+                                            $"Error when executing custom callback for event {objType.AssemblyQualifiedName}. {e}");
+                                        result = Result.Fail();
+                                    }
                                     if (config.DispatchInMemory && _inMemoryEventBusFactory != null)
                                     {
                                         var bus = _inMemoryEventBusFactory();
@@ -207,7 +183,16 @@ namespace CQELight.Buses.RabbitMQ.Subscriber
                                 else if (typeof(ICommand).IsAssignableFrom(objType))
                                 {
                                     var cmd = config.CommandSerializer.DeserializeCommand(enveloppe.Data, objType);
-                                    config.CommandCustomCallback?.Invoke(cmd);
+                                    try
+                                    {
+                                        config.CommandCustomCallback?.Invoke(cmd);
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        _logger.LogError(
+                                            $"Error when executing custom callback for command {objType.AssemblyQualifiedName}. {e}");
+                                        result = Result.Fail();
+                                    }
                                     if (config.DispatchInMemory && _inMemoryCommandBusFactory != null)
                                     {
                                         var bus = _inMemoryCommandBusFactory();

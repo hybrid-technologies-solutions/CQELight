@@ -87,7 +87,7 @@ namespace CQELight.Buses.RabbitMQ.Network
         /// <summary>
         /// Strategy to consider for ack.
         /// </summary>
-        public AckStrategy AckStrategy { get; set; }
+        public AckStrategy AckStrategy { get; set; } = AckStrategy.AckOnSucces;
 
         #endregion
 

@@ -33,7 +33,6 @@ namespace CQELight.Buses.RabbitMQ.Integration.Tests
 
         public RabbitMQCommandBusTests()
         {
-            _testConfiguration = new ConfigurationBuilder().AddJsonFile("test-config.json").Build();
             CreateChannel();
             DeleteData();
         }
@@ -49,9 +48,9 @@ namespace CQELight.Buses.RabbitMQ.Integration.Tests
         private ConnectionFactory GetConnectionFactory() =>
             new ConnectionFactory()
             {
-                HostName = _testConfiguration["host"],
-                UserName = _testConfiguration["user"],
-                Password = _testConfiguration["password"]
+                HostName = "localhost",
+                UserName = "guest",
+                Password = "guest"
             };
 
         private void CreateChannel()

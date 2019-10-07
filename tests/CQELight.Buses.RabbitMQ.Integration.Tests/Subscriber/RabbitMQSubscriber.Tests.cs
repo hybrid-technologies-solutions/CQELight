@@ -129,7 +129,7 @@ namespace CQELight.Buses.RabbitMQ.Integration.Tests
             {
                 bool eventReceived = false;
                 var networkInfos = RabbitNetworkInfos.GetConfigurationFor("sub1", RabbitMQExchangeStrategy.SingleExchange);
-                var serviceQueue = networkInfos.ServiceQueueDescriptions.First();
+                var serviceQueue = networkInfos.ServiceQueueDescriptions[0];
                 serviceQueue.EventCustomCallback = (e) => eventReceived = e is RabbitEvent;
                 serviceQueue.DispatchInMemory = false;
 
@@ -191,7 +191,7 @@ namespace CQELight.Buses.RabbitMQ.Integration.Tests
                         new RabbitExchangeDescription(firstProducerEventExchangeName)
                     );
 
-                var serviceQueue = networkInfos.ServiceQueueDescriptions.First();
+                var serviceQueue = networkInfos.ServiceQueueDescriptions[0];
                 serviceQueue.EventCustomCallback = (e) => eventReceived = e is RabbitEvent;
                 serviceQueue.DispatchInMemory = false;
                 serviceQueue.Bindings.Add(new RabbitQueueBindingDescription(firstProducerEventExchangeName));
@@ -309,6 +309,67 @@ namespace CQELight.Buses.RabbitMQ.Integration.Tests
                 DeleteData();
                 _channel.ExchangeDelete("MyCustomExchange");
                 _channel.QueueDelete("MyCustomQueue");
+            }
+        }
+
+        #endregion
+
+        #region Command
+
+        [Fact]
+        public async Task Command_Should_Be_Send_AsDirect()
+        {
+            try
+            {
+                bool commandReceived = false;
+                var networkInfos = RabbitNetworkInfos.GetConfigurationFor("sub1", RabbitMQExchangeStrategy.SingleExchange);
+                var serviceQueue = networkInfos.ServiceQueueDescriptions[0];
+                serviceQueue.CommandCustomCallback = (c) => commandReceived = c is RabbitCommand;
+                serviceQueue.DispatchInMemory = false;
+
+                var config = new RabbitSubscriberConfiguration
+                {
+                    UseDeadLetterQueue = false,
+                    ConnectionInfos = RabbitConnectionInfos.FromConnectionFactory(
+                        new ConnectionFactory
+                        {
+                            HostName = "localhost",
+                            UserName = "guest",
+                            Password = "guest"
+                        },
+                        "sub1"
+                    ),
+                    NetworkInfos = networkInfos
+                };
+                var subscriber = new RabbitSubscriber(
+                    _loggerFactory,
+                    config,
+                    () => eventBus,
+                    () => commandBus);
+
+                subscriber.Start();
+
+                var enveloppeWithCommand = GetEnveloppeDataForCommand(publisher: "pub1", content: "data");
+
+                _channel.BasicPublish(
+                    exchange: "",
+                    routingKey: serviceQueue.QueueName,
+                    basicProperties: null,
+                    body: enveloppeWithCommand);
+
+                int awaitedTime = 0;
+                while (awaitedTime <= 2000)
+                {
+                    if (commandReceived) break;
+                    await Task.Delay(10);
+                    awaitedTime += 10;
+                }
+
+                commandReceived.Should().BeTrue();
+            }
+            finally
+            {
+                DeleteData();
             }
         }
 

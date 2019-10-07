@@ -1,12 +1,5 @@
-﻿using CQELight.Buses.RabbitMQ.Subscriber.Configuration;
-using FluentAssertions;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using RabbitMQ.Client;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Xunit;
 
 namespace CQELight.Buses.RabbitMQ.Integration.Tests.Subscriber.Configuration
 {
@@ -55,39 +48,39 @@ namespace CQELight.Buses.RabbitMQ.Integration.Tests.Subscriber.Configuration
 
         #region Default configuration
 
-        [Fact]
-        public void RabbitSubscriberConfiguration_Defuaut_Should_Bind_To_AllExchanges_With_Dedicated_Queue()
-        {
-            try
-            {
-                _channel.ExchangeDeclare(
-                               exchange: FirstExchange,
-                               type: ExchangeType.Fanout,
-                               durable: true,
-                               autoDelete: false);
-                _channel.ExchangeDeclare(
-                               exchange: SecondExchange,
-                               type: ExchangeType.Topic,
-                               durable: true,
-                               autoDelete: false);
+        //[Fact]
+        //public void RabbitSubscriberConfiguration_Defuaut_Should_Bind_To_AllExchanges_With_Dedicated_Queue()
+        //{
+        //    try
+        //    {
+        //        _channel.ExchangeDeclare(
+        //                       exchange: FirstExchange,
+        //                       type: ExchangeType.Fanout,
+        //                       durable: true,
+        //                       autoDelete: false);
+        //        _channel.ExchangeDeclare(
+        //                       exchange: SecondExchange,
+        //                       type: ExchangeType.Topic,
+        //                       durable: true,
+        //                       autoDelete: false);
 
-                var configuration = RabbitSubscriberConfiguration.GetDefault("subscriber", GetConnectionFactory());
+        //        var configuration = RabbitSubscriberConfiguration.GetDefault("subscriber", GetConnectionFactory());
 
-                configuration.ExchangeConfigurations.Should().HaveCount(2);
-                configuration.ExchangeConfigurations
-                    .Any(e => e.ExchangeDetails.ExchangeName == FirstExchange
-                           && e.QueueName == "subscriber_queue"
-                           && e.ExchangeDetails.ExchangeType == "fanout").Should().BeTrue();
-                configuration.ExchangeConfigurations
-                    .Any(e => e.ExchangeDetails.ExchangeName == SecondExchange
-                           && e.QueueName == "subscriber_queue"
-                           && e.ExchangeDetails.ExchangeType == "topic").Should().BeTrue();
-            }
-            finally
-            {
-                DeleteData();
-            }
-        }
+        //        configuration.ExchangeConfigurations.Should().HaveCount(2);
+        //        configuration.ExchangeConfigurations
+        //            .Any(e => e.ExchangeDetails.ExchangeName == FirstExchange
+        //                   && e.QueueName == "subscriber_queue"
+        //                   && e.ExchangeDetails.ExchangeType == "fanout").Should().BeTrue();
+        //        configuration.ExchangeConfigurations
+        //            .Any(e => e.ExchangeDetails.ExchangeName == SecondExchange
+        //                   && e.QueueName == "subscriber_queue"
+        //                   && e.ExchangeDetails.ExchangeType == "topic").Should().BeTrue();
+        //    }
+        //    finally
+        //    {
+        //        DeleteData();
+        //    }
+        //}
 
         #endregion
     }

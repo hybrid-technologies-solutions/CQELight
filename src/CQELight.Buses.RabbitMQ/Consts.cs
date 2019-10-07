@@ -16,6 +16,8 @@ namespace CQELight.Buses.RabbitMQ
         public static readonly string CONST_DEAD_LETTER_EXCHANGE_NAME = "cqelight_dead_letter_exchange";
         public static readonly string CONST_DEAD_LETTER_QUEUE_NAME = "cqelight_dead_letter_queue";
 
+        public readonly static string CONST_DEAD_LETTER_EXCHANGE_RABBIT_KEY = "x-dead-letter-exchange";
+
         #endregion
 
     }

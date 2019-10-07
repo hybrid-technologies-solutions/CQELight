@@ -8,7 +8,7 @@ namespace CQELight.Buses.RabbitMQ.Common
     /// <summary>
     /// Holding informations for connecting to RabbitMQ
     /// </summary>
-    public class RabbitMQConnectionInfos
+    public class RabbitConnectionInfos
     {
         #region Static properties
 
@@ -16,7 +16,7 @@ namespace CQELight.Buses.RabbitMQ.Common
         /// Gets RabbitMQ default connection informations (using localhost as hostname
         /// and guest/guest as username/password).
         /// </summary>
-        public static RabbitMQConnectionInfos Default
+        public static RabbitConnectionInfos Default
             =>
             FromConnectionFactory(
                 new ConnectionFactory
@@ -44,7 +44,7 @@ namespace CQELight.Buses.RabbitMQ.Common
 
         #region Ctor
 
-        private RabbitMQConnectionInfos() { }
+        private RabbitConnectionInfos() { }
 
         #endregion
 
@@ -55,7 +55,7 @@ namespace CQELight.Buses.RabbitMQ.Common
         /// </summary>
         /// <param name="connectionFactory">Initialized connection factor.</param>
         /// <returns>New configured instance</returns>
-        public static RabbitMQConnectionInfos FromConnectionFactory(
+        public static RabbitConnectionInfos FromConnectionFactory(
             ConnectionFactory connectionFactory, string emiter)
         {
             if (connectionFactory == null)
@@ -64,7 +64,7 @@ namespace CQELight.Buses.RabbitMQ.Common
             {
                 throw new ArgumentException("Provided connectionFactory seems to be not well parameterized (host is missing).");
             }
-            return new RabbitMQConnectionInfos
+            return new RabbitConnectionInfos
             {
                 Emiter = emiter,
                 ConnectionFactory = connectionFactory

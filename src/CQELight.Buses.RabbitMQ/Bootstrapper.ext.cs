@@ -25,7 +25,7 @@ namespace CQELight
             this Bootstrapper bootstrapper,
 
             RabbitNetworkInfos networkInfos,
-            RabbitMQConnectionInfos connectionInfos)
+            RabbitConnectionInfos connectionInfos)
         {
             var service = RabbitMQBootstrappService.Instance;
             service.BootstrappAction += (ctx) =>

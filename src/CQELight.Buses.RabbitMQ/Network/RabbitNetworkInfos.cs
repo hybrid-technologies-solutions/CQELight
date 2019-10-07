@@ -33,30 +33,22 @@ namespace CQELight.Buses.RabbitMQ.Network
     /// </summary>
     public class RabbitNetworkInfos
     {
-        #region Members
-
-        protected List<RabbitExchangeDescription> serviceExchangeDescriptions = new List<RabbitExchangeDescription>();
-        protected List<RabbitQueueDescription> serviceQueueDescriptions = new List<RabbitQueueDescription>();
-        protected List<RabbitExchangeDescription> distantExchangeDescriptions = new List<RabbitExchangeDescription>();
-
-        #endregion
-
         #region Properties
 
         /// <summary>
         /// Collection of service own exchange descriptions.
         /// </summary>
-        public IEnumerable<RabbitExchangeDescription> ServiceExchangeDescriptions => serviceExchangeDescriptions.AsEnumerable();
+        public List<RabbitExchangeDescription> ServiceExchangeDescriptions { get; set; } = new List<RabbitExchangeDescription>();
 
         /// <summary>
         /// Collection of other service in the system exchanges.
         /// </summary>
-        public IEnumerable<RabbitExchangeDescription> DistantExchangeDescriptions => distantExchangeDescriptions.AsEnumerable();
+        public List<RabbitExchangeDescription> DistantExchangeDescriptions { get; set; } = new List<RabbitExchangeDescription>();
 
         /// <summary>
         /// Collection of service own queue descriptions.
         /// </summary>
-        public IEnumerable<RabbitQueueDescription> ServiceQueueDescriptions => serviceQueueDescriptions.AsEnumerable();
+        public List<RabbitQueueDescription> ServiceQueueDescriptions { get; set; } = new List<RabbitQueueDescription>();
 
         #endregion
 
@@ -86,11 +78,11 @@ namespace CQELight.Buses.RabbitMQ.Network
                 case RabbitMQExchangeStrategy.SingleExchange:
                     return new RabbitNetworkInfos
                     {
-                        distantExchangeDescriptions = new List<RabbitExchangeDescription>
+                        DistantExchangeDescriptions = new List<RabbitExchangeDescription>
                         {
                             new RabbitExchangeDescription(Consts.CONST_CQE_EXCHANGE_NAME)
                         },
-                        serviceQueueDescriptions = new List<RabbitQueueDescription>
+                        ServiceQueueDescriptions = new List<RabbitQueueDescription>
                         {
                             new RabbitQueueDescription (serviceName + "_queue")
                             {
@@ -105,11 +97,11 @@ namespace CQELight.Buses.RabbitMQ.Network
                 default:
                     return new RabbitNetworkInfos
                     {
-                        serviceExchangeDescriptions = new List<RabbitExchangeDescription>
+                        ServiceExchangeDescriptions = new List<RabbitExchangeDescription>
                         {
                             new RabbitExchangeDescription(serviceName + "_exchange")
                         },
-                        serviceQueueDescriptions = new List<RabbitQueueDescription>
+                        ServiceQueueDescriptions = new List<RabbitQueueDescription>
                         {
                             new RabbitQueueDescription(serviceName + "_queue")
                         }

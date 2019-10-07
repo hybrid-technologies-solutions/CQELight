@@ -70,52 +70,9 @@ namespace CQELight.Buses.RabbitMQ.Subscriber
             _connection = GetConnection();
             _channel = GetChannel(_connection);
 
-            if(_config.UseDeadLetterQueue)
-            {
-                _channel.ExchangeDeclare(Consts.CONST_DEAD_LETTER_EXCHANGE_NAME, "fanout", true, false, null);
-                _channel.QueueDeclare(Consts.CONST_DEAD_LETTER_QUEUE_NAME, true, false, false, null);
-                _channel.QueueBind(Consts.CONST_DEAD_LETTER_QUEUE_NAME, Consts.CONST_DEAD_LETTER_EXCHANGE_NAME, "", null);
-            }
-
-            foreach (var exchangeDescription in _config.NetworkInfos.ServiceExchangeDescriptions)
-            {
-                _channel.ExchangeDeclare(exchangeDescription);
-            }
-            foreach (var exchangeDescription in _config.NetworkInfos.DistantExchangeDescriptions)
-            {
-                _channel.ExchangeDeclare(exchangeDescription);
-            }
-
+            RabbitCommonTools.DeclareExchangesAndQueueForSubscriber(_channel, _config);
             foreach (var queueDescription in _config.NetworkInfos.ServiceQueueDescriptions)
             {
-                if (_config.UseDeadLetterQueue && !queueDescription.AdditionnalProperties.ContainsKey(Consts.CONST_DEAD_LETTER_EXCHANGE_RABBIT_KEY))
-                {
-                    queueDescription.AdditionnalProperties.Add(Consts.CONST_DEAD_LETTER_EXCHANGE_RABBIT_KEY, Consts.CONST_DEAD_LETTER_EXCHANGE_NAME);
-                }
-                _channel.QueueDeclare(queueDescription);
-                foreach (var queueBinding in queueDescription.Bindings)
-                {
-                    if (queueBinding.RoutingKeys?.Any() == true)
-                    {
-                        foreach (var routingKey in queueBinding.RoutingKeys)
-                        {
-                            _channel.QueueBind(
-                                queue: queueDescription.QueueName,
-                                exchange: queueBinding.ExchangeName,
-                                routingKey: routingKey,
-                                arguments: queueBinding.AdditionnalProperties);
-                        }
-                    }
-                    else
-                    {
-                        _channel.QueueBind(
-                            queue: queueDescription.QueueName,
-                            exchange: queueBinding.ExchangeName,
-                            routingKey: "",
-                            arguments: queueBinding.AdditionnalProperties);
-                    }
-                }
-
                 var consumer = new CustomRabbitConsumer(_channel, queueDescription);
                 consumer.Received += OnEventReceived;
                 _channel.BasicConsume(

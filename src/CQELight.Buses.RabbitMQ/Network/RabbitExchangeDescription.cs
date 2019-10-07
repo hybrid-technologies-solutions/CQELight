@@ -5,6 +5,26 @@ using System.Text;
 namespace CQELight.Buses.RabbitMQ.Network
 {
     /// <summary>
+    /// Type of message an exchange can handle.
+    /// </summary>
+    [Flags]
+    public enum ExchangeContentType
+    {
+        /// <summary>
+        /// Handling command
+        /// </summary>
+        Command,
+        /// <summary>
+        /// Handling event
+        /// </summary>
+        Event,
+        /// <summary>
+        /// Both
+        /// </summary>
+        Both = Command | Event
+    }
+
+    /// <summary>
     /// RabbitMQ exchange description within a configured system.
     /// </summary>
     public sealed class RabbitExchangeDescription
@@ -36,6 +56,11 @@ namespace CQELight.Buses.RabbitMQ.Network
         /// Custom additionnal properties.
         /// </summary>
         public Dictionary<string, object> AdditionnalProperties { get; set; } = new Dictionary<string, object>();
+
+        /// <summary>
+        /// Type of content this exchange can handle.
+        /// </summary>
+        public ExchangeContentType ExchangeContentType { get; set; } = ExchangeContentType.Both;
 
         #endregion
 

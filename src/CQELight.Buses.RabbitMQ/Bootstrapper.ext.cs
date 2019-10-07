@@ -1,9 +1,8 @@
 ﻿using CQELight.Abstractions.Events.Interfaces;
 using CQELight.Buses.RabbitMQ;
+using CQELight.Buses.RabbitMQ.Client;
 using CQELight.Buses.RabbitMQ.Common;
-using CQELight.Buses.RabbitMQ.Configuration;
 using CQELight.Buses.RabbitMQ.Network;
-using CQELight.Buses.RabbitMQ.Publisher;
 using CQELight.Buses.RabbitMQ.Server;
 using CQELight.Buses.RabbitMQ.Subscriber;
 using CQELight.IoC;
@@ -73,6 +72,7 @@ namespace CQELight
             }
             return bootstrapper;
         }
+
 
         /// <summary>
         /// Use RabbitMQ Server to listen from events on a specific rabbitMQ instance.

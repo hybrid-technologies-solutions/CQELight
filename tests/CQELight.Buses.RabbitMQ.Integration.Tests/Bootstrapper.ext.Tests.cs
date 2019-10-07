@@ -1,4 +1,6 @@
-﻿using CQELight.Buses.RabbitMQ.Publisher;
+﻿using CQELight.Buses.RabbitMQ.Client;
+using CQELight.Buses.RabbitMQ.Publisher;
+using CQELight.Buses.RabbitMQ.Server;
 using CQELight.Buses.RabbitMQ.Subscriber;
 using CQELight.IoC;
 using CQELight.TestFramework;
@@ -24,11 +26,10 @@ namespace CQELight.Buses.RabbitMQ.Integration.Tests
         {
             new Bootstrapper()
                 .UseAutofacAsIoC(c => { })
-                .UseRabbitMQClientBus(new RabbitPublisherBusConfiguration("test",
-                new ConnectionFactory { HostName = "localhost", UserName = "guest", Password = "guest" }))
+                .UseRabbitMQClientBus(new RabbitPublisherBusConfiguration("test", "localhost", "guest", "guest"))
                 .Bootstrapp();
 
-            using(var scope = DIManager.BeginScope())
+            using (var scope = DIManager.BeginScope())
             {
                 var client = scope.Resolve<RabbitMQClient>();
                 client.Should().NotBeNull();
@@ -52,26 +53,26 @@ namespace CQELight.Buses.RabbitMQ.Integration.Tests
         [Fact]
         public void UseRabbitMQServer_WithIoC_Should_Add_RabbitMQClient_Within_Registrations()
         {
-            //new Bootstrapper()
-            //    .UseAutofacAsIoC(c => { })
-            //    .UseRabbitMQServer(new RabbitMQServerConfiguration("test", 
-            //    new ConnectionFactory { HostName = "localhost", UserName = "guest", Password = "guest" }, QueueConfiguration.Empty))
-            //    .Bootstrapp();
+            new Bootstrapper()
+                .UseAutofacAsIoC(c => { })
+                .UseRabbitMQServer(new RabbitMQServerConfiguration("test",
+                new ConnectionFactory { HostName = "localhost", UserName = "guest", Password = "guest" }, QueueConfiguration.Empty))
+                .Bootstrapp();
 
-            //using (var scope = DIManager.BeginScope())
-            //{
-            //    var client = scope.Resolve<RabbitMQClient>();
-            //    client.Should().NotBeNull();
-            //    using (var connection = client.GetConnection())
-            //    {
-            //        connection.IsOpen.Should().BeTrue();
-            //    }
-            //}
+            using (var scope = DIManager.BeginScope())
+            {
+                var client = scope.Resolve<RabbitMQClient>();
+                client.Should().NotBeNull();
+                using (var connection = client.GetConnection())
+                {
+                    connection.IsOpen.Should().BeTrue();
+                }
+            }
 
-            //using (var connection = RabbitMQClient.Instance.GetConnection())
-            //{
-            //    connection.IsOpen.Should().BeTrue();
-            //}
+            using (var connection = RabbitMQClient.Instance.GetConnection())
+            {
+                connection.IsOpen.Should().BeTrue();
+            }
         }
 
         #endregion

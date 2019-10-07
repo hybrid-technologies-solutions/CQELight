@@ -22,7 +22,7 @@ using Xunit;
 
 namespace CQELight.Buses.RabbitMQ.Integration.Tests
 {
-    public class RabbitMQSubscriberTests : BaseUnitTestClass
+    public class RabbitSubscriberTests : BaseUnitTestClass
     {
         #region Ctor & members
 
@@ -58,12 +58,17 @@ namespace CQELight.Buses.RabbitMQ.Integration.Tests
         private readonly InMemoryEventBus eventBus = new InMemoryEventBus();
         private readonly InMemoryCommandBus commandBus = new InMemoryCommandBus();
 
-        public RabbitMQSubscriberTests()
+        public RabbitSubscriberTests()
         {
             _loggerFactory = new LoggerFactory();
             _loggerFactory.AddProvider(new DebugLoggerProvider());
             CleanQueues();
             DeleteData();
+        }
+
+        ~RabbitSubscriberTests()
+        {
+            _channel.Dispose();
         }
 
         private void DeleteData()
@@ -72,7 +77,9 @@ namespace CQELight.Buses.RabbitMQ.Integration.Tests
             {
                 _channel.ExchangeDelete(firstProducerEventExchangeName);
                 _channel.ExchangeDelete(secondProducerEventExchangeName);
+                _channel.ExchangeDelete("sub1_exchange");
                 _channel.ExchangeDelete(Consts.CONST_DEAD_LETTER_EXCHANGE_NAME);
+                _channel.ExchangeDelete(Consts.CONST_CQE_EXCHANGE_NAME);
                 _channel.QueueDelete(publisher1QueueName);
                 _channel.QueueDelete(publisher2QueueName);
                 _channel.QueueDelete(subscriber1QueueName);
@@ -98,12 +105,6 @@ namespace CQELight.Buses.RabbitMQ.Integration.Tests
             var connection = factory.CreateConnection();
 
             _channel = connection.CreateModel();
-        }
-
-        private void CreateExchanges()
-        {
-            _channel.ExchangeDeclare(firstProducerEventExchangeName, "fanout", true, false);
-            _channel.ExchangeDeclare(secondProducerEventExchangeName, "fanout", true, false);
         }
 
         private byte[] GetEnveloppeDataForEvent(string publisher, string content)

@@ -1,5 +1,6 @@
 ﻿using BenchmarkDotNet.Attributes;
 using CQELight.Abstractions.Events.Interfaces;
+using CQELight.Buses.RabbitMQ.Client;
 using CQELight.Buses.RabbitMQ.Publisher;
 using CQELight.Events.Serializers;
 using CQELight_Benchmarks.Models;
@@ -44,7 +45,7 @@ namespace CQELight_Benchmarks.Benchmarks.Buses
         public async Task DispatchEvent()
         {
             var bus = new RabbitMQEventBus(new JsonDispatcherSerializer(),
-                new RabbitPublisherBusConfiguration("benchmark", new ConnectionFactory { HostName = "localhost", UserName = "guest", Password = "guest" }));
+                new RabbitPublisherBusConfiguration("benchmark", "localhost", "guest", "guest"));
             await bus.PublishEventAsync(new TestDispatchEvent(0, false, 0));
         }
 
@@ -63,7 +64,7 @@ namespace CQELight_Benchmarks.Benchmarks.Buses
         {
 
             var bus = new RabbitMQEventBus(new JsonDispatcherSerializer(),
-                new RabbitPublisherBusConfiguration("benchmark", new ConnectionFactory { HostName = "localhost", UserName = "guest", Password = "guest" },
+                new RabbitPublisherBusConfiguration("benchmark", "localhost", "guest", "guest",
                 parallelDispatchEventTypes: allowParallelDispatch ? new List<Type> { typeof(TestDispatchEvent) } : new List<Type>()));
             var events = new List<IDomainEvent>();
             for (int i = 0; i < nbEvents; i++)

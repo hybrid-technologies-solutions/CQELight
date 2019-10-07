@@ -24,7 +24,7 @@ namespace CQELight.Buses.RabbitMQ.Client
     {
         #region Members
 
-        private static RabbitMQClientBusConfiguration _configuration;
+        private static RabbitPublisherBusConfiguration  _configuration;
         private readonly IDispatcherSerializer _serializer;
         private readonly ILogger _logger;
 
@@ -40,7 +40,7 @@ namespace CQELight.Buses.RabbitMQ.Client
         /// <param name="loggerFactory">LoggerFactory</param>
         public RabbitMQEventBus(
             IDispatcherSerializer serializer,
-            RabbitMQClientBusConfiguration configuration,
+            RabbitPublisherBusConfiguration  configuration,
             ILoggerFactory loggerFactory = null)
         {
             if (loggerFactory == null)
@@ -49,7 +49,7 @@ namespace CQELight.Buses.RabbitMQ.Client
                 loggerFactory.AddProvider(new DebugLoggerProvider());
             }
             _logger = loggerFactory.CreateLogger<RabbitMQEventBus>();
-            _configuration = configuration ?? RabbitMQClientBusConfiguration.Default;
+            _configuration = configuration ?? RabbitPublisherBusConfiguration .Default;
             _serializer = serializer ?? throw new System.ArgumentNullException(nameof(serializer));
         }
 

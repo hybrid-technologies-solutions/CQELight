@@ -11,15 +11,15 @@ namespace CQELight.Buses.RabbitMQ.Client
     /// Configuration data for RabbitMQ bus.
     /// </summary>
     [Obsolete("Use CQELight.Buses.RabbitMQ.Publisher.RabbitPublisherBusConfiguration instead")]
-    public class RabbitMQClientBusConfiguration : AbstractBaseConfiguration
+    public class RabbitPublisherBusConfiguration  : AbstractBaseConfiguration
     {
         #region Static members
 
         /// <summary>
         /// Default configuration that targets localhost for messaging.
         /// </summary>
-        public static RabbitMQClientBusConfiguration Default
-            => new RabbitMQClientBusConfiguration("default", "localhost", "guest", "guest");
+        public static RabbitPublisherBusConfiguration  Default
+            => new RabbitPublisherBusConfiguration ("default", "localhost", "guest", "guest");
 
         #endregion
 
@@ -35,7 +35,7 @@ namespace CQELight.Buses.RabbitMQ.Client
         /// <param name="eventsLifetime">Collection of relation between event type and lifetime. You should fill this collection to 
         /// indicates expiration date for some events.</param>
         /// <param name="parallelDispatchEventTypes">Event types that allows parallel dispatch.</param>
-        public RabbitMQClientBusConfiguration(string emiter,
+        public RabbitPublisherBusConfiguration (string emiter,
                                               string host,
                                               string userName,
                                               string password,

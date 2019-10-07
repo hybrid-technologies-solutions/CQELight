@@ -53,7 +53,7 @@ namespace CQELight.Buses
                 EventsLifetime = ReflectionTools.GetAllTypes()
                     .Where(t => typeof(IDomainEvent).IsAssignableFrom(t))
                     .Select(t => new
-                    EventLifeTimeConfiguration(t, TimeSpan.FromDays(1)));
+                    EventLifeTimeConfiguration(t, TimeSpan.FromHours(1)));
             }
 
             _parallelDispatchEventTypes = (parallelDispatchEventTypes ?? Enumerable.Empty<Type>()).ToList();

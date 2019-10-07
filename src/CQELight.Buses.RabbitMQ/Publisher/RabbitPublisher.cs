@@ -204,7 +204,7 @@ namespace CQELight.Buses.RabbitMQ.Publisher
         {
             var commandType = command.GetType();
             var serializedCommand = configuration.Serializer.SerializeCommand(command);
-            return new Enveloppe(serializedCommand, commandType, configuration.ConnectionInfos.Emiter);
+            return new Enveloppe(serializedCommand, commandType, configuration.ConnectionInfos.ServiceName);
         }
 
         private Enveloppe GetEnveloppeFromEvent(IDomainEvent @event)
@@ -220,9 +220,9 @@ namespace CQELight.Buses.RabbitMQ.Publisher
             var serializedEvent = configuration.Serializer.SerializeEvent(@event);
             if (expiration.HasValue)
             {
-                return new Enveloppe(serializedEvent, eventType, configuration.ConnectionInfos.Emiter, true, expiration.Value);
+                return new Enveloppe(serializedEvent, eventType, configuration.ConnectionInfos.ServiceName, true, expiration.Value);
             }
-            return new Enveloppe(serializedEvent, eventType, configuration.ConnectionInfos.Emiter);
+            return new Enveloppe(serializedEvent, eventType, configuration.ConnectionInfos.ServiceName);
 
         }
 

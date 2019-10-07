@@ -14,7 +14,7 @@ namespace CQELight.Buses.RabbitMQ.Network
         /// <summary>
         /// Name of the exchange to bind to.
         /// </summary>
-        public string ExchangeName { get; }
+        public string ExchangeName { get; set; }
 
         /// <summary>
         /// Collection of routing keys to filter.

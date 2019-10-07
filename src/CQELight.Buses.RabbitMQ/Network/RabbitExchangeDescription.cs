@@ -34,7 +34,7 @@ namespace CQELight.Buses.RabbitMQ.Network
         /// <summary>
         /// Exchange name.
         /// </summary>
-        public string ExchangeName { get; }
+        public string ExchangeName { get; set; }
 
         /// <summary>
         /// Type of the exchange.

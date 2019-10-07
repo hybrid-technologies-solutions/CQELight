@@ -14,7 +14,7 @@ namespace CQELight.Buses
         /// <summary>
         /// Configuration for events lifetimes. 
         /// </summary>
-        public IEnumerable<EventLifeTimeConfiguration> EventsLifetime { get; }
+        public IEnumerable<EventLifeTimeConfiguration> EventsLifetime { get; set; }
 
         #endregion
 

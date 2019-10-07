@@ -1,5 +1,6 @@
 ﻿using CQELight.Abstractions.CQS.Interfaces;
 using CQELight.Abstractions.DDD;
+using CQELight.Abstractions.Dispatcher;
 using CQELight.Abstractions.Events.Interfaces;
 using CQELight.Buses.InMemory.Commands;
 using CQELight.Buses.InMemory.Events;
@@ -7,6 +8,7 @@ using CQELight.Buses.RabbitMQ.Common;
 using CQELight.Buses.RabbitMQ.Extensions;
 using CQELight.Buses.RabbitMQ.Network;
 using CQELight.Buses.RabbitMQ.Subscriber.Internal;
+using CQELight.Events.Serializers;
 using CQELight.Tools;
 using CQELight.Tools.Extensions;
 using Microsoft.Extensions.Logging;
@@ -73,7 +75,7 @@ namespace CQELight.Buses.RabbitMQ.Subscriber
             RabbitCommonTools.DeclareExchangesAndQueueForSubscriber(_channel, _config);
             foreach (var queueDescription in _config.NetworkInfos.ServiceQueueDescriptions)
             {
-                var consumer = new CustomRabbitConsumer(_channel, queueDescription);
+                var consumer = new EventingBasicConsumer(_channel);
                 consumer.Received += OnEventReceived;
                 _channel.BasicConsume(
                     queue: queueDescription.QueueName,
@@ -99,9 +101,8 @@ namespace CQELight.Buses.RabbitMQ.Subscriber
 
         private async void OnEventReceived(object model, BasicDeliverEventArgs args)
         {
-            if (args.Body?.Any() == true && model is CustomRabbitConsumer consumer && consumer.QueueDescription != null)
+            if (args.Body?.Any() == true && model is EventingBasicConsumer consumer)
             {
-                var config = consumer.QueueDescription;
                 var result = Result.Ok();
                 try
                 {
@@ -109,7 +110,7 @@ namespace CQELight.Buses.RabbitMQ.Subscriber
                     var enveloppe = dataAsStr.FromJson<Enveloppe>();
                     if (enveloppe != null)
                     {
-                        if (enveloppe.Emiter == _config.ConnectionInfos.Emiter)
+                        if (enveloppe.Emiter == _config.ConnectionInfos.ServiceName)
                         {
                             return;
                         }
@@ -118,12 +119,13 @@ namespace CQELight.Buses.RabbitMQ.Subscriber
                             var objType = Type.GetType(enveloppe.AssemblyQualifiedDataType);
                             if (objType != null)
                             {
+                                var serializer = GetSerializerByContentType(args.BasicProperties?.ContentType);
                                 if (typeof(IDomainEvent).IsAssignableFrom(objType))
                                 {
-                                    var evt = config.EventSerializer.DeserializeEvent(enveloppe.Data, objType);
+                                    var evt = serializer.DeserializeEvent(enveloppe.Data, objType);
                                     try
                                     {
-                                        config.EventCustomCallback?.Invoke(evt);
+                                        _config.EventCustomCallback?.Invoke(evt);
                                     }
                                     catch(Exception e)
                                     {
@@ -131,7 +133,7 @@ namespace CQELight.Buses.RabbitMQ.Subscriber
                                             $"Error when executing custom callback for event {objType.AssemblyQualifiedName}. {e}");
                                         result = Result.Fail();
                                     }
-                                    if (config.DispatchInMemory && _inMemoryEventBusFactory != null)
+                                    if (_config.DispatchInMemory && _inMemoryEventBusFactory != null)
                                     {
                                         var bus = _inMemoryEventBusFactory();
                                         result = await bus.PublishEventAsync(evt).ConfigureAwait(false);
@@ -139,10 +141,10 @@ namespace CQELight.Buses.RabbitMQ.Subscriber
                                 }
                                 else if (typeof(ICommand).IsAssignableFrom(objType))
                                 {
-                                    var cmd = config.CommandSerializer.DeserializeCommand(enveloppe.Data, objType);
+                                    var cmd = serializer.DeserializeCommand(enveloppe.Data, objType);
                                     try
                                     {
-                                        config.CommandCustomCallback?.Invoke(cmd);
+                                        _config.CommandCustomCallback?.Invoke(cmd);
                                     }
                                     catch (Exception e)
                                     {
@@ -150,7 +152,7 @@ namespace CQELight.Buses.RabbitMQ.Subscriber
                                             $"Error when executing custom callback for command {objType.AssemblyQualifiedName}. {e}");
                                         result = Result.Fail();
                                     }
-                                    if (config.DispatchInMemory && _inMemoryCommandBusFactory != null)
+                                    if (_config.DispatchInMemory && _inMemoryCommandBusFactory != null)
                                     {
                                         var bus = _inMemoryCommandBusFactory();
                                         result = await bus.DispatchAsync(cmd).ConfigureAwait(false);
@@ -165,7 +167,7 @@ namespace CQELight.Buses.RabbitMQ.Subscriber
                     _logger.LogErrorMultilines("RabbitMQServer : Error when treating event.", exc.ToString());
                     result = Result.Fail();
                 }
-                if (!result && config.AckStrategy == AckStrategy.AckOnSucces)
+                if (!result && _config.AckStrategy == AckStrategy.AckOnSucces)
                 {
                     consumer.Model.BasicReject(args.DeliveryTag, false);
                 }
@@ -196,6 +198,20 @@ namespace CQELight.Buses.RabbitMQ.Subscriber
             catch
             {
                 //Not throw exception on cleanup
+            }
+        }
+
+        #endregion
+
+        #region Private methods
+
+        private IDispatcherSerializer GetSerializerByContentType(string contentType)
+        {
+            switch(contentType)
+            {
+                case "text/json":
+                default:
+                    return new JsonDispatcherSerializer();
             }
         }
 

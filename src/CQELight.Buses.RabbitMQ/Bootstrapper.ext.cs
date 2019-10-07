@@ -3,6 +3,7 @@ using CQELight.Buses.RabbitMQ;
 using CQELight.Buses.RabbitMQ.Client;
 using CQELight.Buses.RabbitMQ.Common;
 using CQELight.Buses.RabbitMQ.Network;
+using CQELight.Buses.RabbitMQ.Publisher;
 using CQELight.Buses.RabbitMQ.Server;
 using CQELight.Buses.RabbitMQ.Subscriber;
 using CQELight.IoC;
@@ -22,10 +23,10 @@ namespace CQELight
         /// <returns>Configured bootstrapper instance</returns>
         public static Bootstrapper UseRabbitMQ(
             this Bootstrapper bootstrapper,
-
-            RabbitNetworkInfos networkInfos,
             RabbitConnectionInfos connectionInfos,
-            bool useDeadLetterQueue = true)
+            RabbitNetworkInfos networkInfos,
+            Action<RabbitSubscriberConfiguration> subscriberConfiguration = null,
+            Action<RabbitPublisherConfiguration> publisherConfiguration = null)
         {
             var service = RabbitMQBootstrappService.Instance;
             service.BootstrappAction += (ctx) =>
@@ -33,10 +34,21 @@ namespace CQELight
                 var subscriberConf = new RabbitSubscriberConfiguration
                 {
                     ConnectionInfos = connectionInfos,
-                    NetworkInfos = networkInfos,
-                    UseDeadLetterQueue = useDeadLetterQueue
+                    NetworkInfos = networkInfos
                 };
+                subscriberConfiguration?.Invoke(subscriberConf);
                 bootstrapper.AddIoCRegistration(new InstanceTypeRegistration(subscriberConf, typeof(RabbitSubscriberConfiguration)));
+
+                var publisherConf = new RabbitPublisherConfiguration()
+                {
+                    ConnectionInfos = connectionInfos,
+                    NetworkInfos = networkInfos
+                };
+                publisherConfiguration?.Invoke(publisherConf);
+                bootstrapper.AddIoCRegistration(new InstanceTypeRegistration(publisherConf, typeof(RabbitPublisherConfiguration)));
+
+                bootstrapper.AddIoCRegistration(new TypeRegistration(typeof(RabbitPublisher), true));
+                bootstrapper.AddIoCRegistration(new TypeRegistration(typeof(RabbitSubscriber), true));
             };
             return bootstrapper;
         }

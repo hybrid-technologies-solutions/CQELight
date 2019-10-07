@@ -134,21 +134,19 @@ namespace CQELight.Buses.RabbitMQ.Integration.Tests
             {
                 bool eventReceived = false;
                 var networkInfos = RabbitNetworkInfos.GetConfigurationFor("sub1", RabbitMQExchangeStrategy.SingleExchange);
-                var serviceQueue = networkInfos.ServiceQueueDescriptions[0];
-                serviceQueue.EventCustomCallback = (e) => eventReceived = e is RabbitEvent;
-                serviceQueue.DispatchInMemory = false;
-
                 var config = new RabbitSubscriberConfiguration
                 {
                     UseDeadLetterQueue = false,
                     ConnectionInfos = GetConnectionInfos(),
-                    NetworkInfos = networkInfos
+                    NetworkInfos = networkInfos,
+                    DispatchInMemory = false
                 };
+                config.EventCustomCallback = (e) => eventReceived = e is RabbitEvent;
                 var subscriber = new RabbitSubscriber(
-                    _loggerFactory,
-                    config,
-                    () => eventBus,
-                    () => commandBus);
+                        _loggerFactory,
+                        config,
+                        () => eventBus,
+                        () => commandBus);
 
                 subscriber.Start();
 
@@ -189,21 +187,21 @@ namespace CQELight.Buses.RabbitMQ.Integration.Tests
                     );
 
                 var serviceQueue = networkInfos.ServiceQueueDescriptions[0];
-                serviceQueue.EventCustomCallback = (e) => eventReceived = e is RabbitEvent;
-                serviceQueue.DispatchInMemory = false;
                 serviceQueue.Bindings.Add(new RabbitQueueBindingDescription(firstProducerEventExchangeName));
 
                 var config = new RabbitSubscriberConfiguration
                 {
                     UseDeadLetterQueue = false,
                     ConnectionInfos = GetConnectionInfos(),
-                    NetworkInfos = networkInfos
+                    NetworkInfos = networkInfos,
+                    DispatchInMemory = false
                 };
+                config.EventCustomCallback = (e) => eventReceived = e is RabbitEvent;
                 var subscriber = new RabbitSubscriber(
-                    _loggerFactory,
-                    config,
-                    () => eventBus,
-                    () => commandBus);
+                        _loggerFactory,
+                        config,
+                        () => eventBus,
+                        () => commandBus);
 
                 subscriber.Start();
 
@@ -245,8 +243,6 @@ namespace CQELight.Buses.RabbitMQ.Integration.Tests
 
                 networkInfos.ServiceQueueDescriptions.Add(new RabbitQueueDescription("MyCustomQueue")
                 {
-                    DispatchInMemory = false,
-                    EventCustomCallback = (e) => eventReceived = e is RabbitEvent,
                     Bindings = new System.Collections.Generic.List<RabbitQueueBindingDescription>
                     {
                        new RabbitQueueBindingDescription("MyCustomExchange")
@@ -257,8 +253,10 @@ namespace CQELight.Buses.RabbitMQ.Integration.Tests
                 {
                     UseDeadLetterQueue = false,
                     ConnectionInfos = GetConnectionInfos(),
-                    NetworkInfos = networkInfos
+                    NetworkInfos = networkInfos,
+                    DispatchInMemory = false,
                 };
+                config.EventCustomCallback = (e) => eventReceived = e is RabbitEvent;
                 var subscriber = new RabbitSubscriber(
                     _loggerFactory,
                     config,
@@ -305,20 +303,20 @@ namespace CQELight.Buses.RabbitMQ.Integration.Tests
                 bool commandReceived = false;
                 var networkInfos = RabbitNetworkInfos.GetConfigurationFor("sub1", RabbitMQExchangeStrategy.SingleExchange);
                 var serviceQueue = networkInfos.ServiceQueueDescriptions[0];
-                serviceQueue.CommandCustomCallback = (c) => commandReceived = c is RabbitCommand;
-                serviceQueue.DispatchInMemory = false;
-
                 var config = new RabbitSubscriberConfiguration
                 {
                     UseDeadLetterQueue = false,
                     ConnectionInfos = GetConnectionInfos(),
-                    NetworkInfos = networkInfos
+                    NetworkInfos = networkInfos,
+                    DispatchInMemory = false
                 };
+                config.CommandCustomCallback = (c) => commandReceived = c is RabbitCommand;
+
                 var subscriber = new RabbitSubscriber(
-                    _loggerFactory,
-                    config,
-                    () => eventBus,
-                    () => commandBus);
+                        _loggerFactory,
+                        config,
+                        () => eventBus,
+                        () => commandBus);
 
                 subscriber.Start();
 
@@ -374,16 +372,15 @@ namespace CQELight.Buses.RabbitMQ.Integration.Tests
                 bool eventReceived = false;
                 var messages = new List<object>();
                 var networkInfos = RabbitNetworkInfos.GetConfigurationFor("sub1", RabbitMQExchangeStrategy.SingleExchange);
-                var serviceQueue = networkInfos.ServiceQueueDescriptions[0];
-                serviceQueue.EventCustomCallback = (e) => { messages.Add(e); eventReceived = true; };
-                serviceQueue.DispatchInMemory = false;
 
                 var config = new RabbitSubscriberConfiguration
                 {
                     UseDeadLetterQueue = true,
                     ConnectionInfos = GetConnectionInfos(),
-                    NetworkInfos = networkInfos
+                    NetworkInfos = networkInfos,
+                    DispatchInMemory = false
                 };
+                config.EventCustomCallback = (e) => { messages.Add(e); eventReceived = true; };
 
                 var subscriber = new RabbitSubscriber(
                     _loggerFactory,
@@ -423,8 +420,6 @@ namespace CQELight.Buses.RabbitMQ.Integration.Tests
             try
             {
                 var networkInfos = RabbitNetworkInfos.GetConfigurationFor("sub1", RabbitMQExchangeStrategy.SingleExchange);
-                var serviceQueue = networkInfos.ServiceQueueDescriptions[0];
-                serviceQueue.EventCustomCallback += (_) => throw new InvalidOperationException();
 
                 var config = new RabbitSubscriberConfiguration
                 {
@@ -432,6 +427,7 @@ namespace CQELight.Buses.RabbitMQ.Integration.Tests
                     ConnectionInfos = GetConnectionInfos(),
                     NetworkInfos = networkInfos
                 };
+                config.EventCustomCallback += (_) => throw new InvalidOperationException();
 
                 var subscriber = new RabbitSubscriber(
                     _loggerFactory,
@@ -471,16 +467,15 @@ namespace CQELight.Buses.RabbitMQ.Integration.Tests
             try
             {
                 var networkInfos = RabbitNetworkInfos.GetConfigurationFor("sub1", RabbitMQExchangeStrategy.SingleExchange);
-                var serviceQueue = networkInfos.ServiceQueueDescriptions[0];
-                serviceQueue.EventCustomCallback += (_) => throw new InvalidOperationException();
-                serviceQueue.AckStrategy = AckStrategy.AckOnReceive;
 
                 var config = new RabbitSubscriberConfiguration
                 {
                     UseDeadLetterQueue = true,
                     ConnectionInfos = GetConnectionInfos(),
-                    NetworkInfos = networkInfos
+                    NetworkInfos = networkInfos,
+                    AckStrategy = AckStrategy.AckOnReceive
                 };
+                config.EventCustomCallback += (_) => throw new InvalidOperationException();
 
                 var subscriber = new RabbitSubscriber(
                     _loggerFactory,

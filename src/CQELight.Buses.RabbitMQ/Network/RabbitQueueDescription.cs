@@ -32,7 +32,7 @@ namespace CQELight.Buses.RabbitMQ.Network
         /// <summary>
         /// Name of the queue.
         /// </summary>
-        public string QueueName { get; }
+        public string QueueName { get; set; }
 
         /// <summary>
         /// Flag that indicates if object within the queue are considered durable.
@@ -58,37 +58,7 @@ namespace CQELight.Buses.RabbitMQ.Network
         /// Collection of bindings for this specific queue.
         /// </summary>
         public List<RabbitQueueBindingDescription> Bindings { get; set; } = new List<RabbitQueueBindingDescription>();
-
-        /// <summary>
-        /// Flag that indicates if receveid ressource (event or command) should be dispatched on the in-memory buses.
-        /// </summary>
-        public bool DispatchInMemory { get; set; } = true;
-
-        /// <summary>
-        /// Custom callback when an event is received.
-        /// </summary>
-        public Action<IDomainEvent> EventCustomCallback { get; set; } = null;
-
-        /// <summary>
-        /// Custom callback when a command is received.
-        /// </summary>
-        public Action<ICommand> CommandCustomCallback { get; set; } = null;
-
-        /// <summary>
-        /// Event serializer.
-        /// </summary>
-        public IEventSerializer EventSerializer { get; set; } = new JsonDispatcherSerializer();
-
-        /// <summary>
-        /// Command serializer.
-        /// </summary>
-        public ICommandSerializer CommandSerializer { get; set; } = new JsonDispatcherSerializer();
-
-        /// <summary>
-        /// Strategy to consider for ack.
-        /// </summary>
-        public AckStrategy AckStrategy { get; set; } = AckStrategy.AckOnSucces;
-
+        
         #endregion
 
         #region Ctor

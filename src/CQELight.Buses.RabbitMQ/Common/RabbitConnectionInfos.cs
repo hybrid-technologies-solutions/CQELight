@@ -36,9 +36,9 @@ namespace CQELight.Buses.RabbitMQ.Common
         /// </summary>
         public ConnectionFactory ConnectionFactory { get; protected set; }
         /// <summary>
-        /// Emiter application identity.
+        /// Name of the service on RabbitMQ.
         /// </summary>
-        public string Emiter { get; protected set; }
+        public string ServiceName { get; protected set; }
 
         #endregion
 
@@ -56,7 +56,7 @@ namespace CQELight.Buses.RabbitMQ.Common
         /// <param name="connectionFactory">Initialized connection factor.</param>
         /// <returns>New configured instance</returns>
         public static RabbitConnectionInfos FromConnectionFactory(
-            ConnectionFactory connectionFactory, string emiter)
+            ConnectionFactory connectionFactory, string serviceName)
         {
             if (connectionFactory == null)
                 throw new ArgumentNullException(nameof(connectionFactory));
@@ -66,7 +66,7 @@ namespace CQELight.Buses.RabbitMQ.Common
             }
             return new RabbitConnectionInfos
             {
-                Emiter = emiter,
+                ServiceName = serviceName,
                 ConnectionFactory = connectionFactory
             };
         }

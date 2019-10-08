@@ -2,12 +2,14 @@
 using CQELight.Abstractions.DDD;
 using CQELight.Abstractions.Events;
 using CQELight.Abstractions.Events.Interfaces;
+using CQELight.Abstractions.IoC.Interfaces;
 using CQELight.Buses.InMemory.Commands;
 using CQELight.Buses.InMemory.Events;
 using CQELight.Buses.RabbitMQ.Common;
 using CQELight.Buses.RabbitMQ.Network;
 using CQELight.Buses.RabbitMQ.Subscriber;
 using CQELight.TestFramework;
+using CQELight.TestFramework.IoC;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Debug;
@@ -58,12 +60,19 @@ namespace CQELight.Buses.RabbitMQ.Integration.Tests
         private readonly InMemoryEventBus eventBus = new InMemoryEventBus();
         private readonly InMemoryCommandBus commandBus = new InMemoryCommandBus();
 
+        private readonly TestScopeFactory scopeFactory;
+
         public RabbitSubscriberTests()
         {
             _loggerFactory = new LoggerFactory();
             _loggerFactory.AddProvider(new DebugLoggerProvider());
             CleanQueues();
             DeleteData();
+            scopeFactory = new TestScopeFactory(new TestScope(new Dictionary<Type, object>
+            {
+                { typeof(InMemoryEventBus), eventBus },
+                {typeof(InMemoryCommandBus), commandBus } }
+            ));
         }
 
         ~RabbitSubscriberTests()
@@ -145,8 +154,7 @@ namespace CQELight.Buses.RabbitMQ.Integration.Tests
                 var subscriber = new RabbitSubscriber(
                         _loggerFactory,
                         config,
-                        () => eventBus,
-                        () => commandBus);
+                        scopeFactory);
 
                 subscriber.Start();
 
@@ -200,8 +208,7 @@ namespace CQELight.Buses.RabbitMQ.Integration.Tests
                 var subscriber = new RabbitSubscriber(
                         _loggerFactory,
                         config,
-                        () => eventBus,
-                        () => commandBus);
+                        scopeFactory);
 
                 subscriber.Start();
 
@@ -260,8 +267,7 @@ namespace CQELight.Buses.RabbitMQ.Integration.Tests
                 var subscriber = new RabbitSubscriber(
                     _loggerFactory,
                     config,
-                    () => eventBus,
-                    () => commandBus);
+                    scopeFactory);
 
                 subscriber.Start();
 
@@ -315,8 +321,7 @@ namespace CQELight.Buses.RabbitMQ.Integration.Tests
                 var subscriber = new RabbitSubscriber(
                         _loggerFactory,
                         config,
-                        () => eventBus,
-                        () => commandBus);
+                        scopeFactory);
 
                 subscriber.Start();
 

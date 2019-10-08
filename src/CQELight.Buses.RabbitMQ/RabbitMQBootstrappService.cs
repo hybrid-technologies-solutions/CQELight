@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CQELight.Buses.RabbitMQ.Subscriber;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -21,6 +22,8 @@ namespace CQELight.Buses.RabbitMQ
                 return _instance;
             }
         }
+
+        internal static RabbitSubscriber RabbitSubscriber { get; set; }
 
         #endregion
 

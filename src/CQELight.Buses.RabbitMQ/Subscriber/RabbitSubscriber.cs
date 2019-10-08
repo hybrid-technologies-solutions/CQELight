@@ -2,6 +2,7 @@
 using CQELight.Abstractions.DDD;
 using CQELight.Abstractions.Dispatcher;
 using CQELight.Abstractions.Events.Interfaces;
+using CQELight.Abstractions.IoC.Interfaces;
 using CQELight.Buses.InMemory.Commands;
 using CQELight.Buses.InMemory.Events;
 using CQELight.Buses.RabbitMQ.Common;
@@ -37,6 +38,7 @@ namespace CQELight.Buses.RabbitMQ.Subscriber
         private IModel _channel;
         private readonly Func<InMemoryEventBus> _inMemoryEventBusFactory;
         private readonly Func<InMemoryCommandBus> _inMemoryCommandBusFactory;
+        private readonly IScopeFactory scopeFactory;
 
         #endregion
 
@@ -45,8 +47,7 @@ namespace CQELight.Buses.RabbitMQ.Subscriber
         public RabbitSubscriber(
             ILoggerFactory loggerFactory,
             RabbitSubscriberConfiguration config,
-            Func<InMemoryEventBus> inMemoryEventBusFactory = null,
-            Func<InMemoryCommandBus> inMemoryCommandBusFactory = null)
+            IScopeFactory scopeFactory = null)
         {
             if (loggerFactory == null)
             {
@@ -55,8 +56,7 @@ namespace CQELight.Buses.RabbitMQ.Subscriber
             }
             _logger = loggerFactory.CreateLogger<RabbitSubscriber>();
             _config = config;
-            _inMemoryEventBusFactory = inMemoryEventBusFactory;
-            _inMemoryCommandBusFactory = inMemoryCommandBusFactory;
+            this.scopeFactory = scopeFactory;
         }
 
         #endregion
@@ -112,6 +112,7 @@ namespace CQELight.Buses.RabbitMQ.Subscriber
                     {
                         if (enveloppe.Emiter == _config.ConnectionInfos.ServiceName)
                         {
+                            consumer.Model.BasicAck(args.DeliveryTag, false);
                             return;
                         }
                         if (!string.IsNullOrWhiteSpace(enveloppe.Data) && !string.IsNullOrWhiteSpace(enveloppe.AssemblyQualifiedDataType))
@@ -133,10 +134,16 @@ namespace CQELight.Buses.RabbitMQ.Subscriber
                                             $"Error when executing custom callback for event {objType.AssemblyQualifiedName}. {e}");
                                         result = Result.Fail();
                                     }
-                                    if (_config.DispatchInMemory && _inMemoryEventBusFactory != null)
+                                    if (scopeFactory != null)
                                     {
-                                        var bus = _inMemoryEventBusFactory();
-                                        result = await bus.PublishEventAsync(evt).ConfigureAwait(false);
+                                        using (var scope = scopeFactory.CreateScope())
+                                        {
+                                            var bus = scope.Resolve<InMemoryEventBus>();
+                                            if (_config.DispatchInMemory && bus != null)
+                                            {
+                                                result = await bus.PublishEventAsync(evt).ConfigureAwait(false);
+                                            }
+                                        }
                                     }
                                 }
                                 else if (typeof(ICommand).IsAssignableFrom(objType))
@@ -152,10 +159,13 @@ namespace CQELight.Buses.RabbitMQ.Subscriber
                                             $"Error when executing custom callback for command {objType.AssemblyQualifiedName}. {e}");
                                         result = Result.Fail();
                                     }
-                                    if (_config.DispatchInMemory && _inMemoryCommandBusFactory != null)
+                                    using (var scope = scopeFactory.CreateScope())
                                     {
-                                        var bus = _inMemoryCommandBusFactory();
-                                        result = await bus.DispatchAsync(cmd).ConfigureAwait(false);
+                                        var bus = scope.Resolve<InMemoryCommandBus>();
+                                        if (_config.DispatchInMemory && bus != null)
+                                        {
+                                            result = await bus.DispatchAsync(cmd).ConfigureAwait(false);
+                                        }
                                     }
                                 }
                             }

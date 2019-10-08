@@ -100,7 +100,7 @@ namespace CQELight.Buses.RabbitMQ.Publisher
             {
                 var eventType = @event.GetType();
                 logger.LogDebug($"RabbitMQClientBus : Beginning of publishing event of type {eventType.FullName}");
-                var routingKey = configuration.RoutingKeyFactory.GetRoutingKeyForCommand(@event);
+                var routingKey = configuration.RoutingKeyFactory.GetRoutingKeyForEvent(@event);
                 await Publish(GetEnveloppeFromEvent(@event), routingKey).ConfigureAwait(false);
                 logger.LogDebug($"RabbitMQClientBus : End of publishing event of type {eventType.FullName}");
                 return Result.Ok();

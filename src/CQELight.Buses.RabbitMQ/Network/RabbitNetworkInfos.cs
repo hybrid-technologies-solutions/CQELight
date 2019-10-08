@@ -76,11 +76,19 @@ namespace CQELight.Buses.RabbitMQ.Network
                 case RabbitMQExchangeStrategy.Custom:
                     return new RabbitNetworkInfos();
                 case RabbitMQExchangeStrategy.SingleExchange:
+                    var globalExch = new RabbitExchangeDescription(Consts.CONST_CQE_EXCHANGE_NAME)
+                    {
+                        ExchangeContentType = ExchangeContentType.Both
+                    };
                     return new RabbitNetworkInfos
                     {
+                        ServiceExchangeDescriptions = new List<RabbitExchangeDescription>
+                        {
+                           globalExch
+                        },
                         DistantExchangeDescriptions = new List<RabbitExchangeDescription>
                         {
-                            new RabbitExchangeDescription(Consts.CONST_CQE_EXCHANGE_NAME)
+                            globalExch
                         },
                         ServiceQueueDescriptions = new List<RabbitQueueDescription>
                         {

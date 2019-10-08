@@ -1,4 +1,7 @@
 ﻿using CQELight.Abstractions.Events.Interfaces;
+using CQELight.Abstractions.IoC.Interfaces;
+using CQELight.Buses.InMemory.Commands;
+using CQELight.Buses.InMemory.Events;
 using CQELight.Buses.RabbitMQ;
 using CQELight.Buses.RabbitMQ.Client;
 using CQELight.Buses.RabbitMQ.Common;
@@ -8,6 +11,8 @@ using CQELight.Buses.RabbitMQ.Publisher;
 using CQELight.Buses.RabbitMQ.Server;
 using CQELight.Buses.RabbitMQ.Subscriber;
 using CQELight.IoC;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Debug;
 using System;
 using System.Linq;
 
@@ -30,15 +35,16 @@ namespace CQELight
             Action<RabbitPublisherConfiguration> publisherConfiguration = null)
         {
             var service = RabbitMQBootstrappService.Instance;
+
+            var subscriberConf = new RabbitSubscriberConfiguration
+            {
+                ConnectionInfos = connectionInfos,
+                NetworkInfos = networkInfos
+            };
+            subscriberConfiguration?.Invoke(subscriberConf);
+
             service.BootstrappAction += (ctx) =>
             {
-                var subscriberConf = new RabbitSubscriberConfiguration
-                {
-                    ConnectionInfos = connectionInfos,
-                    NetworkInfos = networkInfos
-                };
-                subscriberConfiguration?.Invoke(subscriberConf);
-                bootstrapper.AddIoCRegistration(new InstanceTypeRegistration(subscriberConf, typeof(RabbitSubscriberConfiguration)));
 
                 var publisherConf = new RabbitPublisherConfiguration()
                 {
@@ -46,6 +52,8 @@ namespace CQELight
                     NetworkInfos = networkInfos
                 };
                 publisherConfiguration?.Invoke(publisherConf);
+
+                bootstrapper.AddIoCRegistration(new InstanceTypeRegistration(subscriberConf, typeof(RabbitSubscriberConfiguration)));
                 bootstrapper.AddIoCRegistration(new InstanceTypeRegistration(publisherConf, typeof(RabbitPublisherConfiguration)));
 
                 bootstrapper.AddIoCRegistration(new TypeRegistration(typeof(RabbitPublisher), true));
@@ -54,6 +62,28 @@ namespace CQELight
                 {
                     bootstrapper.AddIoCRegistration(new InstanceTypeRegistration(publisherConf.RoutingKeyFactory, typeof(IRoutingKeyFactory)));
                 }
+            };
+            bootstrapper.AddService(service);
+            bootstrapper.OnPostBootstrapping += (c) =>
+            {
+                ILoggerFactory loggerFactory = null;
+                IScopeFactory scopeFactory = null;
+                if (c.Scope != null)
+                {
+                    loggerFactory = c.Scope.Resolve<ILoggerFactory>();
+                    scopeFactory = c.Scope.Resolve<IScopeFactory>();
+                }
+                if (loggerFactory == null)
+                {
+                    loggerFactory = new LoggerFactory();
+                    loggerFactory.AddProvider(new DebugLoggerProvider());
+                }
+                RabbitMQBootstrappService.RabbitSubscriber =
+                    new RabbitSubscriber(
+                        loggerFactory,
+                        subscriberConf,
+                        scopeFactory);
+                RabbitMQBootstrappService.RabbitSubscriber.Start();
             };
             return bootstrapper;
         }

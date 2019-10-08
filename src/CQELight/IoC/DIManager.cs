@@ -24,7 +24,7 @@ namespace CQELight.IoC
         /// <summary>
         /// Get the fact that DIManager has already been initialized.
         /// </summary>
-        public static bool IsInit { get; private set; }
+        public static bool IsInit { get; internal set; }
 
         #endregion
 

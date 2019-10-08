@@ -1,5 +1,6 @@
 ﻿using CQELight.Abstractions.Dispatcher.Interfaces;
 using CQELight.Abstractions.IoC.Interfaces;
+using CQELight.Bootstrapping;
 using CQELight.Bootstrapping.Notifications;
 using CQELight.Dispatcher;
 using CQELight.Dispatcher.Configuration;
@@ -40,6 +41,15 @@ namespace CQELight
         /// Collection of registered services.
         /// </summary>
         public IEnumerable<IBootstrapperService> RegisteredServices => _services.AsEnumerable();
+
+        #endregion
+
+        #region Event
+
+        /// <summary>
+        /// Occurs when bootstrapping is finished.
+        /// </summary>
+        public event Action<PostBootstrappingContext> OnPostBootstrapping;
 
         #endregion
 
@@ -89,7 +99,7 @@ namespace CQELight
         /// <param name="throwExceptionOnErrorNotif">Flag to indicates if any encountered error notif
         /// should throw <see cref="BootstrappingException"/></param>
         public Bootstrapper(bool strict, bool checkOptimal, bool throwExceptionOnErrorNotif)
-            :this(strict, checkOptimal)
+            : this(strict, checkOptimal)
         {
             _throwExceptionOnErrorNotif = throwExceptionOnErrorNotif;
         }
@@ -168,9 +178,18 @@ namespace CQELight
             {
                 service.BootstrappAction.Invoke(context);
             }
-            if(_throwExceptionOnErrorNotif && _notifications.Any(n => n.Type == BootstrapperNotificationType.Error))
+            if (_throwExceptionOnErrorNotif && _notifications.Any(n => n.Type == BootstrapperNotificationType.Error))
             {
                 throw new BootstrappingException(_notifications);
+            }
+            if (OnPostBootstrapping != null)
+            {
+                OnPostBootstrapping(new PostBootstrappingContext
+                {
+                    Notifications = _notifications,
+                    Scope = DIManager.IsInit ? DIManager.BeginScope() : null
+                });
+                OnPostBootstrapping = null; //Unsubscribe all
             }
             return _notifications.AsEnumerable();
         }

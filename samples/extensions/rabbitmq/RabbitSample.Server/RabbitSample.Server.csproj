@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\src\CQELight.IoC.Autofac\CQELight.IoC.Autofac.csproj" />
+    <ProjectReference Include="..\RabbitSample.Common\RabbitSample.Common.csproj" />
+  </ItemGroup>
+
+</Project>

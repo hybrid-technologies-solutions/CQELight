@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\src\CQELight.Buses.RabbitMQ\CQELight.Buses.RabbitMQ.csproj" />
+    <ProjectReference Include="..\..\..\..\src\CQELight\CQELight.csproj" />
+  </ItemGroup>
+
+</Project>

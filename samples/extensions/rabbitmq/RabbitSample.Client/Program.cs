@@ -1,6 +1,8 @@
-﻿using CQELight;
+﻿using Autofac;
+using CQELight;
 using CQELight.Buses.RabbitMQ.Network;
 using CQELight.Dispatcher;
+using Microsoft.Extensions.Logging;
 using RabbitSample.Common;
 using System;
 
@@ -12,6 +14,8 @@ namespace RabbitSample.Client
         {
             Console.WriteLine("Trying to connect to RabbitMQ instance @locahost with guest:guest");
 
+            var loggerFactory = new LoggerFactory();
+
             var network = RabbitNetworkInfos.GetConfigurationFor("client", RabbitMQExchangeStrategy.SingleExchange);
             //This network will produce a client_queue queue, bound to cqelight_global_exchange
             new Bootstrapper()
@@ -19,6 +23,7 @@ namespace RabbitSample.Client
                     ConnectionInfosHelper.GetConnectionInfos("client"),
                     network
                 )
+                .UseAutofacAsIoC(c => c.Register(_ => loggerFactory).AsImplementedInterfaces().ExternallyOwned())
                 .Bootstrapp();
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("Successfuly connected to RabbitMQ");

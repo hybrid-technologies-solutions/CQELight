@@ -2,6 +2,7 @@
 using CQELight.Buses.RabbitMQ;
 using CQELight.Buses.RabbitMQ.Client;
 using CQELight.Buses.RabbitMQ.Common;
+using CQELight.Buses.RabbitMQ.Common.Abstractions;
 using CQELight.Buses.RabbitMQ.Network;
 using CQELight.Buses.RabbitMQ.Publisher;
 using CQELight.Buses.RabbitMQ.Server;
@@ -49,6 +50,10 @@ namespace CQELight
 
                 bootstrapper.AddIoCRegistration(new TypeRegistration(typeof(RabbitPublisher), true));
                 bootstrapper.AddIoCRegistration(new TypeRegistration(typeof(RabbitSubscriber), true));
+                if (publisherConf.RoutingKeyFactory != null)
+                {
+                    bootstrapper.AddIoCRegistration(new InstanceTypeRegistration(publisherConf.RoutingKeyFactory, typeof(IRoutingKeyFactory)));
+                }
             };
             return bootstrapper;
         }

@@ -70,9 +70,11 @@ namespace CQELight.Buses.RabbitMQ.Publisher
                         var body = Encoding.UTF8.GetBytes(env.ToJson());
                         var props = GetBasicProperties(channel, env);
 
+                        var routingKey = configuration.RoutingKeyFactory.GetRoutingKeyForCommand(command);
+
                         channel.BasicPublish(
                             exchange: "", //Command sending are direct
-                            routingKey: env.AssemblyQualifiedDataType.Split('.')[0], // Convention is first part of namespace is service name
+                            routingKey: routingKey,
                             basicProperties: props,
                             body: body);
                     }
@@ -98,7 +100,8 @@ namespace CQELight.Buses.RabbitMQ.Publisher
             {
                 var eventType = @event.GetType();
                 logger.LogDebug($"RabbitMQClientBus : Beginning of publishing event of type {eventType.FullName}");
-                await Publish(GetEnveloppeFromEvent(@event)).ConfigureAwait(false);
+                var routingKey = configuration.RoutingKeyFactory.GetRoutingKeyForCommand(@event);
+                await Publish(GetEnveloppeFromEvent(@event), routingKey).ConfigureAwait(false);
                 logger.LogDebug($"RabbitMQClientBus : End of publishing event of type {eventType.FullName}");
                 return Result.Ok();
             }
@@ -128,8 +131,9 @@ namespace CQELight.Buses.RabbitMQ.Publisher
 #pragma warning restore
 
             var tasks = new List<Task<Result>>();
-            foreach (var item in eventsGroup)
+            foreach (var item in eventsGroup.Where(e => e.Events.Count > 0))
             {
+                var routingKey = configuration.RoutingKeyFactory.GetRoutingKeyForEvent(item.Events[0]);
                 tasks.Add(Task.Run(async () =>
                 {
                     logger.LogInformation($"RabbitMQClientBus : Beginning of parallel dispatching events of type {item.Type.FullName}");
@@ -156,7 +160,7 @@ namespace CQELight.Buses.RabbitMQ.Publisher
                                         .Where(s => (s.ExchangeContentType & ExchangeContentType.Event) != 0))
                                     {
                                         batch.Add(exchange: cfg.ExchangeName,
-                                                  routingKey: "",
+                                                  routingKey: routingKey,
                                                   mandatory: true,
                                                   properties: props,
                                                   body: body);
@@ -191,7 +195,7 @@ namespace CQELight.Buses.RabbitMQ.Publisher
             props.ContentType = "text/json";
             props.DeliveryMode = (byte)(env.PersistentMessage ? 2 : 1);
             props.Type = env.AssemblyQualifiedDataType;
-            props.Expiration = 
+            props.Expiration =
                 env.Expiration.TotalMilliseconds > 0 ?
                 (env.Expiration.TotalMilliseconds * 1000).ToString() :
                 "3600000000";
@@ -226,7 +230,7 @@ namespace CQELight.Buses.RabbitMQ.Publisher
 
         }
 
-        private Task Publish(Enveloppe env)
+        private Task Publish(Enveloppe env, string routingKey)
         {
             using (var connection = GetConnection())
             {
@@ -234,13 +238,13 @@ namespace CQELight.Buses.RabbitMQ.Publisher
                 {
                     var body = Encoding.UTF8.GetBytes(env.ToJson());
                     var props = GetBasicProperties(channel, env);
-                    
+
                     foreach (var cfg in configuration.NetworkInfos.ServiceExchangeDescriptions
                         .Where(s => (s.ExchangeContentType & ExchangeContentType.Event) != 0))
                     {
                         channel.BasicPublish(
                                              exchange: cfg.ExchangeName,
-                                             routingKey: "",
+                                             routingKey: routingKey,
                                              basicProperties: props,
                                              body: body);
                     }

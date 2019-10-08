@@ -1,6 +1,7 @@
 ﻿using CQELight.Abstractions.CQS.Interfaces;
 using CQELight.Abstractions.Events;
 using CQELight.Buses.RabbitMQ.Common;
+using CQELight.Buses.RabbitMQ.Common.Abstractions;
 using CQELight.Buses.RabbitMQ.Network;
 using CQELight.Buses.RabbitMQ.Publisher;
 using CQELight.TestFramework;
@@ -8,6 +9,7 @@ using CQELight.Tools.Extensions;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Debug;
+using Moq;
 using RabbitMQ.Client;
 using System;
 using System.Collections.Generic;
@@ -135,6 +137,125 @@ namespace CQELight.Buses.RabbitMQ.Integration.Tests.Publisher
             finally
             {
                 DeleteData();
+            }
+        }
+
+        #endregion
+
+        #region RoutingKeyFactory
+
+        [Fact]
+        public async Task DispatchAsync_Default_Routing_Key_Factory_Should_Use_First_Namespace_Part()
+        {
+            try
+            {
+                var networkInfos = RabbitNetworkInfos.GetConfigurationFor("CQELight", RabbitMQExchangeStrategy.Custom);
+                networkInfos.ServiceQueueDescriptions.Add(new RabbitQueueDescription("CQELight"));
+                var config = new RabbitPublisherConfiguration
+                {
+                    ConnectionInfos = GetConnectionInfos(),
+                    NetworkInfos = networkInfos,
+                    RoutingKeyFactory = new RabbitDefaultRoutingKeyFactory()
+                };
+                var publisher = new RabbitPublisher(
+                    loggerFactory,
+                    config);
+
+                await publisher.DispatchAsync(new TestCommand());
+
+                var result = channel.BasicGet("CQELight", true);
+                result.Should().NotBeNull();
+                Encoding.UTF8.GetString(result.Body).FromJson<TestCommand>().Should().NotBeNull();
+            }
+            finally
+            {
+                DeleteData();
+            }
+        }
+
+        [Fact]
+        public async Task DispatchAsync_Default_Routing_Key_Factory_Should_Be_Considered()
+        {
+            try
+            {
+                var fakeRoutingKeyFactory = new Mock<IRoutingKeyFactory>();
+                fakeRoutingKeyFactory
+                    .Setup(m => m.GetRoutingKeyForCommand(It.IsAny<object>()))
+                    .Returns("MyCustomQueue");
+
+                var networkInfos = RabbitNetworkInfos.GetConfigurationFor("CQELight", RabbitMQExchangeStrategy.Custom);
+                networkInfos.ServiceQueueDescriptions.Add(new RabbitQueueDescription("CQELight"));
+                networkInfos.ServiceQueueDescriptions.Add(new RabbitQueueDescription("MyCustomQueue"));
+                var config = new RabbitPublisherConfiguration
+                {
+                    ConnectionInfos = GetConnectionInfos(),
+                    NetworkInfos = networkInfos,
+                    RoutingKeyFactory = fakeRoutingKeyFactory.Object
+                };
+                var publisher = new RabbitPublisher(
+                    loggerFactory,
+                    config);
+
+                await publisher.DispatchAsync(new TestCommand());
+
+                channel.BasicGet("CQELight", true).Should().BeNull();
+
+                var result = channel.BasicGet("MyCustomQueue", true);
+                result.Should().NotBeNull();
+                Encoding.UTF8.GetString(result.Body).FromJson<TestCommand>().Should().NotBeNull();
+            }
+            finally
+            {
+                DeleteData();
+                channel.QueueDelete("MyCustomQueue");
+            }
+        }
+
+        [Fact]
+        public async Task PublishAsync_RoutingKey_Topic_Should_BeConsidered()
+        {
+            try
+            {
+                var fakeRoutingKeyFactory = new Mock<IRoutingKeyFactory>();
+                fakeRoutingKeyFactory
+                    .Setup(m => m.GetRoutingKeyForCommand(It.IsAny<object>()))
+                    .Returns("cqelight.events.testevent");
+
+                var networkInfos = RabbitNetworkInfos.GetConfigurationFor("CQELight", RabbitMQExchangeStrategy.Custom);
+                networkInfos.ServiceQueueDescriptions.Add(new RabbitQueueDescription("CQELight"));
+                networkInfos.ServiceExchangeDescriptions.Add(new RabbitExchangeDescription("MyCustomExchange")
+                {
+                    ExchangeType = ExchangeType.Topic
+                });
+                var queue = new RabbitQueueDescription("MyCustomQueue");
+                queue.Bindings.Add(new RabbitQueueBindingDescription("MyCustomExchange")
+                {
+                    RoutingKeys = new List<string> { "*.events.*" }
+                });
+                networkInfos.ServiceQueueDescriptions.Add(queue);
+                var config = new RabbitPublisherConfiguration
+                {
+                    ConnectionInfos = GetConnectionInfos(),
+                    NetworkInfos = networkInfos,
+                    RoutingKeyFactory = fakeRoutingKeyFactory.Object
+                };
+                var publisher = new RabbitPublisher(
+                    loggerFactory,
+                    config);
+
+                await publisher.PublishEventAsync(new TestEvent());
+
+                channel.BasicGet("CQELight", true).Should().BeNull();
+
+                var result = channel.BasicGet("MyCustomQueue", true);
+                result.Should().NotBeNull();
+                Encoding.UTF8.GetString(result.Body).FromJson<TestEvent>().Should().NotBeNull();
+            }
+            finally
+            {
+                DeleteData();
+                channel.QueueDelete("MyCustomQueue");
+                channel.ExchangeDelete("MyCustomExchange");
             }
         }
 

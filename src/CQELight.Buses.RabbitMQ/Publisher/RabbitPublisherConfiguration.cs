@@ -1,5 +1,6 @@
 ﻿using CQELight.Abstractions.Dispatcher;
 using CQELight.Buses.RabbitMQ.Common;
+using CQELight.Buses.RabbitMQ.Common.Abstractions;
 using CQELight.Buses.RabbitMQ.Network;
 using CQELight.Events.Serializers;
 using System;
@@ -44,6 +45,11 @@ namespace CQELight.Buses.RabbitMQ.Publisher
         /// Serializer instance.
         /// </summary>
         public IDispatcherSerializer Serializer { get; set; } = new JsonDispatcherSerializer();
+
+        /// <summary>
+        /// Routing key factory to use when publishing data.
+        /// </summary>
+        public IRoutingKeyFactory RoutingKeyFactory { get; set; } = new RabbitDefaultRoutingKeyFactory();
 
         #endregion
     }

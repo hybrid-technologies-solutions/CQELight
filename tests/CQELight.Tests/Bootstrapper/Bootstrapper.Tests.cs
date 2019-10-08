@@ -1,6 +1,7 @@
 ﻿using CQELight.Bootstrapping.Notifications;
 using CQELight.IoC;
 using CQELight.TestFramework;
+using CQELight.TestFramework.IoC;
 using CQELight.Tools;
 using FluentAssertions;
 using Moq;
@@ -16,6 +17,11 @@ namespace CQELight.Tests
     {
         #region Ctor & members
 
+        public BootstrapperTests()
+            : base(true)
+        {
+
+        }
         #endregion
 
         #region AddIoCRegistration
@@ -223,6 +229,105 @@ namespace CQELight.Tests
 
         #endregion
 
+        #region PostBootstrapp
+
+        [Fact]
+        public void PostBootstrapp_Action_Should_Be_Invoked()
+        {
+            string content = string.Empty;
+            var b = new Bootstrapper();
+            var s = new Mock<IBootstrapperService>();
+            s.Setup(m => m.BootstrappAction).Returns(m =>
+            {
+                content += "Hello ";
+            });
+            s.SetupGet(m => m.ServiceType).Returns(BootstrapperServiceType.Other);
+            b.AddService(s.Object);
+            b.OnPostBootstrapping += (_) => content += "World!";
+
+            b.Bootstrapp();
+
+            content.Should().Be("Hello World!");
+        }
+
+        [Fact]
+        public void PostBootstrapp_Action_Should_NotBe_Invoked_IfExceptions_AndThrow()
+        {
+            string content = string.Empty;
+            var b = new Bootstrapper(strict: false, checkOptimal: false, throwExceptionOnErrorNotif: true);
+            var s = new Mock<IBootstrapperService>();
+            s.SetupGet(m => m.ServiceType).Returns(BootstrapperServiceType.Other);
+            s.Setup(m => m.BootstrappAction).Returns(m =>
+            {
+                content += "Hello ";
+            });
+            b.AddNotification(new BootstrapperNotification { Type = BootstrapperNotificationType.Error });
+            b.AddService(s.Object);
+            b.OnPostBootstrapping += (_) => content += "World!";
+
+            try
+            {
+                b.Bootstrapp();
+            }
+            catch
+            {
+                //No need to handle exc
+            }
+
+            content.Should().Be("Hello ");
+        }
+
+        [Fact]
+        public void PostBootstrapp_Action_Should_Be_Invoked_With_GeneratedNotifications()
+        {
+            string content = string.Empty;
+            var b = new Bootstrapper();
+            var s = new Mock<IBootstrapperService>();
+            s.SetupGet(m => m.ServiceType).Returns(BootstrapperServiceType.Other);
+            s.Setup(m => m.BootstrappAction).Returns(m =>
+            {
+                content += "Hello ";
+            });
+            b.AddService(s.Object);
+            b.AddNotification(new BootstrapperNotification(BootstrapperNotificationType.Info, "data"));
+            b.OnPostBootstrapping += (c) => content += c.Notifications.First().Message;
+
+            b.Bootstrapp();
+
+            content.Should().Be("Hello data");
+        }
+
+        [Fact]
+        public void PostBootstrapp_Action_Should_Be_Give_Scope_If_IoC_Configured()
+        {
+            bool scopeIsNull = false;
+
+            var b = new Bootstrapper();
+            var s = new Mock<IBootstrapperService>();
+            s.Setup(m => m.BootstrappAction).Returns(_ => { });
+            s.SetupGet(m => m.ServiceType).Returns(BootstrapperServiceType.Other);
+            b.AddService(s.Object);
+            b.OnPostBootstrapping += (c) => scopeIsNull = c.Scope == null;
+
+            b.Bootstrapp();
+
+            scopeIsNull.Should().BeTrue();
+
+            var b2 = new Bootstrapper();
+            var s2 = new Mock<IBootstrapperService>();
+            s2.Setup(m => m.BootstrappAction).Returns(_ =>
+            {
+                DIManager.Init(new TestScopeFactory());
+            });
+            b2.AddService(s2.Object);
+            b2.OnPostBootstrapping += (c) => scopeIsNull = c.Scope == null;
+
+            b2.Bootstrapp();
+
+            scopeIsNull.Should().BeFalse();
+        }
+
+        #endregion
 
     }
 }

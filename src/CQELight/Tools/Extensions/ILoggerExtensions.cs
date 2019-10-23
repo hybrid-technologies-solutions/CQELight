@@ -44,6 +44,44 @@ namespace CQELight.Tools.Extensions
             logger.LogDebug($"ui culture = {Thread.CurrentThread.CurrentUICulture?.Name}{Environment.NewLine}");
         }
 
+        /// <summary>
+        /// Perform a lazy log of a debug value, only if debug level is enabled.
+        /// </summary>
+        /// <param name="logger">Logger instance</param>
+        /// <param name="logRetriever">Lambda for retrieving log value</param>
+        public static void LogDebug(this ILogger logger, Func<string> logRetriever)
+        {
+            if(logger.IsEnabled(LogLevel.Debug))
+            {
+                logger.LogDebug(logRetriever());
+            }
+        }
+
+        /// <summary>
+        /// Perform a lazy log of an information value, only if debug level is enabled.
+        /// </summary>
+        /// <param name="logger">Logger instance</param>
+        /// <param name="logRetriever">Lambda for retrieving log value</param>
+        public static void LogInformation(this ILogger logger, Func<string> logRetriever)
+        {
+            if (logger.IsEnabled(LogLevel.Information))
+            {
+                logger.LogInformation(logRetriever());
+            }
+        }
+
+        /// <summary>
+        /// Perform a lazy log of a warning value, only if debug level is enabled.
+        /// </summary>
+        /// <param name="logger">Logger instance</param>
+        /// <param name="logRetriever">Lambda for retrieving log value</param>
+        public static void LogWarning(this ILogger logger, Func<string> logRetriever)
+        {
+            if (logger.IsEnabled(LogLevel.Warning))
+            {
+                logger.LogWarning(logRetriever());
+            }
+        }
         #endregion
 
     }

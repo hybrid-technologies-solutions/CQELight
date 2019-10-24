@@ -35,13 +35,13 @@ namespace CQELight.Tools.Extensions
         /// <param name="logger">Logger instance.</param>
         public static void LogThreadInfos(this ILogger logger)
         {
-            logger.LogDebug($"Thread infos :{Environment.NewLine}");
-            logger.LogDebug($"id = {Thread.CurrentThread.ManagedThreadId}{Environment.NewLine}");
-            logger.LogDebug($"priority = {Thread.CurrentThread.Priority}{Environment.NewLine}");
-            logger.LogDebug($"name = {Thread.CurrentThread.Name}{Environment.NewLine}");
-            logger.LogDebug($"state = {Thread.CurrentThread.ThreadState}{Environment.NewLine}");
-            logger.LogDebug($"culture = {Thread.CurrentThread.CurrentCulture?.Name}{Environment.NewLine}");
-            logger.LogDebug($"ui culture = {Thread.CurrentThread.CurrentUICulture?.Name}{Environment.NewLine}");
+            logger.LogDebug(() => $"Thread infos :{Environment.NewLine}");
+            logger.LogDebug(() => $"id = {Thread.CurrentThread.ManagedThreadId}{Environment.NewLine}");
+            logger.LogDebug(() => $"priority = {Thread.CurrentThread.Priority}{Environment.NewLine}");
+            logger.LogDebug(() => $"name = {Thread.CurrentThread.Name}{Environment.NewLine}");
+            logger.LogDebug(() => $"state = {Thread.CurrentThread.ThreadState}{Environment.NewLine}");
+            logger.LogDebug(() => $"culture = {Thread.CurrentThread.CurrentCulture?.Name}{Environment.NewLine}");
+            logger.LogDebug(() => $"ui culture = {Thread.CurrentThread.CurrentUICulture?.Name}{Environment.NewLine}");
         }
 
         /// <summary>
@@ -53,7 +53,14 @@ namespace CQELight.Tools.Extensions
         {
             if(logger.IsEnabled(LogLevel.Debug))
             {
-                logger.LogDebug(logRetriever());
+                try
+                {
+                    logger.LogDebug(logRetriever());
+                }
+                catch
+                {
+                    //No need to throw for logging purpose
+                }
             }
         }
 
@@ -66,7 +73,14 @@ namespace CQELight.Tools.Extensions
         {
             if (logger.IsEnabled(LogLevel.Information))
             {
-                logger.LogInformation(logRetriever());
+                try
+                {
+                    logger.LogInformation(logRetriever());
+                }
+                catch 
+                {
+                    //No need to throw for logging purpose
+                }
             }
         }
 

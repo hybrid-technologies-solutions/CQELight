@@ -61,7 +61,7 @@ namespace CQELight.Buses.RabbitMQ.Publisher
             if (command != null)
             {
                 var commandType = command.GetType();
-                logger.LogDebug($"RabbitMQClientBus : Beginning of publishing command of type {commandType.FullName}");
+                logger.LogDebug(() => $"RabbitMQClientBus : Beginning of publishing command of type {commandType.FullName}");
                 using (var connection = GetConnection())
                 {
                     using (var channel = GetChannel(connection))
@@ -79,7 +79,7 @@ namespace CQELight.Buses.RabbitMQ.Publisher
                             body: body);
                     }
                 }
-                logger.LogDebug($"RabbitMQClientBus : End of publishing command of type {commandType.FullName}");
+                logger.LogDebug(() => $"RabbitMQClientBus : End of publishing command of type {commandType.FullName}");
                 return Result.Ok();
             }
             return Result.Fail("RabbitMQClientBus : No command provided to publish method");
@@ -99,10 +99,10 @@ namespace CQELight.Buses.RabbitMQ.Publisher
             if (@event != null)
             {
                 var eventType = @event.GetType();
-                logger.LogDebug($"RabbitMQClientBus : Beginning of publishing event of type {eventType.FullName}");
+                logger.LogDebug(() => $"RabbitMQClientBus : Beginning of publishing event of type {eventType.FullName}");
                 var routingKey = configuration.RoutingKeyFactory.GetRoutingKeyForEvent(@event);
                 await Publish(GetEnveloppeFromEvent(@event), routingKey).ConfigureAwait(false);
-                logger.LogDebug($"RabbitMQClientBus : End of publishing event of type {eventType.FullName}");
+                logger.LogDebug(() => $"RabbitMQClientBus : End of publishing event of type {eventType.FullName}");
                 return Result.Ok();
             }
             return Result.Fail("RabbitMQClientBus : No event provided to publish method");
@@ -114,7 +114,7 @@ namespace CQELight.Buses.RabbitMQ.Publisher
         /// <param name="events">Data that contains all events</param>
         public async Task<Result> PublishEventRangeAsync(IEnumerable<IDomainEvent> events)
         {
-            logger.LogInformation("RabbitMQClientBus : Beginning of treating bunch of events");
+            logger.LogInformation(() => "RabbitMQClientBus : Beginning of treating bunch of events");
             var eventsGroup = events.GroupBy(d => d.GetType())
                 .Select(g => new
                 {
@@ -125,8 +125,8 @@ namespace CQELight.Buses.RabbitMQ.Publisher
 #pragma warning disable
             Task.Run(() =>
             {
-                logger.LogDebug($"RabbitMQClientBus : Found {eventsGroup.Count} group(s) :");
-                eventsGroup.ForEach(e => logger.LogDebug($"\t Event of type {e.Type} : {e.Events.Count} events"));
+                logger.LogDebug(() => $"RabbitMQClientBus : Found {eventsGroup.Count} group(s) :");
+                eventsGroup.ForEach(e => logger.LogDebug(() => $"\t Event of type {e.Type} : {e.Events.Count} events"));
             });
 #pragma warning restore
 
@@ -136,7 +136,7 @@ namespace CQELight.Buses.RabbitMQ.Publisher
                 var routingKey = configuration.RoutingKeyFactory.GetRoutingKeyForEvent(item.Events[0]);
                 tasks.Add(Task.Run(async () =>
                 {
-                    logger.LogInformation($"RabbitMQClientBus : Beginning of parallel dispatching events of type {item.Type.FullName}");
+                    logger.LogInformation(() => $"RabbitMQClientBus : Beginning of parallel dispatching events of type {item.Type.FullName}");
                     var innerTasks = new List<Task<Enveloppe>>();
                     foreach (var @event in item.Events)
                     {
@@ -219,7 +219,7 @@ namespace CQELight.Buses.RabbitMQ.Publisher
             if (evtCfg.LifeTime.TotalMilliseconds > 0)
             {
                 expiration = evtCfg.LifeTime;
-                logger.LogDebug($"RabbitMQClientBus : Defining {evtCfg.LifeTime.ToString()} lifetime for event of type {eventType.FullName}");
+                logger.LogDebug(() => $"RabbitMQClientBus : Defining {evtCfg.LifeTime.ToString()} lifetime for event of type {eventType.FullName}");
             }
             var serializedEvent = configuration.Serializer.SerializeEvent(@event);
             if (expiration.HasValue)

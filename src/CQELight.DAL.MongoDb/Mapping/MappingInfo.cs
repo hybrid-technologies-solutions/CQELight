@@ -56,7 +56,7 @@ namespace CQELight.DAL.MongoDb.Mapping
         #region Private methods
 
         private void Log(string message)
-            => _logger.LogInformation(message);
+            => _logger.LogInformation(() => message);
 
         private void ExtractInformationsFromType()
         {

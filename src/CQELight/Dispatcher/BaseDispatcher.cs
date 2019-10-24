@@ -140,18 +140,10 @@ namespace CQELight.Dispatcher
                 return Result.Fail();
             }
             var commandType = command.GetType();
-            s_Logger.LogInformation($"Dispatcher : Beginning of sending command of type {commandType.FullName} from {callerMemberName}");
-            s_Logger.LogInformation($"Dispatcher : Type of context associated with command {commandType.FullName} : {(context == null ? "none" : context.GetType().FullName)}");
-            try
-            {
-#pragma warning disable CS4014
-                Task.Run(() => s_Logger.LogDebug($"Dispatcher : Command's data : {command.ToJson()}"));
-#pragma warning restore
-            }
-            catch
-            {
-                //No need to throw exception for logging purpose.
-            }
+            s_Logger.LogInformation(() => $"Dispatcher : Beginning of sending command of type {commandType.FullName} from {callerMemberName}");
+            s_Logger.LogInformation(() => $"Dispatcher : Type of context associated with command {commandType.FullName} : {(context == null ? "none" : context.GetType().FullName)}");
+
+            s_Logger.LogDebug(() => $"Dispatcher : Command's data : {command.ToJson()}");
 
             s_Logger.LogThreadInfos();
 
@@ -175,7 +167,7 @@ namespace CQELight.Dispatcher
                         }
                         if (busInstance != null)
                         {
-                            s_Logger.LogInformation($"Dispatcher : Sending the command {commandType.FullName} on bus {bus.FullName}");
+                            s_Logger.LogInformation(() => $"Dispatcher : Sending the command {commandType.FullName} on bus {bus.FullName}");
                             tasks.Add(busInstance.DispatchAsync(command, context));
                         }
                         else
@@ -192,7 +184,7 @@ namespace CQELight.Dispatcher
                     }
                 }
                 await Task.WhenAll(tasks).ConfigureAwait(false);
-                if(tasks.Count == 1)
+                if (tasks.Count == 1)
                 {
                     return tasks[0].Result;
                 }
@@ -215,19 +207,10 @@ namespace CQELight.Dispatcher
                 throw new ArgumentNullException(nameof(@event));
             }
             var eventType = @event.GetType();
-            s_Logger.LogInformation($"Dispatcher : Beginning of dispatch event of type {eventType.FullName} from {callerMemberName}");
-            s_Logger.LogInformation($"Dispatcher : Type of context associated to event {eventType.FullName} : {(context == null ? "none" : context.GetType().FullName)}");
+            s_Logger.LogInformation(() => $"Dispatcher : Beginning of dispatch event of type {eventType.FullName} from {callerMemberName}");
+            s_Logger.LogInformation(() => $"Dispatcher : Type of context associated to event {eventType.FullName} : {(context == null ? "none" : context.GetType().FullName)}");
 
-            try
-            {
-#pragma warning disable CS4014
-                Task.Run(() => s_Logger.LogDebug($"Dispatcher : Event data : {Environment.NewLine}{@event.ToJson()}"));
-#pragma warning restore
-            }
-            catch
-            {
-                //Useless for logging purpose.
-            }
+            s_Logger.LogDebug(() => $"Dispatcher : Event data : {Environment.NewLine}{@event.ToJson()}");
 
             s_Logger.LogThreadInfos();
 
@@ -255,7 +238,7 @@ namespace CQELight.Dispatcher
                         }
                         if (busInstance != null)
                         {
-                            s_Logger.LogInformation($"Dispatcher : Sending the event {eventType.FullName} on bus {bus.FullName}");
+                            s_Logger.LogInformation(() => $"Dispatcher : Sending the event {eventType.FullName} on bus {bus.FullName}");
                             await busInstance.PublishEventAsync(@event, context).ConfigureAwait(false);
                         }
                         else
@@ -270,7 +253,7 @@ namespace CQELight.Dispatcher
                         eventConfiguration.ErrorHandler?.Invoke(e);
                     }
                 }
-                s_Logger.LogInformation($"Dispatcher : End of sending event of type {eventType.FullName}");
+                s_Logger.LogInformation(() => $"Dispatcher : End of sending event of type {eventType.FullName}");
             }
             else
             {

@@ -131,7 +131,7 @@ namespace CQELight.Dispatcher
                     });
                     if (handlerReference != null)
                     {
-                        s_Logger.LogInformation($"Dispatcher : Remove an handler of type {handler.GetType()} from Dispatcher.");
+                        s_Logger.LogInformation(() => $"Dispatcher : Remove an handler of type {handler.GetType()} from Dispatcher.");
                         collection = new ConcurrentBag<WeakReference<object>>(collection.Except(new[] { handlerReference }));
                     }
                 };
@@ -184,7 +184,7 @@ namespace CQELight.Dispatcher
                         return h == handler;
                     }))
                     {
-                        s_Logger.LogInformation($"Dispatcher : Adding an handler of type {handler.GetType()} in Dispatcher.");
+                        s_Logger.LogInformation(() => $"Dispatcher : Adding an handler of type {handler.GetType()} in Dispatcher.");
                         collection.Add(new WeakReference<object>(handler));
                     }
                 };
@@ -219,7 +219,7 @@ namespace CQELight.Dispatcher
         /// <param name="callerMemberName">Caller name.</param>
         public static async Task PublishEventsRangeAsync(IEnumerable<(IDomainEvent Event, IEventContext Context)> data, [CallerMemberName] string callerMemberName = "")
         {
-            if(OnEventsDispatched != null)
+            if (OnEventsDispatched != null)
             {
                 await OnEventsDispatched(data.Select(e => e.Event)).ConfigureAwait(false);
             }
@@ -270,17 +270,10 @@ namespace CQELight.Dispatcher
             var sem = s_LockData.GetOrAdd(typeof(T), type => new SemaphoreSlim(1));
             await sem.WaitAsync().ConfigureAwait(false); // perform a lock per message type to allow parallel execution of different messages
             s_Logger.LogThreadInfos();
-            s_Logger.LogInformation($"Dispatcher : Beginning of dispatch a message of type {typeof(T).FullName}");
-            try
-            {
-#pragma warning disable CS4014
-                Task.Run(() => s_Logger.LogDebug($"Dispatcher : Message's data = {Environment.NewLine}{message.ToJson()}"));
-#pragma warning restore
-            }
-            catch
-            {
-                //No need to stop for logging
-            }
+            s_Logger.LogInformation(() => $"Dispatcher : Beginning of dispatch a message of type {typeof(T).FullName}");
+
+            s_Logger.LogDebug(() => $"Dispatcher : Message's data = {Environment.NewLine}{message.ToJson()}");
+
             try
             {
                 if (OnMessageDispatched != null)
@@ -289,7 +282,7 @@ namespace CQELight.Dispatcher
                     {
                         try
                         {
-                            s_Logger.LogInformation($"Dispatcher :Invoking action {act.Method.Name} on {act.Target.GetType().FullName} for " +
+                            s_Logger.LogInformation(() => $"Dispatcher :Invoking action {act.Method.Name} on {act.Target.GetType().FullName} for " +
                                 $"message of type {typeof(T).FullName}");
                         }
                         catch
@@ -325,7 +318,7 @@ namespace CQELight.Dispatcher
                         {
                             try
                             {
-                                s_Logger.LogInformation($"Dispatcher : Invoking handle method on handler type {handlerType.FullName} " +
+                                s_Logger.LogInformation(() => $"Dispatcher : Invoking handle method on handler type {handlerType.FullName} " +
                                     $"for message of type {messageType.FullName}");
                                 var methodInfo = handlerType.GetMethods(BindingFlags.Instance | BindingFlags.Public);
                                 var method = Array.Find(methodInfo, m => m.Name == nameof(IMessageHandler<T>.HandleMessageAsync) && m.GetParameters()
@@ -349,7 +342,7 @@ namespace CQELight.Dispatcher
                     }
                     else
                     {
-                        s_Logger.LogInformation($"Dispatcher : Removing handler of type {vm.GetType().FullName} because instance has been garbage collected.");
+                        s_Logger.LogInformation(() => $"Dispatcher : Removing handler of type {vm.GetType().FullName} because instance has been garbage collected.");
                         toDelete.Add(vm);
                     }
                 }
@@ -512,7 +505,7 @@ namespace CQELight.Dispatcher
                 {
                     try
                     {
-                        s_Logger.LogInformation($"CoreDispatcher : Invoke of action {act.Method.Name} on" +
+                        s_Logger.LogInformation(() => $"CoreDispatcher : Invoke of action {act.Method.Name} on" +
                             $" {(act.Target != null ? act.Target.GetType().FullName : act.Method.DeclaringType.FullName)} for event {eventType.FullName}");
                     }
                     catch
@@ -548,7 +541,7 @@ namespace CQELight.Dispatcher
                 {
                     try
                     {
-                        s_Logger.LogInformation($"Dispatcher : Invoke action {act.Method.Name} on {(act.Target != null ? act.Target.GetType().FullName : act.Method.DeclaringType.FullName)} " +
+                        s_Logger.LogInformation(() => $"Dispatcher : Invoke action {act.Method.Name} on {(act.Target != null ? act.Target.GetType().FullName : act.Method.DeclaringType.FullName)} " +
                             $"for command {commandType.FullName}");
                     }
                     catch

@@ -76,24 +76,24 @@ namespace CQELight.Buses.InMemory.Commands
         public async Task<Result> DispatchAsync(ICommand command, ICommandContext context = null)
         {
             var commandTypeName = command.GetType().FullName;
-            _logger.LogInformation($"InMemoryCommandBus : Beginning of dispatching a command of type {commandTypeName}");
+            _logger.LogInformation(() => $"InMemoryCommandBus : Beginning of dispatching a command of type {commandTypeName}");
             var commandTasks = new List<Task<Result>>();
             _config = _config ?? InMemoryCommandBusConfiguration.Default;
             var ifClause = _config.IfClauses.FirstOrDefault(i => i.Key == command.GetType()).Value;
             if (ifClause?.Invoke(command) == false)
             {
-                _logger.LogInformation($"InMemoryCommandBus : If condition for command type {commandTypeName} has returned false.");
+                _logger.LogInformation(() => $"InMemoryCommandBus : If condition for command type {commandTypeName} has returned false.");
                 return Result.Ok();
             }
             var handlers = TryGetHandlerFromIoCContainer(command);
             if (!handlers.Any())
             {
-                _logger.LogInformation($"InMemoryCommandBus : Handler for command type {commandTypeName} not found in Ioc container, trying to get it from CoreDispatcher.");
+                _logger.LogInformation(() => $"InMemoryCommandBus : Handler for command type {commandTypeName} not found in Ioc container, trying to get it from CoreDispatcher.");
                 handlers = TryGetHandlersInstancesFromCoreDispatcher(command);
             }
             if (!handlers.Any())
             {
-                _logger.LogInformation($"InMemoryCommandBus : Handler for command type {commandTypeName} not found in CoreDispatcher, trying to instantiate if by reflection.");
+                _logger.LogInformation(() => $"InMemoryCommandBus : Handler for command type {commandTypeName} not found in CoreDispatcher, trying to instantiate if by reflection.");
                 handlers = TryGetHandlersInstancesByReflection(command);
             }
             if (!handlers.Any())
@@ -123,7 +123,7 @@ namespace CQELight.Buses.InMemory.Commands
             }
             foreach (var handler in cmdHandlers)
             {
-                _logger.LogInformation($"InMemoryCommandBus : Invocation of handler of type {handlers.GetType().FullName}");
+                _logger.LogInformation(() => $"InMemoryCommandBus : Invocation of handler of type {handlers.GetType().FullName}");
                 var handlerType = handler.GetType();
                 var method = handlerType.GetMethods()
                         .First(m => m.Name == nameof(ICommandHandler<ICommand>.HandleAsync));

@@ -63,11 +63,11 @@ namespace CQELight.DAL.EFCore
             }
             if (debug)
             {
-                _logger.LogDebug(message);
+                _logger.LogDebug(() => message);
             }
             else
             {
-                _logger.LogInformation(message);
+                _logger.LogInformation(() => message);
             }
         }
 

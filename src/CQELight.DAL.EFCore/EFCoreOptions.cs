@@ -19,6 +19,11 @@ namespace CQELight.DAL.EFCore
         /// </summary>
         public bool DisableLogicalDeletion { get; set; }
 
+        /// <summary>
+        /// Model assembly name to dynamically retrieve models.
+        /// </summary>
+        public string ModelAssembly { get; set; }
+
         #endregion
         
     }

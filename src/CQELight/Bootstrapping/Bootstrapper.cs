@@ -2,6 +2,8 @@
 using CQELight.Abstractions.IoC.Interfaces;
 using CQELight.Bootstrapping;
 using CQELight.Bootstrapping.Notifications;
+using CQELight.DAL;
+using CQELight.DAL.Interfaces;
 using CQELight.Dispatcher;
 using CQELight.Dispatcher.Configuration;
 using CQELight.IoC;
@@ -353,6 +355,7 @@ namespace CQELight
             {
                 AddDispatcherToIoC();
                 AddToolboxToIoC();
+                AddRepositoriesToIoC();
             }
             var context = new BootstrappingContext(
                         services.Select(s => s.ServiceType).Distinct(),
@@ -366,6 +369,15 @@ namespace CQELight
             foreach (var service in services.OrderByDescending(s => s.ServiceType))
             {
                 service.BootstrappAction.Invoke(context);
+            }
+        }
+
+        private void AddRepositoriesToIoC()
+        {
+            if (!iocRegistrations.SelectMany(r => r.AbstractionTypes).Any(t =>
+            t.In(typeof(IDatabaseRepository), typeof(IDatabaseRepository), typeof(IDataUpdateRepository))))
+            {
+                iocRegistrations.Add(new TypeRegistration<DatabaseRepository>(true));
             }
         }
 

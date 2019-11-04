@@ -98,6 +98,10 @@ namespace CQELight
                     bootstrapper.AddIoCRegistration(new TypeRegistration<EFCoreDataWriterAdapter>(true));
                     bootstrapper.AddIoCRegistration(new TypeRegistration(typeof(BaseDbContext), typeof(BaseDbContext)));
                     bootstrapper.AddIoCRegistration(new InstanceTypeRegistration(dbContextOptionsBuilder.Options, typeof(DbContextOptions), typeof(DbContextOptions<BaseDbContext>)));
+                    if (options != null)
+                    {
+                        bootstrapper.AddIoCRegistration(new InstanceTypeRegistration(options, typeof(EFCoreOptions)));
+                    }
 
                     foreach (var item in ReflectionTools.GetAllTypes().Where(t => typeof(IPersistableEntity).IsAssignableFrom(t) && !t.IsAbstract && t.IsClass).ToList())
                     {

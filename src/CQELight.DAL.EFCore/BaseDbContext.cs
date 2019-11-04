@@ -14,7 +14,7 @@ namespace CQELight.DAL.EFCore
     /// <summary>
     /// Base classe for implementing Entity Framework DbContext.
     /// </summary>
-    public abstract class BaseDbContext : DbContext
+    public class BaseDbContext : DbContext
     {
         #region Members
 
@@ -29,7 +29,7 @@ namespace CQELight.DAL.EFCore
         /// Create a new BaseDbContext with the specified connection to the database.
         /// </summary>
         /// <param name="options">DbContext options.</param>
-        protected BaseDbContext(DbContextOptions options)
+        public BaseDbContext(DbContextOptions options)
             : this(options, null)
         {
         }
@@ -40,7 +40,7 @@ namespace CQELight.DAL.EFCore
         /// </summary>
         /// <param name="options">DbContext options.</param>
         /// <param name="loggerFactory">Logger factory.</param>
-        protected BaseDbContext(DbContextOptions options, ILoggerFactory loggerFactory)
+        public BaseDbContext(DbContextOptions options, ILoggerFactory loggerFactory)
             : base(options)
         {
             _loggerFactory = loggerFactory;

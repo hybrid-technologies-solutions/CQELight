@@ -8,6 +8,7 @@ namespace CQELight.DAL.Interfaces
     /// <summary>
     /// Contract interface for repositories that can handle SQL requests.
     /// </summary>
+    [Obsolete("This ISqlRepository is not supported anymore")]
     public interface ISqlRepository
     {
         /// <summary>

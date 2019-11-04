@@ -9,45 +9,52 @@ namespace CQELight.DAL.Interfaces
     /// <summary>
     /// Contrat interface for repositories that performs data updates.
     /// </summary>
-    public interface IDataUpdateRepository : IUnitOfWork
+    [Obsolete("This repository per entity is not supported anymore. Use IDataUpdateRepository without type instead")]
+    public interface IDataUpdateRepository<T>
+        where T : IPersistableEntity
     {
+        /// <summary>
+        /// Asynchronously saves all modifications into repository.
+        /// </summary>
+        /// <returns>Number of modifications performed.</returns>
+        Task<int> SaveAsync();
         /// <summary>
         /// Mark an entity for insertion.
         /// </summary>
         /// <param name="entity">Entity to insert.</param>
-        void MarkForInsert<T>(T entity) where T : class;
+        void MarkForInsert(T entity);
         /// <summary>
         /// Mark a range of entities for insertion.
         /// </summary>
         /// <param name="entities">Entities to insert.</param>
-        void MarkForInsertRange<T>(IEnumerable<T> entities) where T : class;
+        void MarkForInsertRange(IEnumerable<T> entities);
         /// <summary>
         /// Mark an entity for update.
         /// </summary>
         /// <param name="entity">Entity to update.</param>
-        void MarkForUpdate<T>(T entity) where T : class;
+        void MarkForUpdate(T entity);
         /// <summary>
         /// Mark a range of entities for update.
         /// </summary>
         /// <param name="entities">Entities to update.</param>
-        void MarkForUpdateRange<T>(IEnumerable<T> entities) where T : class;
+        void MarkForUpdateRange(IEnumerable<T> entities);
         /// <summary>
         /// Mark an entity for deletion.
         /// </summary>
         /// <param name="entityToDelete">Entity to delete.</param>
         /// <param name="physicalDeletion">Flag to use physical deletion.</param>
-        void MarkForDelete<T>(T entityToDelete, bool physicalDeletion = false) where T : class;
+        void MarkForDelete(T entityToDelete, bool physicalDeletion = false);
         /// <summary>
         /// Mark a range of entities for deletion.
         /// </summary>
         /// <param name="entitiesToDelete">Entities to delete.</param>
         /// <param name="physicalDeletion">Flag to use physical deletion.</param>
-        void MarkForDeleteRange<T>(IEnumerable<T> entitiesToDelete, bool physicalDeletion = false) where T : class;
+        void MarkForDeleteRange(IEnumerable<T> entitiesToDelete, bool physicalDeletion = false);
         /// <summary>
         /// Mark an entity by its id for deletion.
         /// </summary>
         /// <param name="id">Id of the entity to delete.</param>
         /// <param name="physicalDeletion">Flag to use physical deletion.</param>
-        void MarkIdForDelete<T>(object id, bool physicalDeletion = false) where T : class;
+        void MarkIdForDelete<TId>(TId id, bool physicalDeletion = false);
     }
 }

@@ -53,11 +53,15 @@ namespace CQELight.DAL.EFCore.Integration.Tests
         {
             using (var ctx = new TestDbContext())
             {
+                ctx.RemoveRange(ctx.Set<AzureLocation>());
                 ctx.RemoveRange(ctx.Set<Hyperlink>());
                 ctx.RemoveRange(ctx.Set<WebSite>());
                 ctx.RemoveRange(ctx.Set<Post>());
                 ctx.RemoveRange(ctx.Set<Comment>());
                 ctx.RemoveRange(ctx.Set<User>());
+                ctx.RemoveRange(ctx.Set<Tag>());
+                ctx.RemoveRange(ctx.Set<Word>());
+                ctx.RemoveRange(ctx.Set<ComposedKeyEntity>());
                 ctx.SaveChanges();
             }
         }
@@ -357,18 +361,6 @@ namespace CQELight.DAL.EFCore.Integration.Tests
             }
         }
 
-        [Fact]
-        public async Task EFRepository_Insert_CustomId_AsExpected()
-        {
-            throw new NotImplementedException();
-        }
-
-        [Fact]
-        public async Task EFRepository_Insert_ComplexeId_AsExpected()
-        {
-            throw new NotImplementedException();
-        }
-
         #endregion
 
         #region Update
@@ -624,63 +616,70 @@ namespace CQELight.DAL.EFCore.Integration.Tests
         [Fact]
         public async Task EFRepository_Update_Blog_Should_Update_Posts_But_Not_User()
         {
-            var site = new WebSite();
-            site.Url = "http://msdn.dotnet.com";
-            site.Posts = new List<Post>();
-            site.Posts.Add(new Post
+            try
             {
-                Content = "test content",
-                WebSite = site,
-                QuickUrl = "http://msdn.dotnet.com/test",
-            });
-            var user = new User
-            {
-                Name = "toto",
-                LastName = "titi"
-            };
-            user.Posts = new List<Post>();
-            user.Posts.Add(site.Posts.First());
-            user.Comments = new List<Comment>();
-            user.Comments.Add(new Comment("test comment", user, site.Posts.First()));
+                var site = new WebSite();
+                site.Url = "http://msdn.dotnet.com";
+                site.Posts = new List<Post>();
+                site.Posts.Add(new Post
+                {
+                    Content = "test content",
+                    WebSite = site,
+                    QuickUrl = "http://msdn.dotnet.com/test",
+                });
+                var user = new User
+                {
+                    Name = "toto",
+                    LastName = "titi"
+                };
+                user.Posts = new List<Post>();
+                user.Posts.Add(site.Posts.First());
+                user.Comments = new List<Comment>();
+                user.Comments.Add(new Comment("test comment", user, site.Posts.First()));
 
-            site.Posts.First().Writer = user;
+                site.Posts.First().Writer = user;
 
-            using (var repo = new TestBlogEFRepository())
-            {
-                repo.MarkForInsert(site);
-                await repo.SaveAsync().ConfigureAwait(false);
-            }
+                using (var repo = new TestBlogEFRepository())
+                {
+                    repo.MarkForInsert(site);
+                    await repo.SaveAsync().ConfigureAwait(false);
+                }
 
-            WebSite dbSite = null;
-            using (var repo = new TestBlogEFRepository())
-            {
-                dbSite = repo.GetWithPostAndComment();
-            }
-            dbSite.Should().NotBeNull();
-
-            var post = dbSite.Posts.First();
-
-            post.QuickUrl += "2";
-            post.Writer.LastName += "2";
-            post.Writer.Name += "2";
-            post.Writer.Comments.First().Value += "2";
-
-            using (var repo = new TestBlogEFRepository())
-            {
-                repo.MarkForUpdate(dbSite);
-                await repo.SaveAsync().ConfigureAwait(false);
-            }
-
-            using (var repo = new TestBlogEFRepository())
-            {
-                dbSite = repo.GetWithPostAndComment();
+                WebSite dbSite = null;
+                using (var repo = new TestBlogEFRepository())
+                {
+                    dbSite = repo.GetWithPostAndComment();
+                }
                 dbSite.Should().NotBeNull();
-                post = dbSite.Posts.First();
 
-                post.QuickUrl.Should().Be("http://msdn.dotnet.com/test2");
-                post.Writer.Comments.First().Value.Should().Be("test comment2");
-                post.Writer.LastName.Should().Be("titi");
-                post.Writer.Name.Should().Be("toto");
+                var post = dbSite.Posts.First();
+
+                post.QuickUrl += "2";
+                post.Writer.LastName += "2";
+                post.Writer.Name += "2";
+                post.Writer.Comments.First().Value += "2";
+
+                using (var repo = new TestBlogEFRepository())
+                {
+                    repo.MarkForUpdate(dbSite);
+                    await repo.SaveAsync().ConfigureAwait(false);
+                }
+
+                using (var repo = new TestBlogEFRepository())
+                {
+                    dbSite = repo.GetWithPostAndComment();
+                    dbSite.Should().NotBeNull();
+                    post = dbSite.Posts.First();
+
+                    post.QuickUrl.Should().Be("http://msdn.dotnet.com/test2");
+                    post.Writer.Comments.First().Value.Should().Be("test comment2");
+                    post.Writer.LastName.Should().Be("titi");
+                    post.Writer.Name.Should().Be("toto");
+                }
+            }
+            finally
+            {
+                DeleteAll();
             }
         }
 
@@ -691,133 +690,155 @@ namespace CQELight.DAL.EFCore.Integration.Tests
         [Fact]
         public async Task EFRepository_MarkForDelete_DeleteBlog_Should_Delete_Posts_Logical_Cascade()
         {
-            using (var ctx = new TestDbContext())
+            try
             {
-                var entity = new WebSite
+                using (var ctx = new TestDbContext())
                 {
-                    Url = "http://dotnet.microsoft.com/"
-                };
-                var post = new Post
+                    var entity = new WebSite
+                    {
+                        Url = "http://dotnet.microsoft.com/"
+                    };
+                    var post = new Post
+                    {
+                        WebSite = entity,
+                        Published = true,
+                        PublicationDate = DateTime.Today,
+                        QuickUrl = "http://dotnet.microsoft.com/abgfazJSQg2",
+                        Version = 1,
+                        Content = "test data"
+                    };
+                    entity.Posts = new List<Post> { post };
+                    ctx.Add(entity);
+                    ctx.SaveChanges();
+                }
+
+                using (var ctx = new TestDbContext())
                 {
-                    WebSite = entity,
-                    Published = true,
-                    PublicationDate = DateTime.Today,
-                    QuickUrl = "http://dotnet.microsoft.com/abgfazJSQg2",
-                    Version = 1,
-                    Content = "test data"
-                };
-                entity.Posts = new List<Post> { post };
-                ctx.Add(entity);
-                ctx.SaveChanges();
+                    ctx.Set<WebSite>().Should().HaveCount(1);
+                    ctx.Set<Post>().Should().HaveCount(1);
+                }
+
+                using (var rep = new TestBlogEFRepository())
+                {
+                    var b = await rep.GetAsync().First().ConfigureAwait(false);
+                    rep.MarkForDelete(b);
+                    await rep.SaveAsync().ConfigureAwait(false);
+                }
+
+                using (var ctx = new TestDbContext())
+                {
+                    ctx.Set<WebSite>().Should().HaveCount(1);
+                    ctx.Set<Post>().Should().HaveCount(1);
+
+                    ctx.Set<WebSite>().Where(e => !e.Deleted).Should().HaveCount(0);
+                    ctx.Set<Post>().Where(e => !e.Deleted).Should().HaveCount(1); // Le soft delete est à gérer niveau repository
+                }
             }
-
-            using (var ctx = new TestDbContext())
+            finally
             {
-                ctx.Set<WebSite>().Should().HaveCount(1);
-                ctx.Set<Post>().Should().HaveCount(1);
-            }
-
-            using (var rep = new TestBlogEFRepository())
-            {
-                var b = await rep.GetAsync().First().ConfigureAwait(false);
-                rep.MarkForDelete(b);
-                await rep.SaveAsync().ConfigureAwait(false);
-            }
-
-            using (var ctx = new TestDbContext())
-            {
-                ctx.Set<WebSite>().Should().HaveCount(1);
-                ctx.Set<Post>().Should().HaveCount(1);
-
-                ctx.Set<WebSite>().Where(e => !e.Deleted).Should().HaveCount(0);
-                ctx.Set<Post>().Where(e => !e.Deleted).Should().HaveCount(1); // Le soft delete est à gérer niveau repository
+                DeleteAll();
             }
         }
 
         [Fact]
         public async Task EFRepository_MarkForDelete_DeleteBlog_Should_Delete_Posts_Physical_Cascade()
         {
-            using (var ctx = new TestDbContext())
+            try
             {
-                var entity = new WebSite
+                using (var ctx = new TestDbContext())
                 {
-                    Url = "http://dotnet.microsoft.com/"
-                };
-                var post = new Post
+                    var entity = new WebSite
+                    {
+                        Url = "http://dotnet.microsoft.com/"
+                    };
+                    var post = new Post
+                    {
+                        WebSite = entity,
+                        Published = true,
+                        PublicationDate = DateTime.Today,
+                        QuickUrl = "http://dotnet.microsoft.com/abgfazJSQg2",
+                        Version = 1,
+                        Content = "test data"
+                    };
+                    entity.Posts = new List<Post> { post };
+                    ctx.Add(entity);
+                    ctx.SaveChanges();
+                }
+
+                using (var ctx = new TestDbContext())
                 {
-                    WebSite = entity,
-                    Published = true,
-                    PublicationDate = DateTime.Today,
-                    QuickUrl = "http://dotnet.microsoft.com/abgfazJSQg2",
-                    Version = 1,
-                    Content = "test data"
-                };
-                entity.Posts = new List<Post> { post };
-                ctx.Add(entity);
-                ctx.SaveChanges();
-            }
+                    ctx.Set<WebSite>().Should().HaveCount(1);
+                    ctx.Set<Post>().Should().HaveCount(1);
+                }
 
-            using (var ctx = new TestDbContext())
-            {
-                ctx.Set<WebSite>().Should().HaveCount(1);
-                ctx.Set<Post>().Should().HaveCount(1);
-            }
+                using (var rep = new TestBlogEFRepository())
+                {
+                    var b = await rep.GetAsync().First().ConfigureAwait(false);
+                    rep.MarkForDelete(b, true);
+                    await rep.SaveAsync().ConfigureAwait(false);
+                }
 
-            using (var rep = new TestBlogEFRepository())
-            {
-                var b = await rep.GetAsync().First().ConfigureAwait(false);
-                rep.MarkForDelete(b, true);
-                await rep.SaveAsync().ConfigureAwait(false);
+                using (var ctx = new TestDbContext())
+                {
+                    ctx.Set<WebSite>().Should().HaveCount(0);
+                    ctx.Set<Post>().Should().HaveCount(0);
+                }
             }
-
-            using (var ctx = new TestDbContext())
+            finally
             {
-                ctx.Set<WebSite>().Should().HaveCount(0);
-                ctx.Set<Post>().Should().HaveCount(0);
+                DeleteAll();
             }
         }
 
         [Fact]
         public async Task EFRepository_MarkForDelete_Logical_Deletion_Globally_Deactivated()
         {
-            EFCoreInternalExecutionContext.DisableLogicalDeletion = true;
-            using (var ctx = new TestDbContext())
+            try
             {
-                var entity = new WebSite
+                EFCoreInternalExecutionContext.DisableLogicalDeletion = true;
+                using (var ctx = new TestDbContext())
                 {
-                    Url = "http://dotnet.microsoft.com/"
-                };
-                var post = new Post
+                    var entity = new WebSite
+                    {
+                        Url = "http://dotnet.microsoft.com/"
+                    };
+                    var post = new Post
+                    {
+                        WebSite = entity,
+                        Published = true,
+                        PublicationDate = DateTime.Today,
+                        QuickUrl = "http://dotnet.microsoft.com/abgfazJSQg2",
+                        Version = 1,
+                        Content = "test data"
+                    };
+                    entity.Posts = new List<Post> { post };
+                    ctx.Add(entity);
+                    ctx.SaveChanges();
+                }
+
+                using (var ctx = new TestDbContext())
                 {
-                    WebSite = entity,
-                    Published = true,
-                    PublicationDate = DateTime.Today,
-                    QuickUrl = "http://dotnet.microsoft.com/abgfazJSQg2",
-                    Version = 1,
-                    Content = "test data"
-                };
-                entity.Posts = new List<Post> { post };
-                ctx.Add(entity);
-                ctx.SaveChanges();
-            }
+                    ctx.Set<WebSite>().Should().HaveCount(1);
+                    ctx.Set<Post>().Should().HaveCount(1);
+                }
 
-            using (var ctx = new TestDbContext())
-            {
-                ctx.Set<WebSite>().Should().HaveCount(1);
-                ctx.Set<Post>().Should().HaveCount(1);
-            }
+                using (var rep = new TestBlogEFRepository())
+                {
+                    var b = await rep.GetAsync().First().ConfigureAwait(false);
+                    rep.MarkForDelete(b);
+                    await rep.SaveAsync().ConfigureAwait(false);
+                }
 
-            using (var rep = new TestBlogEFRepository())
-            {
-                var b = await rep.GetAsync().First().ConfigureAwait(false);
-                rep.MarkForDelete(b);
-                await rep.SaveAsync().ConfigureAwait(false);
+                using (var ctx = new TestDbContext())
+                {
+                    ctx.Set<WebSite>().Should().HaveCount(0);
+                    ctx.Set<Post>().Should().HaveCount(0);
+                }
             }
-
-            using (var ctx = new TestDbContext())
+            finally
             {
-                ctx.Set<WebSite>().Should().HaveCount(0);
-                ctx.Set<Post>().Should().HaveCount(0);
+                EFCoreInternalExecutionContext.DisableLogicalDeletion = false;
+                DeleteAll();
             }
         }
 

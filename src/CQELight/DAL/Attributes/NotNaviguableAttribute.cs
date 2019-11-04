@@ -30,6 +30,7 @@ namespace CQELight.DAL.Attributes
     /// Attribute use to prevents for seeking for différences when tracking changes on an object graph.
     /// </summary>
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
+    [Obsolete("This attribute is no longer considered.")]
     public class NotNaviguableAttribute : Attribute
     {
         #region Properties

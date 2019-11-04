@@ -1,5 +1,6 @@
 ﻿using CQELight.DAL.Common;
 using CQELight.DAL.EFCore;
+using CQELight.DAL.EFCore.Adapters;
 using CQELight.DAL.Interfaces;
 using CQELight.IoC;
 using CQELight.Tools;
@@ -31,6 +32,7 @@ namespace CQELight
         /// <param name="bootstrapper">Bootstrapper instance</param>
         /// <param name="dbContext">Instance of BaseDbContext to use</param>
         /// <param name="options">Custom options to use of using EF.</param>
+        [Obsolete("Using a single DbContext for all adapters is not recommended. This method shouldn't be used anymore.")]
         public static Bootstrapper UseEFCoreAsMainRepository(this Bootstrapper bootstrapper, BaseDbContext dbContext,
             EFCoreOptions options = null)
         {
@@ -45,7 +47,9 @@ namespace CQELight
                          if (ctx.IsServiceRegistered(BootstrapperServiceType.IoC))
                          {
                              var entities = ReflectionTools.GetAllTypes()
-                                .Where(t => typeof(IPersistableEntity).IsAssignableFrom(t)).ToList();
+                                .Where(t => typeof(IPersistableEntity).IsAssignableFrom(t)
+                                   && !t.IsAbstract
+                                   && t.IsClass).ToList();
                              foreach (var item in entities)
                              {
                                  var efRepoType = typeof(EFRepository<>).MakeGenericType(item);
@@ -89,7 +93,13 @@ namespace CQELight
                 {
                     var dbContextOptionsBuilder = new DbContextOptionsBuilder();
                     optionsBuilderCfg(dbContextOptionsBuilder);
-                    foreach (var item in ReflectionTools.GetAllTypes().Where(t => t.IsSubclassOf(typeof(BasePersistableEntity)) && !t.IsAbstract && t.IsClass).ToList())
+
+                    bootstrapper.AddIoCRegistration(new TypeRegistration<EFCoreDataReaderAdapter>(true));
+                    bootstrapper.AddIoCRegistration(new TypeRegistration<EFCoreDataWriterAdapter>(true));
+                    bootstrapper.AddIoCRegistration(new TypeRegistration(typeof(BaseDbContext), typeof(BaseDbContext)));
+                    bootstrapper.AddIoCRegistration(new InstanceTypeRegistration(dbContextOptionsBuilder.Options, typeof(DbContextOptions), typeof(DbContextOptions<BaseDbContext>)));
+
+                    foreach (var item in ReflectionTools.GetAllTypes().Where(t => typeof(IPersistableEntity).IsAssignableFrom(t) && !t.IsAbstract && t.IsClass).ToList())
                     {
                         var efRepoType = typeof(EFRepository<>).MakeGenericType(item);
                         var dataReaderRepoType = typeof(IDataReaderRepository<>).MakeGenericType(item);

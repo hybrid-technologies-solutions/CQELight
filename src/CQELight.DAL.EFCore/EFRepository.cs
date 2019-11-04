@@ -22,6 +22,7 @@ namespace CQELight.DAL.EFCore
     /// Entity Framework Core Repository implementation.
     /// </summary>
     /// <typeparam name="T">Type of entity to manage.</typeparam>
+    [Obsolete("This implementation of EF Repository is no longer maintained. Use DataRepository with EFDataReaderAdapter & EFDataWriterAdapter.")]
     public class EFRepository<T> : DisposableObject, IDatabaseRepository<T>
         where T : class, IPersistableEntity
     {

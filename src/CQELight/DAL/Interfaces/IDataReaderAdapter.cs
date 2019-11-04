@@ -1,8 +1,5 @@
-﻿using CQELight.DAL.Common;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,17 +7,17 @@ using System.Threading.Tasks;
 namespace CQELight.DAL.Interfaces
 {
     /// <summary>
-    /// Base contract interface for reader repository.
+    /// Contract interface for DAL DataReader Adapter.
     /// </summary>
-    public interface IDataReaderRepository
+    public interface IDataReaderAdapter : IDisposable
     {
-
         /// <summary>
         /// Get asynchronously a bunch of entites from repository, by applying filter, order and some other.
         /// </summary>
         /// <param name="filter">Specific filter to apply on entities.</param>
         /// <param name="orderBy">Order to apply when retrieving entities.</param>
         /// <param name="includeDeleted">Flag to indicates if soft deleted entites should be included.</param>
+        /// <typeparam name="T">Type of entity to look for</typeparam>
         /// <returns>Bunch of entites that respects defined parameters.</returns>
         IAsyncEnumerable<T> GetAsync<T>(
             Expression<Func<T, bool>> filter = null,
@@ -31,7 +28,7 @@ namespace CQELight.DAL.Interfaces
         /// <summary>
         /// Get asynchronously an entity by its id.
         /// </summary>
-        /// <typeparam name="T">Type of object to retrieve</typeparam>
+        /// <typeparam name="T">Type of entity to retrieve by Id</typeparam>
         /// <param name="value">Id value.</param>
         /// <returns>Entity that matches Id value.</returns>
         Task<T> GetByIdAsync<T>(object value)

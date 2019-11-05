@@ -9,7 +9,6 @@ namespace CQELight.DAL.EFCore
     /// </summary>
     public class EFCoreOptions
     {
-
         #region Properties
 
         /// <summary>
@@ -20,11 +19,11 @@ namespace CQELight.DAL.EFCore
         public bool DisableLogicalDeletion { get; set; }
 
         /// <summary>
-        /// Model assembly name to dynamically retrieve models.
+        /// Configures the assembly where the db models are maintained
         /// </summary>
         public string ModelAssembly { get; set; }
 
         #endregion
-        
+
     }
 }

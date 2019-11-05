@@ -19,9 +19,7 @@ namespace CQELight.DAL
 
         protected readonly IDataReaderAdapter dataReaderAdapter;
         protected readonly IDataWriterAdapter dataWriterAdapter;
-        protected readonly List<object> added;
-        protected readonly List<object> updated;
-        protected readonly List<object> deleted;
+        protected List<Task> markingTasks = new List<Task>();
 
         private bool saveInProgress;
 
@@ -35,9 +33,6 @@ namespace CQELight.DAL
         {
             this.dataReaderAdapter = dataReaderAdapter;
             this.dataWriterAdapter = dataWriterAdapter;
-            added = new List<object>();
-            updated = new List<object>();
-            deleted = new List<object>();
         }
 
         #endregion
@@ -57,7 +52,7 @@ namespace CQELight.DAL
         {
             if (physicalDeletion)
             {
-                deleted.Add(entityToDelete);
+                markingTasks.Add(dataWriterAdapter.DeleteAsync(entityToDelete));
             }
             else
             {
@@ -65,7 +60,7 @@ namespace CQELight.DAL
                 {
                     basePersistableEntity.Deleted = true;
                     basePersistableEntity.DeletionDate = DateTime.UtcNow;
-                    updated.Add(basePersistableEntity);
+                    markingTasks.Add(dataWriterAdapter.UpdateAsync(entityToDelete));
                 }
                 else
                 {
@@ -109,19 +104,14 @@ namespace CQELight.DAL
         {
             if (saveInProgress)
             {
-                throw new InvalidOperationException("A current save operation is currently in progress. You'll have to wait before doing a new one on the same repository or add more operation in the same unit of work scope.");
+                throw new InvalidOperationException("A save operation is currently in progress on this repository instance. You'll have to wait before doing a new one on the same repository or add more operation in the same unit of work scope.");
             }
             saveInProgress = true;
             try
             {
-                await added.DoForEachAsync(dataWriterAdapter.InsertAsync);
-                await updated.DoForEachAsync(dataWriterAdapter.UpdateAsync);
-                await deleted.DoForEachAsync(dataWriterAdapter.DeleteAsync);
-                int dbResults = await dataWriterAdapter.SaveAsync().ConfigureAwait(false);
-                added.Clear();
-                updated.Clear();
-                deleted.Clear();
-                return dbResults;
+                await Task.WhenAll(markingTasks);
+                markingTasks.Clear();
+                return await dataWriterAdapter.SaveAsync().ConfigureAwait(false);
             }
             finally
             {
@@ -140,7 +130,7 @@ namespace CQELight.DAL
             {
                 basePersistableEntity.EditDate = DateTime.Now;
             }
-            updated.Add(entity);
+            markingTasks.Add(dataWriterAdapter.UpdateAsync(entity));
         }
 
         protected virtual void MarkEntityForInsert<TEntity>(TEntity entity)
@@ -150,7 +140,7 @@ namespace CQELight.DAL
             {
                 basePersistableEntity.EditDate = DateTime.Now;
             }
-            added.Add(entity);
+            markingTasks.Add(dataWriterAdapter.InsertAsync(entity));
         }
 
         protected virtual void MarkEntityForSoftDeletion<TEntity>(TEntity entityToDelete)
@@ -161,7 +151,7 @@ namespace CQELight.DAL
                 basePersistableEntity.Deleted = true;
                 basePersistableEntity.DeletionDate = DateTime.Now;
             }
-            updated.Add(entityToDelete);
+            markingTasks.Add(dataWriterAdapter.UpdateAsync(entityToDelete));
         }
 
         #endregion

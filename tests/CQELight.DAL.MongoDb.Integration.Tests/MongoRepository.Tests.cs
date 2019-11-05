@@ -19,13 +19,8 @@ namespace CQELight.DAL.MongoDb.Integration.Tests
 
         public MongoRepositoryTests()
         {
-            if (!Global.s_globalInit)
-            {
-                var c = new ConfigurationBuilder().AddJsonFile("test-config.json").Build();
-                new Bootstrapper().UseMongoDbAsMainRepository(new MongoDbOptions(c["user"], c["password"], $"{c["host"]}:{c["port"]}")).Bootstrapp();
-
-                Global.s_globalInit = true;
-            }
+            var c = new ConfigurationBuilder().AddJsonFile("test-config.json").Build();
+            new Bootstrapper().UseMongoDbAsMainRepository(new MongoDbOptions(c["user"], c["password"], $"{c["host"]}:{c["port"]}")).Bootstrapp();
             DeleteAll();
         }
 

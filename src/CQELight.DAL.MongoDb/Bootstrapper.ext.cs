@@ -30,8 +30,14 @@ namespace CQELight
             {
                 BootstrappAction = (ctx) =>
                 {
-                    BsonSerializer.RegisterSerializer(typeof(Type), new TypeSerializer());
-                    BsonSerializer.RegisterSerializer(typeof(Guid), new GuidSerializer());
+                    if (BsonSerializer.SerializerRegistry.GetSerializer<Type>() == null)
+                    {
+                        BsonSerializer.RegisterSerializer(typeof(Type), new TypeSerializer());
+                    }
+                    if (BsonSerializer.SerializerRegistry.GetSerializer<Guid>() == null)
+                    {
+                        BsonSerializer.RegisterSerializer(typeof(Guid), new GuidSerializer());
+                    }
 
                     MongoDbContext.MongoClient = new MongoDB.Driver.MongoClient(options.Url);
 

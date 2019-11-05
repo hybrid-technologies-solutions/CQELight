@@ -1,5 +1,6 @@
 ﻿using CQELight.DAL.Interfaces;
 using CQELight.DAL.MongoDb;
+using CQELight.DAL.MongoDb.Adapters;
 using CQELight.DAL.MongoDb.Serializers;
 using CQELight.IoC;
 using CQELight.Tools;
@@ -31,7 +32,6 @@ namespace CQELight
                 {
                     BsonSerializer.RegisterSerializer(typeof(Type), new TypeSerializer());
                     BsonSerializer.RegisterSerializer(typeof(Guid), new GuidSerializer());
-                    BsonSerializer.RegisterSerializer(typeof(object), new ObjectSerializer());
 
                     MongoDbContext.MongoClient = new MongoDB.Driver.MongoClient(options.Url);
 
@@ -41,15 +41,18 @@ namespace CQELight
 
                     if (ctx.IsServiceRegistered(BootstrapperServiceType.IoC))
                     {
+                        bootstrapper.AddIoCRegistration(new TypeRegistration<MongoDataReaderAdapter>(true));
+                        bootstrapper.AddIoCRegistration(new TypeRegistration<MongoDataWriterAdapter>(true));
+
                         var entities = ReflectionTools.GetAllTypes()
-                            .Where(t => typeof(IPersistableEntity).IsAssignableFrom(t)).ToList();
+                        .Where(t => typeof(IPersistableEntity).IsAssignableFrom(t)).ToList();
                         foreach (var item in entities)
                         {
                             var mongoRepoType = typeof(MongoRepository<>).MakeGenericType(item);
                             var dataReaderRepoType = typeof(IDataReaderRepository<>).MakeGenericType(item);
                             var databaseRepoType = typeof(IDatabaseRepository<>).MakeGenericType(item);
                             var dataUpdateRepoType = typeof(IDataUpdateRepository<>).MakeGenericType(item);
-                            
+
                             bootstrapper
                                 .AddIoCRegistration(new FactoryRegistration(() => mongoRepoType.CreateInstance(),
                                     mongoRepoType, dataUpdateRepoType, databaseRepoType, dataReaderRepoType));

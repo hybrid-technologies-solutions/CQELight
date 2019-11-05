@@ -9,6 +9,7 @@ using CQELight.Tools.Extensions;
 using CQELight.TestFramework;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
+using CQELight.DAL.MongoDb.Mapping;
 
 namespace CQELight.DAL.MongoDb.Integration.Tests
 {
@@ -16,14 +17,14 @@ namespace CQELight.DAL.MongoDb.Integration.Tests
     {
         #region Ctor & members
 
-        private static bool _init;
         public MongoRepositoryTests()
         {
-            if (!_init)
+            if (!Global.s_globalInit)
             {
                 var c = new ConfigurationBuilder().AddJsonFile("test-config.json").Build();
                 new Bootstrapper().UseMongoDbAsMainRepository(new MongoDbOptions(c["user"], c["password"], $"{c["host"]}:{c["port"]}")).Bootstrapp();
-                _init = true;
+
+                Global.s_globalInit = true;
             }
             DeleteAll();
         }
@@ -31,7 +32,7 @@ namespace CQELight.DAL.MongoDb.Integration.Tests
         private IMongoCollection<T> GetCollection<T>()
             => MongoDbContext.MongoClient
                     .GetDatabase("DefaultDatabase")
-                    .GetCollection<T>(typeof(T).Name);
+                    .GetCollection<T>(MongoDbMapper.GetMapping<T>().CollectionName);
 
         private void DeleteAll()
         {
@@ -256,7 +257,7 @@ namespace CQELight.DAL.MongoDb.Integration.Tests
                 {
                    new Comment("comment", user, post ),
                    new Comment("comment2", user, post)
-                });;
+                }); ;
 
                 using (var repo = new MongoRepository<Comment>())
                 {

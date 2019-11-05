@@ -15,8 +15,9 @@ using System.Threading.Tasks;
 
 namespace CQELight.DAL.MongoDb
 {
+    [Obsolete("MongoRepository has been deprecated. Use DatabaseRepository instead.")]
     public class MongoRepository<T> : IDatabaseRepository<T>
-        where T : IPersistableEntity
+        where T : class, IPersistableEntity
     {
         #region Members
 

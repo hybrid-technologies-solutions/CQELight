@@ -19,12 +19,14 @@ namespace CQELight.DAL.MongoDb.Mapping
         #region Static methods
 
         public static MappingInfo GetMapping<T>()
-            where T : IPersistableEntity
+            => GetMapping(typeof(T));
+
+        public static MappingInfo GetMapping(Type t)
         {
-            var mapping = _mappings.FirstOrDefault(m => m.EntityType == typeof(T));
-            if(mapping == null)
+            var mapping = _mappings.FirstOrDefault(m => m.EntityType == t);
+            if (mapping == null)
             {
-                mapping = new MappingInfo(typeof(T));
+                mapping = new MappingInfo(t);
             }
             return mapping;
         }

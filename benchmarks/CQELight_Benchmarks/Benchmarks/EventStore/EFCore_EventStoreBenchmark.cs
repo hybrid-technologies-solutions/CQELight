@@ -204,7 +204,7 @@ namespace CQELight_Benchmarks.Benchmarks
         public async Task GetEventsByAggregateId()
         {
             var evt
-                = await new EFEventStore(GetConfig()).GetAllEventsByAggregateId<TestAggregate, Guid>(AggregateId).ToList();
+                = await new EFEventStore(GetConfig()).GetAllEventsByAggregateId<TestAggregate, Guid>(AggregateId).ToListAsync();
         }
 
         [Benchmark]

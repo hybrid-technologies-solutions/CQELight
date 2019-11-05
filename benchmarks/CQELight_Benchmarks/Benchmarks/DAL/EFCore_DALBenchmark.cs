@@ -201,7 +201,7 @@ namespace CQELight_Benchmarks.Benchmarks.DAL
             {
                 using (var repo = new EFRepository<WebSite>(new EFCoreBenchmarkDbContext(GetOptions())))
                 {
-                    var ws = await repo.GetAsync(b => b.Url.EndsWith(r.Next(0, NbIterations - 1).ToString())).FirstOrDefault().ConfigureAwait(false);
+                    var ws = await repo.GetAsync(b => b.Url.EndsWith(r.Next(0, NbIterations - 1).ToString())).FirstOrDefaultAsync().ConfigureAwait(false);
                 }
             }
         }
@@ -233,7 +233,7 @@ namespace CQELight_Benchmarks.Benchmarks.DAL
                 var id = _allIds[r.Next(0, _allIds.Count - 1)];
                 using (var repo = new EFRepository<WebSite>(new EFCoreBenchmarkDbContext(GetOptions())))
                 {
-                    var ws = await repo.GetAsync(w => w.Id == id, includes: w => w.Posts).FirstOrDefault();
+                    var ws = await repo.GetAsync(w => w.Id == id, includes: w => w.Posts).FirstOrDefaultAsync();
 
                     ws.Url = "http://blogs.msdn.net/dotnet" + i + "/newValue/" + r.Next();
 
@@ -254,7 +254,7 @@ namespace CQELight_Benchmarks.Benchmarks.DAL
                 var id = _allIds[r.Next(0, _allIds.Count - 1)];
                 using (var repo = new EFRepository<WebSite>(new EFCoreBenchmarkDbContext(GetOptions())))
                 {
-                    var ws = await repo.GetAsync(w => w.Id == id, includes: w => w.Posts).FirstOrDefault();
+                    var ws = await repo.GetAsync(w => w.Id == id, includes: w => w.Posts).FirstOrDefaultAsync();
 
                     ws.Url = "http://blogs.msdn.net/dotnet" + i + "/newValue/" + r.Next();
 

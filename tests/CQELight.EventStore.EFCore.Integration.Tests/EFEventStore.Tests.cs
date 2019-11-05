@@ -334,7 +334,7 @@ namespace CQELight.EventStore.EFCore.Integration.Tests
                     ctx.Set<Event>().Should().HaveCount(2);
                 }
 
-                var collection = await new EFEventStore(GetOptions()).GetAllEventsByAggregateId<SampleAgg, Guid>(agg.Id).ToList();
+                var collection = await new EFEventStore(GetOptions()).GetAllEventsByAggregateId<SampleAgg, Guid>(agg.Id).ToListAsync();
                 collection.Should().HaveCount(2);
 
                 collection.Any(e => e.GetType() == typeof(AggCreated)).Should().BeTrue();
@@ -400,8 +400,8 @@ namespace CQELight.EventStore.EFCore.Integration.Tests
 
                 var store2 = new EFEventStore(GetOptions());
 
-                (await store2.GetAllEventsByAggregateType(typeof(AggA)).ToList()).Should().HaveCount(50);
-                (await store2.GetAllEventsByAggregateType(typeof(AggB)).ToList()).Should().HaveCount(50);
+                (await store2.GetAllEventsByAggregateType(typeof(AggA)).ToListAsync()).Should().HaveCount(50);
+                (await store2.GetAllEventsByAggregateType(typeof(AggB)).ToListAsync()).Should().HaveCount(50);
             }
             finally
             {
@@ -439,8 +439,8 @@ namespace CQELight.EventStore.EFCore.Integration.Tests
 
                 var store2 = new EFEventStore(GetOptions());
 
-                (await store2.GetAllEventsByEventType(typeof(EventAggA)).ToList()).Should().HaveCount(20);
-                (await store2.GetAllEventsByEventType(typeof(EventAggB)).ToList()).Should().HaveCount(80);
+                (await store2.GetAllEventsByEventType(typeof(EventAggA)).ToListAsync()).Should().HaveCount(20);
+                (await store2.GetAllEventsByEventType(typeof(EventAggB)).ToListAsync()).Should().HaveCount(80);
             }
             finally
             {
@@ -474,8 +474,8 @@ namespace CQELight.EventStore.EFCore.Integration.Tests
 
                 var store2 = new EFEventStore(GetOptions());
 
-                (await store2.GetAllEventsByEventType<EventAggA>().ToList()).Should().HaveCount(10);
-                (await store2.GetAllEventsByEventType<EventAggB>().ToList()).Should().HaveCount(90);
+                (await store2.GetAllEventsByEventType<EventAggA>().ToListAsync()).Should().HaveCount(10);
+                (await store2.GetAllEventsByEventType<EventAggB>().ToListAsync()).Should().HaveCount(90);
             }
             finally
             {
@@ -538,7 +538,7 @@ namespace CQELight.EventStore.EFCore.Integration.Tests
                 using (var ctx = GetContext())
                 {
                     ctx.Set<Event>().Count().Should().Be(11);
-                    var evt = await ctx.Set<Event>().OrderByDescending(e => e.EventTime).FirstOrDefaultAsync();
+                    var evt = ctx.Set<Event>().ToList().OrderByDescending(e => e.EventTime).FirstOrDefault();
                     evt.Should().NotBeNull();
                     evt.HashedAggregateId.Should().Be(aggId.ToJson(true).GetHashCode());
                     evt.Sequence.Should().Be(11);
@@ -687,8 +687,8 @@ namespace CQELight.EventStore.EFCore.Integration.Tests
 
                 using (var ctx = GetContext())
                 {
-                    ctx.Set<Event>().Where(c => c.HashedAggregateId == aggId.ToJson(true).GetHashCode()).Count().Should().Be(1);
-                    ctx.Set<ArchiveEvent>().Where(c => c.HashedAggregateId == aggId.ToJson(true).GetHashCode()).Count().Should().Be(10);
+                    ctx.Set<Event>().ToList().Where(c => c.HashedAggregateId == aggId.ToJson(true).GetHashCode()).Count().Should().Be(1);
+                    ctx.Set<ArchiveEvent>().ToList().Where(c => c.HashedAggregateId == aggId.ToJson(true).GetHashCode()).Count().Should().Be(10);
                     var evt = ctx.Set<Event>().FirstOrDefault();
                     evt.Should().NotBeNull();
                     evt.HashedAggregateId.Should().Be(aggId.ToJson(true).GetHashCode());
@@ -785,7 +785,7 @@ namespace CQELight.EventStore.EFCore.Integration.Tests
                 using (var ctx = GetContext())
                 {
                     ctx.Set<Event>().Count(e => e.HashedAggregateId == aggId.ToJson(true).GetHashCode()).Should().Be(1);
-                    var evt = ctx.Set<Event>().Where(e => e.HashedAggregateId == aggId.ToJson(true).GetHashCode()).FirstOrDefault();
+                    var evt = ctx.Set<Event>().ToList().Where(e => e.HashedAggregateId == aggId.ToJson(true).GetHashCode()).FirstOrDefault();
                     evt.Should().NotBeNull();
                     evt.HashedAggregateId.Should().Be(aggId.ToJson(true).GetHashCode());
                     evt.Sequence.Should().Be(11);

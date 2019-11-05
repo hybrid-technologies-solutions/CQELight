@@ -49,6 +49,7 @@ namespace CQELight.EventStore.EFCore
         internal static void Activate()
         {
             CoreDispatcher.OnEventDispatched += OnEventDispatchedMethod;
+            CoreDispatcher.OnEventsDispatched += OnEventsDispatchedMethod;
 
             using (var ctx = new EventStoreDbContext(s_Options.DbContextOptions, s_Options.ArchiveBehavior))
             {
@@ -67,6 +68,7 @@ namespace CQELight.EventStore.EFCore
         internal static void Deactivate()
         {
             CoreDispatcher.OnEventDispatched -= OnEventDispatchedMethod;
+            CoreDispatcher.OnEventsDispatched -= OnEventsDispatchedMethod;
         }
 
         internal static async Task OnEventDispatchedMethod(IDomainEvent @event)
@@ -78,6 +80,18 @@ namespace CQELight.EventStore.EFCore
             catch (Exception exc)
             {
                 _logger?.LogError($"EventHandler.OnEventDispatchedMethod() : Exception {exc}");
+            }
+        }
+        
+        internal static async Task OnEventsDispatchedMethod(IEnumerable<IDomainEvent> events)
+        {
+            try
+            {
+                await new EFEventStore(s_Options, _loggerFactory).StoreDomainEventRangeAsync(events).ConfigureAwait(false);
+            }
+            catch (Exception exc)
+            {
+                _logger?.LogError($"EventHandler.OnEventsDispatchedMethod() : Exception {exc}");
             }
         }
 

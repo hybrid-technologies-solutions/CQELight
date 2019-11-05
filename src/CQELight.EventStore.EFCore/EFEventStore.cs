@@ -75,6 +75,77 @@ namespace CQELight.EventStore.EFCore
 
         #region IEventStore
 
+#if NETSTANDARD2_1
+        public async IAsyncEnumerable<IDomainEvent> GetAllEventsByAggregateType(Type aggregateType)
+        {
+            using (var ctx = new EventStoreDbContext(_dbContextOptions))
+            {
+                var dbEvents = ctx
+                    .Set<Event>()
+                    .AsNoTracking()
+                    .Where(c => c.AggregateType == aggregateType.AssemblyQualifiedName)
+                    .AsAsyncEnumerable();
+                await foreach (var @event in dbEvents)
+                {
+                    yield return GetRehydratedEventFromDbEvent(@event);
+                }
+            }
+        }
+
+        public async IAsyncEnumerable<T> GetAllEventsByEventType<T>()
+            where T : class, IDomainEvent
+        {
+            using (var ctx = new EventStoreDbContext(_dbContextOptions))
+            {
+                var dbEvents = ctx
+                    .Set<Event>()
+                    .AsNoTracking()
+                    .Where(c => c.EventType == typeof(T).AssemblyQualifiedName)
+                    .AsAsyncEnumerable();
+                await foreach (var @event in dbEvents)
+                {
+                    var rehydratedEvent = GetRehydratedEventFromDbEvent(@event) as T;
+                    if (rehydratedEvent != null)
+                    {
+                        yield return rehydratedEvent;
+                    }
+                }
+            }
+        }
+
+        public async IAsyncEnumerable<IDomainEvent> GetAllEventsByEventType(Type eventType)
+        {
+            using (var ctx = new EventStoreDbContext(_dbContextOptions))
+            {
+                var dbEvents = ctx
+                    .Set<Event>()
+                    .AsNoTracking()
+                    .Where(c => c.EventType == eventType.AssemblyQualifiedName)
+                    .AsAsyncEnumerable();
+                await foreach (var @event in dbEvents)
+                {
+                    yield return GetRehydratedEventFromDbEvent(@event);
+                }
+            }
+        }
+        public async IAsyncEnumerable<IDomainEvent> GetAllEventsByAggregateId(Type aggregateType, object aggregateId)
+        {
+            using (var ctx = new EventStoreDbContext(_dbContextOptions))
+            {
+                var dbEvents = ctx
+                    .Set<Event>()
+                    .AsNoTracking()
+                    .Where(c => c.AggregateType == aggregateType.AssemblyQualifiedName
+                    && c.AggregateIdType == aggregateId.GetType().AssemblyQualifiedName
+                    && c.HashedAggregateId == aggregateId.ToJson(true).GetHashCode())
+                    .AsAsyncEnumerable();
+                await foreach (var @event in dbEvents)
+                {
+                    yield return GetRehydratedEventFromDbEvent(@event);
+                }
+            }
+        }
+#elif NETSTANDARD2_0
         public IAsyncEnumerable<IDomainEvent> GetAllEventsByAggregateType(Type aggregateType)
         {
             using (var ctx = new EventStoreDbContext(_dbContextOptions))
@@ -115,10 +186,6 @@ namespace CQELight.EventStore.EFCore
             }
         }
 
-        public IAsyncEnumerable<IDomainEvent> GetAllEventsByAggregateId<TAggregateType, TAggregateId>(TAggregateId id)
-            where TAggregateType : AggregateRoot<TAggregateId>
-            => GetAllEventsByAggregateId(typeof(TAggregateType), id);
-
         public IAsyncEnumerable<IDomainEvent> GetAllEventsByAggregateId(Type aggregateType, object aggregateId)
         {
             using (var ctx = new EventStoreDbContext(_dbContextOptions))
@@ -133,6 +200,12 @@ namespace CQELight.EventStore.EFCore
                 return dbEvents.Select(GetRehydratedEventFromDbEvent).ToAsyncEnumerable();
             }
         }
+#endif
+
+        public IAsyncEnumerable<IDomainEvent> GetAllEventsByAggregateId<TAggregateType, TAggregateId>(TAggregateId id)
+            where TAggregateType : AggregateRoot<TAggregateId>
+            => GetAllEventsByAggregateId(typeof(TAggregateType), id);
+
         public async Task<Result> StoreDomainEventAsync(IDomainEvent @event)
         {
             var evtType = @event.GetType();
@@ -220,7 +293,6 @@ namespace CQELight.EventStore.EFCore
                 throw new InvalidOperationException("EFEventStore.GetRehydratedAggregateAsync() : Cannot create a new instance of" +
                     $" {aggregateType.FullName} aggregate. It should have one parameterless constructor (can be private).");
             }
-            var events = await GetAllEventsByAggregateId(aggregateType, aggregateUniqueId).ToList().ConfigureAwait(false);
             Snapshot snapshot = null;
             using (var ctx = new EventStoreDbContext(_dbContextOptions, _archiveBehavior))
             {
@@ -257,28 +329,18 @@ namespace CQELight.EventStore.EFCore
                 throw new InvalidOperationException("EFEventStore.GetRehydratedAggregateAsync() : Cannot find property/field that manage state for aggregate" +
                     $" type {aggregateType.FullName}. State should be a property or a field of the aggregate");
             }
+            List<IDomainEvent> events = new List<IDomainEvent>();
+#if NETSTANDARD2_0
+            events = await
+                 GetAllEventsByAggregateId(aggregateType, aggregateUniqueId)
+                .ToList().ConfigureAwait(false);
+#elif NETSTANDARD2_1
+            await foreach(var @event in GetAllEventsByAggregateId(aggregateType, aggregateUniqueId))
+            {
+                events.Add(@event);
+            }
+#endif
             aggInstance.RehydrateState(events);
-            //PropertyInfo stateProp = aggregateType.GetAllProperties().FirstOrDefault(p => p.PropertyType.IsSubclassOf(typeof(AggregateState)));
-            //FieldInfo stateField = aggregateType.GetAllFields().FirstOrDefault(f => f.FieldType.IsSubclassOf(typeof(AggregateState)));
-            //Type stateType = stateProp?.PropertyType ?? stateField?.FieldType;
-            //if (stateType != null)
-            //{
-            //    var state = await GetRehydratedAggregateStateAsync(aggregateUniqueId, aggregateType);
-            //    if (stateProp != null)
-            //    {
-            //        stateProp.SetValue(aggInstance, state);
-            //    }
-            //    else
-            //    {
-            //        stateField.SetValue(aggInstance, state);
-            //    }
-            //}
-            //else
-            //{
-            //    throw new InvalidOperationException("EFEventStore.GetRehydratedAggregateAsync() : Cannot find property/field that manage state for aggregate" +
-            //        $" type {aggregateType.FullName}. State should be a property or a field of the aggregate");
-            //}
-
             return aggInstance;
         }
 
@@ -286,9 +348,9 @@ namespace CQELight.EventStore.EFCore
             where TAggregate : class, IEventSourcedAggregate
             => (await GetRehydratedAggregateAsync(aggregateUniqueId, typeof(TAggregate)).ConfigureAwait(false)) as TAggregate;
 
-        #endregion
+#endregion
 
-        #region Private methods
+#region Private methods
 
         private async Task StoreEvent(IDomainEvent @event, EventStoreDbContext ctx, bool useBuffer = true)
         {
@@ -435,7 +497,17 @@ namespace CQELight.EventStore.EFCore
             Type aggregateType,
             EventStoreDbContext externalCtx = null)
         {
-            var events = await GetAllEventsByAggregateId(aggregateType, aggregateId).ToList().ConfigureAwait(false);
+            List<IDomainEvent> events = new List<IDomainEvent>();
+#if NETSTANDARD2_0
+            events = await
+                 GetAllEventsByAggregateId(aggregateType, aggregateId)
+                .ToList().ConfigureAwait(false);
+#elif NETSTANDARD2_1
+            await foreach (var @event in GetAllEventsByAggregateId(aggregateType, aggregateId))
+            {
+                events.Add(@event);
+            }
+#endif
             if (externalCtx != null)
             {
                 var eventsInChangeTracker = ExtractEventsFromChangeTracker(externalCtx).Select(GetRehydratedEventFromDbEvent);
@@ -470,6 +542,7 @@ namespace CQELight.EventStore.EFCore
                 throw new InvalidOperationException("EFEventStore.GetRehydratedAggregateAsync() : Cannot find property/field that manage state for aggregate" +
                     $" type {aggregateType.FullName}. State should be a property or a field of the aggregate");
             }
+
             state.ApplyRange(events);
             return state;
         }
@@ -508,7 +581,8 @@ namespace CQELight.EventStore.EFCore
             }
             using (var ctx = new EventStoreDbContext(_dbContextOptions))
             {
-                var events = await ctx.Set<Event>().Where(e => archiveEvents.Any(ev => ev.Id == e.Id)).ToListAsync().ConfigureAwait(false);
+                var archiveEventsIds = archiveEvents.Select(e => e.Id).ToList();
+                var events = await ctx.Set<Event>().Where(e => archiveEventsIds.Contains(e.Id)).ToListAsync().ConfigureAwait(false);
                 if (events.Count > 0)
                 {
                     ctx.RemoveRange(events);
@@ -618,7 +692,7 @@ namespace CQELight.EventStore.EFCore
                     .WhereNotNull()
                     .ToList();
 
-        #endregion
+#endregion
 
     }
 }

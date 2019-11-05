@@ -115,7 +115,7 @@ namespace CQELight.DAL.MongoDb.Integration.Tests.Adapters
                 });
                 using (var repo = new RepositoryBase(new MongoDataReaderAdapter(), new MongoDataWriterAdapter()))
                 {
-                    var w = await repo.GetAsync<WebSite>().FirstOrDefault().ConfigureAwait(false);
+                    var w = await repo.GetAsync<WebSite>().FirstOrDefaultAsync().ConfigureAwait(false);
                     w.Url = "https://www.microsoft.com/office365";
                     repo.MarkForUpdate(w);
                     await repo.SaveAsync().ConfigureAwait(false);
@@ -123,7 +123,7 @@ namespace CQELight.DAL.MongoDb.Integration.Tests.Adapters
 
                 using (var repo = new RepositoryBase(new MongoDataReaderAdapter(), new MongoDataWriterAdapter()))
                 {
-                    var testB = await repo.GetAsync<WebSite>().ToList().ConfigureAwait(false);
+                    var testB = await repo.GetAsync<WebSite>().ToListAsync().ConfigureAwait(false);
                     testB.Should().HaveCount(1);
                     testB[0].Url.Should().Be("https://www.microsoft.com/office365");
                 }
@@ -203,20 +203,20 @@ namespace CQELight.DAL.MongoDb.Integration.Tests.Adapters
 
                 using (var repo = new RepositoryBase(new MongoDataReaderAdapter(), new MongoDataWriterAdapter()))
                 {
-                    (await repo.GetAsync<WebSite>().Count()).Should().Be(1);
-                    (await repo.GetAsync<WebSite>(includeDeleted: true).Count()).Should().Be(1);
+                    (await repo.GetAsync<WebSite>().CountAsync()).Should().Be(1);
+                    (await repo.GetAsync<WebSite>(includeDeleted: true).CountAsync()).Should().Be(1);
                 }
                 using (var repo = new RepositoryBase(new MongoDataReaderAdapter(), new MongoDataWriterAdapter()))
                 {
-                    var entity = await repo.GetAsync<WebSite>().FirstOrDefault();
+                    var entity = await repo.GetAsync<WebSite>().FirstOrDefaultAsync();
                     entity.Should().NotBeNull();
                     repo.MarkIdForDelete<WebSite>(id, true);
                     await repo.SaveAsync().ConfigureAwait(false);
                 }
                 using (var repo = new RepositoryBase(new MongoDataReaderAdapter(), new MongoDataWriterAdapter()))
                 {
-                    (await repo.GetAsync<WebSite>(includeDeleted: true).Count()).Should().Be(0);
-                    (await repo.GetAsync<WebSite>().Count()).Should().Be(0);
+                    (await repo.GetAsync<WebSite>(includeDeleted: true).CountAsync()).Should().Be(0);
+                    (await repo.GetAsync<WebSite>().CountAsync()).Should().Be(0);
                 }
             }
             finally
@@ -252,22 +252,22 @@ namespace CQELight.DAL.MongoDb.Integration.Tests.Adapters
 
                 using (var repo = new RepositoryBase(new MongoDataReaderAdapter(), new MongoDataWriterAdapter()))
                 {
-                    (await repo.GetAsync<WebSite>().Count()).Should().Be(1);
-                    (await repo.GetAsync<WebSite>(includeDeleted: true).Count()).Should().Be(1);
+                    (await repo.GetAsync<WebSite>().CountAsync()).Should().Be(1);
+                    (await repo.GetAsync<WebSite>(includeDeleted: true).CountAsync()).Should().Be(1);
                 }
                 using (var repo = new RepositoryBase(new MongoDataReaderAdapter(), new MongoDataWriterAdapter()))
                 {
-                    var entity = await repo.GetAsync<WebSite>().FirstOrDefault();
+                    var entity = await repo.GetAsync<WebSite>().FirstOrDefaultAsync();
                     entity.Should().NotBeNull();
                     repo.MarkIdForDelete<WebSite>(id);
                     await repo.SaveAsync().ConfigureAwait(false);
                 }
                 using (var repo = new RepositoryBase(new MongoDataReaderAdapter(), new MongoDataWriterAdapter()))
                 {
-                    (await repo.GetAsync<WebSite>(includeDeleted: true).Count()).Should().Be(1);
-                    var entity = await repo.GetAsync<WebSite>(includeDeleted: true).FirstOrDefault();
+                    (await repo.GetAsync<WebSite>(includeDeleted: true).CountAsync()).Should().Be(1);
+                    var entity = await repo.GetAsync<WebSite>(includeDeleted: true).FirstOrDefaultAsync();
                     entity.DeletionDate.Should().BeSameDateAs(DateTime.Today);
-                    (await repo.GetAsync<WebSite>().Count()).Should().Be(0);
+                    (await repo.GetAsync<WebSite>().CountAsync()).Should().Be(0);
                 }
             }
             finally
@@ -303,20 +303,20 @@ namespace CQELight.DAL.MongoDb.Integration.Tests.Adapters
 
                 using (var repo = new RepositoryBase(new MongoDataReaderAdapter(), new MongoDataWriterAdapter()))
                 {
-                    (await repo.GetAsync<WebSite>().Count()).Should().Be(1);
-                    (await repo.GetAsync<WebSite>(includeDeleted: true).Count()).Should().Be(1);
+                    (await repo.GetAsync<WebSite>().CountAsync()).Should().Be(1);
+                    (await repo.GetAsync<WebSite>(includeDeleted: true).CountAsync()).Should().Be(1);
                 }
                 using (var repo = new RepositoryBase(new MongoDataReaderAdapter(), new MongoDataWriterAdapter()))
                 {
-                    var entity = await repo.GetAsync<WebSite>().FirstOrDefault();
+                    var entity = await repo.GetAsync<WebSite>().FirstOrDefaultAsync();
                     entity.Should().NotBeNull();
                     repo.MarkForDelete(entity, true);
                     await repo.SaveAsync().ConfigureAwait(false);
                 }
                 using (var repo = new RepositoryBase(new MongoDataReaderAdapter(), new MongoDataWriterAdapter()))
                 {
-                    (await repo.GetAsync<WebSite>(includeDeleted: true).Count()).Should().Be(0);
-                    (await repo.GetAsync<WebSite>().Count()).Should().Be(0);
+                    (await repo.GetAsync<WebSite>(includeDeleted: true).CountAsync()).Should().Be(0);
+                    (await repo.GetAsync<WebSite>().CountAsync()).Should().Be(0);
                 }
             }
             finally
@@ -352,22 +352,22 @@ namespace CQELight.DAL.MongoDb.Integration.Tests.Adapters
 
                 using (var repo = new RepositoryBase(new MongoDataReaderAdapter(), new MongoDataWriterAdapter()))
                 {
-                    (await repo.GetAsync<WebSite>().Count()).Should().Be(1);
-                    (await repo.GetAsync<WebSite>(includeDeleted: true).Count()).Should().Be(1);
+                    (await repo.GetAsync<WebSite>().CountAsync()).Should().Be(1);
+                    (await repo.GetAsync<WebSite>(includeDeleted: true).CountAsync()).Should().Be(1);
                 }
                 using (var repo = new RepositoryBase(new MongoDataReaderAdapter(), new MongoDataWriterAdapter()))
                 {
-                    var entity = await repo.GetAsync<WebSite>().FirstOrDefault();
+                    var entity = await repo.GetAsync<WebSite>().FirstOrDefaultAsync();
                     entity.Should().NotBeNull();
                     repo.MarkForDelete(entity);
                     await repo.SaveAsync().ConfigureAwait(false);
                 }
                 using (var repo = new RepositoryBase(new MongoDataReaderAdapter(), new MongoDataWriterAdapter()))
                 {
-                    (await repo.GetAsync<WebSite>(includeDeleted: true).Count()).Should().Be(1);
-                    var entity = await repo.GetAsync<WebSite>(includeDeleted: true).FirstOrDefault();
+                    (await repo.GetAsync<WebSite>(includeDeleted: true).CountAsync()).Should().Be(1);
+                    var entity = await repo.GetAsync<WebSite>(includeDeleted: true).FirstOrDefaultAsync();
                     entity.DeletionDate.Should().BeSameDateAs(DateTime.Today);
-                    (await repo.GetAsync<WebSite>().Count()).Should().Be(0);
+                    (await repo.GetAsync<WebSite>().CountAsync()).Should().Be(0);
                 }
             }
             finally

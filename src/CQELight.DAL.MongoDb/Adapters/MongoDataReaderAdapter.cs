@@ -20,6 +20,7 @@ namespace CQELight.DAL.MongoDb.Adapters
     {
         #region IDataReaderAdapter
 
+#if NETSTANDARD2_0
         public IAsyncEnumerable<T> GetAsync<T>(Expression<Func<T, bool>> filter = null, Expression<Func<T, object>> orderBy = null, bool includeDeleted = false)
             where T : class
         {
@@ -45,6 +46,34 @@ namespace CQELight.DAL.MongoDb.Adapters
                 .ToEnumerable()
                 .ToAsyncEnumerable();
         }
+#elif NETSTANDARD2_1
+         public async IAsyncEnumerable<T> GetAsync<T>(Expression<Func<T, bool>> filter = null, Expression<Func<T, object>> orderBy = null, bool includeDeleted = false)
+            where T : class
+        {
+            var collection = GetCollection<T>();
+            FilterDefinition<T> whereFilter = FilterDefinition<T>.Empty;
+            FilterDefinition<T> deletedFilter = FilterDefinition<T>.Empty;
+            if (filter != null)
+            {
+                whereFilter = new FilterDefinitionBuilder<T>().Where(filter);
+            }
+            if (!includeDeleted && typeof(T).IsInHierarchySubClassOf(typeof(BasePersistableEntity)))
+            {
+                deletedFilter = new FilterDefinitionBuilder<T>().Eq("Deleted", false);
+            }
+            var result = collection
+                .Find(new FilterDefinitionBuilder<T>().And(whereFilter, deletedFilter));
+            IOrderedFindFluent<T, T> sortedResult = null;
+            if (orderBy != null)
+            {
+                sortedResult = result.SortBy(orderBy);
+            }
+            foreach (var item in await (sortedResult ?? result).ToListAsync())
+            {
+                yield return item;
+            } 
+        }
+#endif
 
         public async Task<T> GetByIdAsync<T>(object value) where T : class
         {
@@ -63,9 +92,9 @@ namespace CQELight.DAL.MongoDb.Adapters
             return data.FirstOrDefault();
         }
 
-        #endregion
+#endregion
 
-        #region Private methods
+#region Private methods
 
         private IMongoCollection<T> GetCollection<T>()
             where T : class
@@ -96,6 +125,6 @@ namespace CQELight.DAL.MongoDb.Adapters
             return collection;
         }
 
-        #endregion
+#endregion
     }
 }

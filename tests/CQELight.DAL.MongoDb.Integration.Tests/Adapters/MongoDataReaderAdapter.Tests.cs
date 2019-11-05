@@ -63,7 +63,7 @@ namespace CQELight.DAL.MongoDb.Integration.Tests.Adapters
 
                 using (var repo = new RepositoryBase(new MongoDataReaderAdapter(), new MongoDataWriterAdapter()))
                 {
-                    var sites = await repo.GetAsync<WebSite>().ToList().ConfigureAwait(false);
+                    var sites = await repo.GetAsync<WebSite>().ToListAsync().ConfigureAwait(false);
                     sites.Should().HaveCount(2);
                     sites.Any(s => s.Url.Contains("msdn")).Should().BeTrue();
                     sites.Any(s => s.Url.Contains("microsoft")).Should().BeTrue();
@@ -95,7 +95,7 @@ namespace CQELight.DAL.MongoDb.Integration.Tests.Adapters
 
                 using (var repo = new RepositoryBase(new MongoDataReaderAdapter(), new MongoDataWriterAdapter()))
                 {
-                    var sites = await repo.GetAsync<WebSite>(w => w.Url.Contains("msdn")).ToList().ConfigureAwait(false);
+                    var sites = await repo.GetAsync<WebSite>(w => w.Url.Contains("msdn")).ToListAsync().ConfigureAwait(false);
                     sites.Should().HaveCount(1);
                     sites.Any(s => s.Url.Contains("msdn")).Should().BeTrue();
                     sites.Any(s => s.Url.Contains("microsoft")).Should().BeFalse();
@@ -129,14 +129,14 @@ namespace CQELight.DAL.MongoDb.Integration.Tests.Adapters
 
                 using (var repo = new RepositoryBase(new MongoDataReaderAdapter(), new MongoDataWriterAdapter()))
                 {
-                    var sites = await repo.GetAsync<WebSite>(includeDeleted: true).ToList().ConfigureAwait(false);
+                    var sites = await repo.GetAsync<WebSite>(includeDeleted: true).ToListAsync().ConfigureAwait(false);
                     sites.Should().HaveCount(2);
                     sites.Any(s => s.Url.Contains("msdn")).Should().BeTrue();
                     sites.Any(s => s.Url.Contains("microsoft")).Should().BeTrue();
                     sites.Any(s => s.Deleted).Should().BeTrue();
                     sites.Any(s => !s.Deleted).Should().BeTrue();
 
-                    var undeletedSites = await repo.GetAsync<WebSite>().ToList().ConfigureAwait(false);
+                    var undeletedSites = await repo.GetAsync<WebSite>().ToListAsync().ConfigureAwait(false);
                     undeletedSites.Should().HaveCount(1);
                     undeletedSites.Any(s => s.Url.Contains("msdn")).Should().BeTrue();
                     undeletedSites.Any(s => s.Url.Contains("microsoft")).Should().BeFalse();
@@ -168,7 +168,7 @@ namespace CQELight.DAL.MongoDb.Integration.Tests.Adapters
 
                 using (var repo = new RepositoryBase(new MongoDataReaderAdapter(), new MongoDataWriterAdapter()))
                 {
-                    var sites = await repo.GetAsync<WebSite>(orderBy: b => b.Url).ToList().ConfigureAwait(false);
+                    var sites = await repo.GetAsync<WebSite>(orderBy: b => b.Url).ToListAsync().ConfigureAwait(false);
                     sites.Should().HaveCount(2);
                     sites.Any(s => s.Url.Contains("msdn")).Should().BeTrue();
                     sites.Any(s => s.Url.Contains("microsoft")).Should().BeTrue();
@@ -223,7 +223,7 @@ namespace CQELight.DAL.MongoDb.Integration.Tests.Adapters
 
                 using (var repo = new RepositoryBase(new MongoDataReaderAdapter(), new MongoDataWriterAdapter()))
                 {
-                    var sites = await repo.GetAsync<WebSite>().ToList().ConfigureAwait(false);
+                    var sites = await repo.GetAsync<WebSite>().ToListAsync().ConfigureAwait(false);
                     sites.Should().HaveCount(2);
                     sites.Any(s => s.Url.Contains("msdn")).Should().BeTrue();
                     sites.Any(s => s.Url.Contains("microsoft")).Should().BeTrue();
@@ -256,7 +256,7 @@ namespace CQELight.DAL.MongoDb.Integration.Tests.Adapters
 
                 using (var repo = new RepositoryBase(new MongoDataReaderAdapter(), new MongoDataWriterAdapter()))
                 {
-                    var comments = await repo.GetAsync<Comment>().ToList().ConfigureAwait(false);
+                    var comments = await repo.GetAsync<Comment>().ToListAsync().ConfigureAwait(false);
                     comments.Should().HaveCount(2);
                     comments.Any(s => s.Value.Contains("comment")).Should().BeTrue();
                     comments.Any(s => s.Value.Contains("comment2")).Should().BeTrue();

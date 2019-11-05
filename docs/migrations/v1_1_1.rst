@@ -1,0 +1,54 @@
+Migration de la V1 à la V1.1
+============================
+Même si la V1.1 est une version mineure de transition, elle apporte son lot de nouveautés et de changement. La totalité des API qui existaient en V1 sont toujours présentes en V1.1, mais certaines sont dépréciées et seront supprimées en V2. Afin que la migration en V2 soit la plus indolore possible, vous pouvez déjà migrer votre code vers la 1.1.
+
+RabbitMQ
+^^^^^^^^
+Défintion du réseau
+^^^^^^^^^^^^^^^^^^^
+En 1.0x, le réseau fonctionnait de façon exclusive en mode SingleExchange sans routing key. Il est recommandé de définir le réseau suivant (en remplaçant ``serviceName`` par la valeur que vous aviez fixé dans votre configuration comme ``emiter``)  :
+
+::
+
+    var network = RabbitNetworkInfos.GetConfigurationFor(
+	   "serviceName", 
+	   RabbitMQExchangeStrategy.SingleExchange);
+    network.ServiceQueueDescriptions.Add(
+	   new RabbitQueueDescription("cqelight.events.serviceName"));
+	
+Il vous reste à changer votre bootstrapper et remplacer les méthodes ``UseRabbitMQClientBus`` et ``UseRabbitMQServer`` par ``UseRabbitMQ`` :
+
+::
+
+    new Bootstrapper()
+    bootstrapper.UseRabbitMQ(
+	   connectionInfos: null, //Your connection infos
+	   networkInfos: network, //Previously defined
+	   subscriberConfiguration: (c) => {
+	      c.UseDeadLetterQueue = true; // If used
+	      c.DispatchInMemory = true; // If used
+	      c.EventCustomCallback = (e) => {}; // If used
+	   })
+	.Bootstrapp();
+
+Vous restez libre de modifier la topologie réseau et de profiter des nouvelles options suite à ces changements.
+
+DAL EF Core/MongoDb
+^^^^^^^^^^^^^^^^^^^
+La façon d'aborder la couche d'accès aux données a été totalement repensée en V1.1. Afin d'éviter d'avoir plusieurs instances de repository (un pour chaque modèle et pour chaque provider), une unification a été fait. Dorénavant, il n'y a qu'un seul repository : ``CQELight.DAL.RepositoryBase``. Cette implémentation peut être overridée selon votre besoin, voire ignorée (il suffit d'implémenter l'interface ``CQELight.DAL.AbstractionsIRepository`` selon votre besoin).
+
+La migration se passe en plusieurs étapes :
+- Remplacer les appels à vos ``IDataReaderRepository<T>``,  ``IDataUpdateRepository<T>`` et ``IDatabaseRepository<T>`` par leur équivalent sans paramètre générique
+- Ajouter l'information sur le type à récupérer sur les méthodes concernées (``GetAsync``, ``GetByIdAsync``, ``MarkIdForDelete``)
+- Utiliser directement le contexte EF Core si besoin d'exécuter une requête SQL. ``ISqlRepository`` a été totalement déprécié.
+
+Il n'est plus nécessaire non plus de passer par IPersistableEntity pour la définition de vos modèles, les deux providers supportent maintenant n'importe quel type d'objet, sous réserve que ce dernier soit une classe.
+
+Spécificités EF Core
+^^^^^^^^^^^^^^^^^^^^
+- Il n'est plus nécessaire de créer une classe qui hérite de ``BaseDbContext``. Vous pouvez même dorénavant directement utiliser ``BaseDbContext`` dans votre code.
+- Dû au changement ci-dessus, la recherche automatique des modèles pour la configuration du modèle n'est plus possible si vous n'héritez plus de BaseDbContext. Il est nécessaire de spécifier le nom de l'assembly qui contient vos modèles pour garder le côté automatique. Cette information doit être définie dans le bootstrapping du provider, dans la classe EFCoreOptions.
+
+Breaking changes
+^^^^^^^^^^^^^^^^
+- Le paramètre "includes" du ``GetAsync`` a été supprimé. Ce dernier n'étant réservé qu'à EF Core, il est supprimé pour s'ouvrir à la généricité. Si vous avez besoin de faire de l'eager-loading dans votre code, il est conseillé d'écrire une fonction pour cela dans votre implémentation de repository.

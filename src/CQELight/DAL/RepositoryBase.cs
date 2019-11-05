@@ -13,7 +13,7 @@ namespace CQELight.DAL
     /// <summary>
     /// A standard base database repository.
     /// </summary>
-    public class DatabaseRepository : DisposableObject, IDatabaseRepository
+    public class RepositoryBase : DisposableObject, IDatabaseRepository
     {
         #region Members
 
@@ -27,7 +27,7 @@ namespace CQELight.DAL
 
         #region Ctor
 
-        public DatabaseRepository(
+        public RepositoryBase(
             IDataReaderAdapter dataReaderAdapter,
             IDataWriterAdapter dataWriterAdapter)
         {
@@ -71,22 +71,22 @@ namespace CQELight.DAL
             }
         }
 
-        public void MarkForDeleteRange<T>(IEnumerable<T> entitiesToDelete, bool physicalDeletion = false) where T : class
+        public virtual void MarkForDeleteRange<T>(IEnumerable<T> entitiesToDelete, bool physicalDeletion = false) where T : class
             => entitiesToDelete.DoForEach(e => MarkForDelete(e, physicalDeletion));
 
-        public void MarkForInsert<T>(T entity) where T : class
+        public virtual void MarkForInsert<T>(T entity) where T : class
             => MarkEntityForInsert(entity);
 
-        public void MarkForInsertRange<T>(IEnumerable<T> entities) where T : class
+        public virtual void MarkForInsertRange<T>(IEnumerable<T> entities) where T : class
             => entities.DoForEach(MarkForInsert);
 
-        public void MarkForUpdate<T>(T entity) where T : class
+        public virtual void MarkForUpdate<T>(T entity) where T : class
             => MarkEntityForUpdate(entity);
 
-        public void MarkForUpdateRange<T>(IEnumerable<T> entities) where T : class
+        public virtual void MarkForUpdateRange<T>(IEnumerable<T> entities) where T : class
             => entities.DoForEach(MarkForUpdate);
 
-        public void MarkIdForDelete<T>(object id, bool physicalDeletion = false) where T : class
+        public virtual void MarkIdForDelete<T>(object id, bool physicalDeletion = false) where T : class
         {
             if (id == null)
             {
@@ -100,7 +100,7 @@ namespace CQELight.DAL
             MarkForDelete(instance, physicalDeletion);
         }
 
-        public async Task<int> SaveAsync()
+        public virtual async Task<int> SaveAsync()
         {
             if (saveInProgress)
             {

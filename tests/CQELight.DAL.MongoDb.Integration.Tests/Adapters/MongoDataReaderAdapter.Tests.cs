@@ -65,7 +65,7 @@ namespace CQELight.DAL.MongoDb.Integration.Tests.Adapters
                     }
                 });
 
-                using (var repo = new DatabaseRepository(new MongoDataReaderAdapter(), new MongoDataWriterAdapter()))
+                using (var repo = new RepositoryBase(new MongoDataReaderAdapter(), new MongoDataWriterAdapter()))
                 {
                     var sites = await repo.GetAsync<WebSite>().ToList().ConfigureAwait(false);
                     sites.Should().HaveCount(2);
@@ -97,7 +97,7 @@ namespace CQELight.DAL.MongoDb.Integration.Tests.Adapters
                     }
                 });
 
-                using (var repo = new DatabaseRepository(new MongoDataReaderAdapter(), new MongoDataWriterAdapter()))
+                using (var repo = new RepositoryBase(new MongoDataReaderAdapter(), new MongoDataWriterAdapter()))
                 {
                     var sites = await repo.GetAsync<WebSite>(w => w.Url.Contains("msdn")).ToList().ConfigureAwait(false);
                     sites.Should().HaveCount(1);
@@ -131,7 +131,7 @@ namespace CQELight.DAL.MongoDb.Integration.Tests.Adapters
                     }
                 });
 
-                using (var repo = new DatabaseRepository(new MongoDataReaderAdapter(), new MongoDataWriterAdapter()))
+                using (var repo = new RepositoryBase(new MongoDataReaderAdapter(), new MongoDataWriterAdapter()))
                 {
                     var sites = await repo.GetAsync<WebSite>(includeDeleted: true).ToList().ConfigureAwait(false);
                     sites.Should().HaveCount(2);
@@ -170,7 +170,7 @@ namespace CQELight.DAL.MongoDb.Integration.Tests.Adapters
                     }
                 });
 
-                using (var repo = new DatabaseRepository(new MongoDataReaderAdapter(), new MongoDataWriterAdapter()))
+                using (var repo = new RepositoryBase(new MongoDataReaderAdapter(), new MongoDataWriterAdapter()))
                 {
                     var sites = await repo.GetAsync<WebSite>(orderBy: b => b.Url).ToList().ConfigureAwait(false);
                     sites.Should().HaveCount(2);
@@ -225,7 +225,7 @@ namespace CQELight.DAL.MongoDb.Integration.Tests.Adapters
                     }
                 });
 
-                using (var repo = new DatabaseRepository(new MongoDataReaderAdapter(), new MongoDataWriterAdapter()))
+                using (var repo = new RepositoryBase(new MongoDataReaderAdapter(), new MongoDataWriterAdapter()))
                 {
                     var sites = await repo.GetAsync<WebSite>().ToList().ConfigureAwait(false);
                     sites.Should().HaveCount(2);
@@ -258,7 +258,7 @@ namespace CQELight.DAL.MongoDb.Integration.Tests.Adapters
                    new Comment("comment2", user, post)
                 }); ;
 
-                using (var repo = new DatabaseRepository(new MongoDataReaderAdapter(), new MongoDataWriterAdapter()))
+                using (var repo = new RepositoryBase(new MongoDataReaderAdapter(), new MongoDataWriterAdapter()))
                 {
                     var comments = await repo.GetAsync<Comment>().ToList().ConfigureAwait(false);
                     comments.Should().HaveCount(2);
@@ -296,7 +296,7 @@ namespace CQELight.DAL.MongoDb.Integration.Tests.Adapters
                 site1.FakePersistenceId(id);
                 await collection.InsertManyAsync(new[] { site1, site2 });
 
-                using (var repo = new DatabaseRepository(new MongoDataReaderAdapter(), new MongoDataWriterAdapter()))
+                using (var repo = new RepositoryBase(new MongoDataReaderAdapter(), new MongoDataWriterAdapter()))
                 {
                     var result = await repo.GetByIdAsync<WebSite>(id).ConfigureAwait(false);
                     result.Should().NotBeNull();
@@ -319,7 +319,7 @@ namespace CQELight.DAL.MongoDb.Integration.Tests.Adapters
                     Value = "http://www.microsoft.com"
                 });
 
-                using (var repo = new DatabaseRepository(new MongoDataReaderAdapter(), new MongoDataWriterAdapter()))
+                using (var repo = new RepositoryBase(new MongoDataReaderAdapter(), new MongoDataWriterAdapter()))
                 {
                     var result = await repo.GetByIdAsync<Hyperlink>("http://www.microsoft.com").ConfigureAwait(false);
                     result.Should().NotBeNull();
@@ -356,7 +356,7 @@ namespace CQELight.DAL.MongoDb.Integration.Tests.Adapters
                 };
                 await collection.InsertManyAsync(locations);
 
-                using (var repo = new DatabaseRepository(new MongoDataReaderAdapter(), new MongoDataWriterAdapter()))
+                using (var repo = new RepositoryBase(new MongoDataReaderAdapter(), new MongoDataWriterAdapter()))
                 {
                     var result = await repo.GetByIdAsync<AzureLocation>(new { Country = "France", DataCenter = "Paris" }).ConfigureAwait(false);
                     result.Should().NotBeNull();

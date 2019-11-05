@@ -377,7 +377,7 @@ namespace CQELight
             if (!iocRegistrations.SelectMany(r => r.AbstractionTypes).Any(t =>
             t.In(typeof(IDatabaseRepository), typeof(IDatabaseRepository), typeof(IDataUpdateRepository))))
             {
-                iocRegistrations.Add(new TypeRegistration<DatabaseRepository>(true));
+                iocRegistrations.Add(new TypeRegistration<RepositoryBase>(true));
             }
         }
 

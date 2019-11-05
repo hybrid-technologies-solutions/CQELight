@@ -124,7 +124,7 @@ namespace CQELight.DAL.EFCore.Integration.Tests
                 using (var scope = DIManager.BeginScope())
                 {
                     var repo = scope.Resolve<EFRepository<WebSite>>();
-                    var ws = await repo.GetAsync().FirstOrDefault();
+                    var ws = await repo.GetAsync().FirstOrDefaultAsync();
 
                     repo.MarkForDelete(ws, false); //Force it just to be sure
                     await repo.SaveAsync();

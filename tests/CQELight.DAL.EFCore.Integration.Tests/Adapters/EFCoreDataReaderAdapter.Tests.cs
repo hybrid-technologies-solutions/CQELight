@@ -78,7 +78,7 @@ namespace CQELight.DAL.EFCore.Integration.Tests.Adapters
 
                 using (var repo = GetRepository())
                 {
-                    var sites = await repo.GetAsync<WebSite>().ToList().ConfigureAwait(false);
+                    var sites = await repo.GetAsync<WebSite>().ToListAsync().ConfigureAwait(false);
                     sites.Should().HaveCount(2);
                     sites.Any(s => s.Url.Contains("msdn")).Should().BeTrue();
                     sites.Any(s => s.Url.Contains("microsoft")).Should().BeTrue();
@@ -110,7 +110,7 @@ namespace CQELight.DAL.EFCore.Integration.Tests.Adapters
 
                 using (var adapter = GetRepository())
                 {
-                    var sites = await adapter.GetAsync<WebSite>(w => w.Url.Contains("msdn")).ToList().ConfigureAwait(false);
+                    var sites = await adapter.GetAsync<WebSite>(w => w.Url.Contains("msdn")).ToListAsync().ConfigureAwait(false);
                     sites.Should().HaveCount(1);
                     sites.Any(s => s.Url.Contains("msdn")).Should().BeTrue();
                     sites.Any(s => s.Url.Contains("microsoft")).Should().BeFalse();
@@ -144,7 +144,7 @@ namespace CQELight.DAL.EFCore.Integration.Tests.Adapters
 
                 using (var adapter = GetRepository())
                 {
-                    var sites = await adapter.GetAsync<WebSite>(includeDeleted: true).ToList().ConfigureAwait(false);
+                    var sites = await adapter.GetAsync<WebSite>(includeDeleted: true).ToListAsync().ConfigureAwait(false);
                     sites.Should().HaveCount(2);
                     sites.Any(s => s.Url.Contains("msdn")).Should().BeTrue();
                     sites.Any(s => s.Url.Contains("microsoft")).Should().BeTrue();
@@ -178,7 +178,7 @@ namespace CQELight.DAL.EFCore.Integration.Tests.Adapters
 
                 using (var adapter = GetRepository())
                 {
-                    var sites = await adapter.GetAsync<WebSite>(orderBy: b => b.Url).ToList().ConfigureAwait(false);
+                    var sites = await adapter.GetAsync<WebSite>(orderBy: b => b.Url).ToListAsync().ConfigureAwait(false);
                     sites.Should().HaveCount(2);
                     sites.Any(s => s.Url.Contains("msdn")).Should().BeTrue();
                     sites.Any(s => s.Url.Contains("microsoft")).Should().BeTrue();

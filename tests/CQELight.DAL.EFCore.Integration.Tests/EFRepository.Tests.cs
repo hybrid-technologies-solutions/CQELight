@@ -90,7 +90,7 @@ namespace CQELight.DAL.EFCore.Integration.Tests
 
                 using (var repo = new TestBlogEFRepository())
                 {
-                    var sites = await repo.GetAsync().ToList().ConfigureAwait(false);
+                    var sites = await repo.GetAsync().ToListAsync().ConfigureAwait(false);
                     sites.Should().HaveCount(2);
                     sites.Any(s => s.Url.Contains("msdn")).Should().BeTrue();
                     sites.Any(s => s.Url.Contains("microsoft")).Should().BeTrue();
@@ -122,7 +122,7 @@ namespace CQELight.DAL.EFCore.Integration.Tests
 
                 using (var repo = new TestBlogEFRepository())
                 {
-                    var sites = await repo.GetAsync(w => w.Url.Contains("msdn")).ToList().ConfigureAwait(false);
+                    var sites = await repo.GetAsync(w => w.Url.Contains("msdn")).ToListAsync().ConfigureAwait(false);
                     sites.Should().HaveCount(1);
                     sites.Any(s => s.Url.Contains("msdn")).Should().BeTrue();
                     sites.Any(s => s.Url.Contains("microsoft")).Should().BeFalse();
@@ -156,7 +156,7 @@ namespace CQELight.DAL.EFCore.Integration.Tests
 
                 using (var repo = new TestBlogEFRepository())
                 {
-                    var sites = await repo.GetAsync(includeDeleted: true).ToList().ConfigureAwait(false);
+                    var sites = await repo.GetAsync(includeDeleted: true).ToListAsync().ConfigureAwait(false);
                     sites.Should().HaveCount(2);
                     sites.Any(s => s.Url.Contains("msdn")).Should().BeTrue();
                     sites.Any(s => s.Url.Contains("microsoft")).Should().BeTrue();
@@ -190,7 +190,7 @@ namespace CQELight.DAL.EFCore.Integration.Tests
 
                 using (var repo = new TestBlogEFRepository())
                 {
-                    var sites = await repo.GetAsync(orderBy: b => b.Url).ToList().ConfigureAwait(false);
+                    var sites = await repo.GetAsync(orderBy: b => b.Url).ToListAsync().ConfigureAwait(false);
                     sites.Should().HaveCount(2);
                     sites.Any(s => s.Url.Contains("msdn")).Should().BeTrue();
                     sites.Any(s => s.Url.Contains("microsoft")).Should().BeTrue();
@@ -245,7 +245,7 @@ namespace CQELight.DAL.EFCore.Integration.Tests
 
                 using (var repo = new TestBlogEFRepository())
                 {
-                    var sites = await repo.GetAsync(includes: w => w.HyperLinks).ToList().ConfigureAwait(false);
+                    var sites = await repo.GetAsync(includes: w => w.HyperLinks).ToListAsync().ConfigureAwait(false);
                     sites.Should().HaveCount(2);
                     sites.Any(s => s.Url.Contains("msdn")).Should().BeTrue();
                     sites.Any(s => s.Url.Contains("microsoft")).Should().BeTrue();
@@ -321,7 +321,7 @@ namespace CQELight.DAL.EFCore.Integration.Tests
 
                 using (var repo = new TestBlogEFRepository())
                 {
-                    var testB = await repo.GetAsync().ToList().ConfigureAwait(false);
+                    var testB = await repo.GetAsync().ToListAsync().ConfigureAwait(false);
                     testB.Should().HaveCount(1);
                     testB[0].Url.Should().Be("http://www.microsoft.com");
                 }
@@ -350,7 +350,7 @@ namespace CQELight.DAL.EFCore.Integration.Tests
 
                 using (var repo = new TestBlogEFRepository())
                 {
-                    var testB = await repo.GetAsync().ToList().ConfigureAwait(false);
+                    var testB = await repo.GetAsync().ToListAsync().ConfigureAwait(false);
                     testB.Should().HaveCount(1);
                     testB[0].Url.Should().Be("http://www.microsoft.com");
                 }
@@ -381,7 +381,7 @@ namespace CQELight.DAL.EFCore.Integration.Tests
                 }
                 using (var repo = new TestBlogEFRepository())
                 {
-                    var w = await repo.GetAsync().FirstOrDefault().ConfigureAwait(false);
+                    var w = await repo.GetAsync().FirstOrDefaultAsync().ConfigureAwait(false);
                     w.Url = "https://www.microsoft.com";
                     repo.MarkForUpdate(w);
                     await repo.SaveAsync().ConfigureAwait(false);
@@ -389,7 +389,7 @@ namespace CQELight.DAL.EFCore.Integration.Tests
 
                 using (var repo = new TestBlogEFRepository())
                 {
-                    var testB = await repo.GetAsync().ToList().ConfigureAwait(false);
+                    var testB = await repo.GetAsync().ToListAsync().ConfigureAwait(false);
                     testB.Should().HaveCount(1);
                     testB[0].Url.Should().Be("https://www.microsoft.com");
                 }
@@ -418,7 +418,7 @@ namespace CQELight.DAL.EFCore.Integration.Tests
 
                 using (var repo = new TestBlogEFRepository())
                 {
-                    var testB = await repo.GetAsync().ToList().ConfigureAwait(false);
+                    var testB = await repo.GetAsync().ToListAsync().ConfigureAwait(false);
                     testB.Should().HaveCount(1);
                     testB[0].Url.Should().Be("http://www.microsoft.com");
                 }
@@ -720,7 +720,7 @@ namespace CQELight.DAL.EFCore.Integration.Tests
 
                 using (var rep = new TestBlogEFRepository())
                 {
-                    var b = await rep.GetAsync().First().ConfigureAwait(false);
+                    var b = await rep.GetAsync().FirstAsync().ConfigureAwait(false);
                     rep.MarkForDelete(b);
                     await rep.SaveAsync().ConfigureAwait(false);
                 }
@@ -730,8 +730,8 @@ namespace CQELight.DAL.EFCore.Integration.Tests
                     ctx.Set<WebSite>().Should().HaveCount(1);
                     ctx.Set<Post>().Should().HaveCount(1);
 
-                    ctx.Set<WebSite>().Where(e => !e.Deleted).Should().HaveCount(0);
-                    ctx.Set<Post>().Where(e => !e.Deleted).Should().HaveCount(1); // Le soft delete est à gérer niveau repository
+                    ctx.Set<WebSite>().ToList().Where(e => !e.Deleted).Should().HaveCount(0);
+                    ctx.Set<Post>().ToList().Where(e => !e.Deleted).Should().HaveCount(1); // Le soft delete est à gérer niveau repository
                 }
             }
             finally
@@ -773,7 +773,7 @@ namespace CQELight.DAL.EFCore.Integration.Tests
 
                 using (var rep = new TestBlogEFRepository())
                 {
-                    var b = await rep.GetAsync().First().ConfigureAwait(false);
+                    var b = await rep.GetAsync().FirstAsync().ConfigureAwait(false);
                     rep.MarkForDelete(b, true);
                     await rep.SaveAsync().ConfigureAwait(false);
                 }
@@ -824,7 +824,7 @@ namespace CQELight.DAL.EFCore.Integration.Tests
 
                 using (var rep = new TestBlogEFRepository())
                 {
-                    var b = await rep.GetAsync().First().ConfigureAwait(false);
+                    var b = await rep.GetAsync().FirstAsync().ConfigureAwait(false);
                     rep.MarkForDelete(b);
                     await rep.SaveAsync().ConfigureAwait(false);
                 }

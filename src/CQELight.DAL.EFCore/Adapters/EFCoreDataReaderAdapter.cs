@@ -59,7 +59,7 @@ namespace CQELight.DAL.EFCore.Adapters
             IQueryable<T> query = dataSet;
             if (typeof(T).IsSubclassOf(typeof(BasePersistableEntity)))
             {
-                query = includeDeleted ? dataSet : dataSet.Where(m => !(m as BasePersistableEntity).Deleted);
+                query = includeDeleted ? dataSet : dataSet.Where(m => !EF.Property<bool>(m, nameof(BasePersistableEntity.Deleted)));
             }
 
             if (filter != null)

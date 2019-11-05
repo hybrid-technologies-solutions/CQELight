@@ -80,12 +80,12 @@ namespace CQELight.DAL.EFCore
             .AsAsyncEnumerable();
 #endif
 
-        public async Task<T> GetByIdAsync<TId>(TId value) 
+        public async Task<T> GetByIdAsync<TId>(TId value)
             => await DataSet.FindAsync(value).ConfigureAwait(false);
 
-#endregion
+        #endregion
 
-#region IDataUpdateRepository methods
+        #region IDataUpdateRepository methods
 
         public virtual async Task<int> SaveAsync()
         {
@@ -152,9 +152,9 @@ namespace CQELight.DAL.EFCore
             MarkForDelete(instance, physicalDeletion);
         }
 
-#endregion
+        #endregion
 
-#region ISQLRepository
+        #region ISQLRepository
 
         public Task<int> ExecuteSQLCommandAsync(string sql)
              => Context.Database.ExecuteSqlCommandAsync(sql);
@@ -174,15 +174,15 @@ namespace CQELight.DAL.EFCore
             }
         }
 
-#endregion
+        #endregion
 
-#region protected virtual methods
+        #region protected virtual methods
 
         protected virtual void MarkEntityForUpdate<TEntity>(TEntity entity)
             where TEntity : class, IPersistableEntity
         {
             _lock.Wait();
-            if(entity is BasePersistableEntity basePersistableEntity)
+            if (entity is BasePersistableEntity basePersistableEntity)
             {
                 basePersistableEntity.EditDate = DateTime.Now;
             }
@@ -209,7 +209,7 @@ namespace CQELight.DAL.EFCore
         protected virtual void MarkEntityForSoftDeletion<TEntity>(TEntity entityToDelete)
             where TEntity : class, IPersistableEntity
         {
-            if(entityToDelete is BasePersistableEntity basePersistableEntity)
+            if (entityToDelete is BasePersistableEntity basePersistableEntity)
             {
                 basePersistableEntity.Deleted = true;
                 basePersistableEntity.DeletionDate = DateTime.Now;
@@ -225,9 +225,9 @@ namespace CQELight.DAL.EFCore
             params Expression<Func<T, object>>[] includes)
         {
             IQueryable<T> query = DataSet;
-            if(typeof(T).IsSubclassOf(typeof(BasePersistableEntity)))
+            if (typeof(T).IsSubclassOf(typeof(BasePersistableEntity)) && !includeDeleted)
             {
-                query = includeDeleted ? DataSet : DataSet.Where(m => !(m as BasePersistableEntity).Deleted);
+                query = includeDeleted ? DataSet : DataSet.Where(m => !EF.Property<bool>(m, nameof(BasePersistableEntity.Deleted)));
             }
 
             if (filter != null)
@@ -280,9 +280,9 @@ namespace CQELight.DAL.EFCore
             }
         }
 
-#endregion
+        #endregion
 
-#region Private methods
+        #region Private methods
 
         private bool CannotNaviguate(NotNaviguableAttribute navAttr)
         {
@@ -290,9 +290,9 @@ namespace CQELight.DAL.EFCore
                             ((_createMode && navAttr.Mode.HasFlag(NavigationMode.Create)) || (!_createMode && navAttr.Mode.HasFlag(NavigationMode.Update)));
         }
 
-#endregion
+        #endregion
 
-#region IDisposable methods
+        #region IDisposable methods
 
         protected override void Dispose(bool disposing)
         {
@@ -305,7 +305,7 @@ namespace CQELight.DAL.EFCore
             }
             this.Disposed = true;
         }
-#endregion
+        #endregion
 
     }
 }

@@ -48,8 +48,8 @@ namespace CQELight.DAL.EFCore.Integration.Tests.Adapters
             }
         }
 
-        private DatabaseRepository GetRepository()
-            => new DatabaseRepository(
+        private RepositoryBase GetRepository()
+            => new RepositoryBase(
                     new EFCoreDataReaderAdapter(new TestDbContext()),
                     new EFCoreDataWriterAdapter(new TestDbContext())
                 );

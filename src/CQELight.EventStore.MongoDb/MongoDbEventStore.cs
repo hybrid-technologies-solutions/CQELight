@@ -28,7 +28,7 @@ namespace CQELight.EventStore.MongoDb
         private readonly SnapshotEventsArchiveBehavior _archiveBehavior;
 
         #endregion
-        
+
         #region Ctor
 
         public MongoDbEventStore(ISnapshotBehaviorProvider snapshotBehaviorProvider = null,
@@ -42,6 +42,7 @@ namespace CQELight.EventStore.MongoDb
 
         #region IEventStore
 
+#if NETSTANDARD2_0
         public IAsyncEnumerable<IDomainEvent> GetAllEventsByAggregateType(Type aggregateType)
         {
             var filterBuilder = Builders<IDomainEvent>.Filter;
@@ -71,9 +72,6 @@ namespace CQELight.EventStore.MongoDb
                             .ToList()
                             .ToAsyncEnumerable();
 
-        public IAsyncEnumerable<IDomainEvent> GetAllEventsByAggregateId<TAggregateType, TAggregateId>(TAggregateId id)
-            where TAggregateType : AggregateRoot<TAggregateId>
-            => GetAllEventsByAggregateId(typeof(TAggregateType), id);
 
         public IAsyncEnumerable<IDomainEvent> GetAllEventsByAggregateId(Type aggregateType, object aggregateId)
         {
@@ -88,6 +86,66 @@ namespace CQELight.EventStore.MongoDb
 
             return collection.Find(filter).Sort(Builders<IDomainEvent>.Sort.Ascending(nameof(IDomainEvent.Sequence))).ToEnumerable().ToAsyncEnumerable();
         }
+#elif NETSTANDARD2_1
+        public async IAsyncEnumerable<IDomainEvent> GetAllEventsByAggregateType(Type aggregateType)
+        {
+            var filterBuilder = Builders<IDomainEvent>.Filter;
+            var filter = filterBuilder.Eq(nameof(IDomainEvent.AggregateType), aggregateType);
+
+            var collection = EventStoreManager.Client
+                            .GetDatabase(Consts.CONST_DB_NAME)
+                            .GetCollection<IDomainEvent>(Consts.CONST_EVENTS_COLLECTION_NAME);
+            foreach (var item in await (await collection.FindAsync(filter)).ToListAsync())
+            {
+                yield return item;
+            }
+        }
+
+        public async IAsyncEnumerable<T> GetAllEventsByEventType<T>()
+            where T : class, IDomainEvent
+        {
+            foreach (var item in await (await EventStoreManager.Client
+                              .GetDatabase(Consts.CONST_DB_NAME)
+                              .GetCollection<T>(Consts.CONST_EVENTS_COLLECTION_NAME)
+                              .FindAsync(new BsonDocument("_t", typeof(T).Name))).ToListAsync())
+            {
+                yield return item;
+            }
+        }
+
+        public async IAsyncEnumerable<IDomainEvent> GetAllEventsByEventType(Type eventType)
+        {
+            foreach (var item in await (await EventStoreManager.Client
+                              .GetDatabase(Consts.CONST_DB_NAME)
+                              .GetCollection<IDomainEvent>(Consts.CONST_EVENTS_COLLECTION_NAME)
+                              .FindAsync(new BsonDocument("_t", eventType.Name))).ToListAsync())
+            {
+                yield return item;
+            }
+        }
+
+        public async IAsyncEnumerable<IDomainEvent> GetAllEventsByAggregateId(Type aggregateType, object aggregateId)
+        {
+            var filterBuilder = Builders<IDomainEvent>.Filter;
+            var filter = filterBuilder.And(
+                filterBuilder.Eq(nameof(IDomainEvent.AggregateId), aggregateId),
+                filterBuilder.Eq(nameof(IDomainEvent.AggregateType), aggregateType));
+
+            var collection = EventStoreManager.Client
+                            .GetDatabase(Consts.CONST_DB_NAME)
+                            .GetCollection<IDomainEvent>(Consts.CONST_EVENTS_COLLECTION_NAME);
+
+            foreach (var item in await collection.Find(filter).Sort(Builders<IDomainEvent>.Sort.Ascending(nameof(IDomainEvent.Sequence))).ToListAsync())
+            {
+                yield return item;
+            }
+        }
+#endif
+
+        public IAsyncEnumerable<IDomainEvent> GetAllEventsByAggregateId<TAggregateType, TAggregateId>(TAggregateId id)
+        where TAggregateType : AggregateRoot<TAggregateId>
+        => GetAllEventsByAggregateId(typeof(TAggregateType), id);
+
 
         public async Task<Result> StoreDomainEventRangeAsync(IEnumerable<IDomainEvent> events)
         {
@@ -165,7 +223,6 @@ namespace CQELight.EventStore.MongoDb
 
         private async Task<AggregateState> GetRehydratedStateAsync<TId>(TId aggregateUniqueId, Type aggregateType)
         {
-            var events = await GetAllEventsByAggregateId(aggregateType, aggregateUniqueId).ToList().ConfigureAwait(false);
             var snapshot = await GetSnapshotFromAggregateId(aggregateUniqueId, aggregateType).ConfigureAwait(false);
 
             PropertyInfo stateProp = aggregateType.GetAllProperties().FirstOrDefault(p => p.PropertyType.IsSubclassOf(typeof(AggregateState)));
@@ -188,6 +245,15 @@ namespace CQELight.EventStore.MongoDb
                 throw new InvalidOperationException("MongoDbEventStore.GetRehydratedAggregateAsync() : Cannot find property/field that manage state for aggregate" +
                     $" type {aggregateType.FullName}. State should be a property or a field of the aggregate");
             }
+            List<IDomainEvent> events = new List<IDomainEvent>();
+#if NETSTANDARD2_0
+            events = await GetAllEventsByAggregateId(aggregateType, aggregateUniqueId).ToList().ConfigureAwait(false);
+#elif NETSTANDARD2_1
+            await foreach(var @event in GetAllEventsByAggregateId(aggregateType, aggregateUniqueId))
+            {
+                events.Add(@event);
+            }
+#endif
             state.ApplyRange(events);
             return state;
         }
@@ -383,7 +449,7 @@ namespace CQELight.EventStore.MongoDb
             }
         }
 
-        #endregion
+#endregion
 
     }
 }

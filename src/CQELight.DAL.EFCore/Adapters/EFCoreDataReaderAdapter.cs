@@ -1,6 +1,7 @@
 ﻿using CQELight.DAL.Common;
 using CQELight.DAL.Interfaces;
 using CQELight.Tools;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,10 +35,15 @@ namespace CQELight.DAL.EFCore.Adapters
             Expression<Func<T, bool>> filter = null,
             Expression<Func<T, object>> orderBy = null,
             bool includeDeleted = false) where T : class
-            => GetCore(filter, orderBy, includeDeleted).ToAsyncEnumerable();
+            => GetCore(filter, orderBy, includeDeleted)
+#if NETSTANDARD2_0
+            .ToAsyncEnumerable();
+#elif NETSTANDARD2_1
+            .AsAsyncEnumerable();
+#endif
 
-        public Task<T> GetByIdAsync<T>(object value) where T : class
-            => dbContext.Set<T>().FindAsync(value);
+        public async Task<T> GetByIdAsync<T>(object value) where T : class
+            => await dbContext.Set<T>().FindAsync(value).ConfigureAwait(false);
 
         #endregion
 

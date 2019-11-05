@@ -73,13 +73,19 @@ namespace CQELight.DAL.EFCore
             Expression<Func<T, object>> orderBy = null,
             bool includeDeleted = false,
             params Expression<Func<T, object>>[] includes)
-            => GetCore(filter, orderBy, includeDeleted, includes).ToAsyncEnumerable();
+            => GetCore(filter, orderBy, includeDeleted, includes)
+#if NETSTANDARD2_0
+            .ToAsyncEnumerable();
+#elif NETSTANDARD2_1
+            .AsAsyncEnumerable();
+#endif
 
-        public Task<T> GetByIdAsync<TId>(TId value) => DataSet.FindAsync(value);
+        public async Task<T> GetByIdAsync<TId>(TId value) 
+            => await DataSet.FindAsync(value).ConfigureAwait(false);
 
-        #endregion
+#endregion
 
-        #region IDataUpdateRepository methods
+#region IDataUpdateRepository methods
 
         public virtual async Task<int> SaveAsync()
         {
@@ -146,9 +152,9 @@ namespace CQELight.DAL.EFCore
             MarkForDelete(instance, physicalDeletion);
         }
 
-        #endregion
+#endregion
 
-        #region ISQLRepository
+#region ISQLRepository
 
         public Task<int> ExecuteSQLCommandAsync(string sql)
              => Context.Database.ExecuteSqlCommandAsync(sql);
@@ -168,9 +174,9 @@ namespace CQELight.DAL.EFCore
             }
         }
 
-        #endregion
+#endregion
 
-        #region protected virtual methods
+#region protected virtual methods
 
         protected virtual void MarkEntityForUpdate<TEntity>(TEntity entity)
             where TEntity : class, IPersistableEntity
@@ -274,9 +280,9 @@ namespace CQELight.DAL.EFCore
             }
         }
 
-        #endregion
+#endregion
 
-        #region Private methods
+#region Private methods
 
         private bool CannotNaviguate(NotNaviguableAttribute navAttr)
         {
@@ -284,9 +290,9 @@ namespace CQELight.DAL.EFCore
                             ((_createMode && navAttr.Mode.HasFlag(NavigationMode.Create)) || (!_createMode && navAttr.Mode.HasFlag(NavigationMode.Update)));
         }
 
-        #endregion
+#endregion
 
-        #region IDisposable methods
+#region IDisposable methods
 
         protected override void Dispose(bool disposing)
         {
@@ -299,7 +305,7 @@ namespace CQELight.DAL.EFCore
             }
             this.Disposed = true;
         }
-        #endregion
+#endregion
 
     }
 }

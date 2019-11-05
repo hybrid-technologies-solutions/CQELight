@@ -1,6 +1,6 @@
 {
   "host": "localhost",
   "port": "27017",
-  "user": "root",
+  "user": "hts-test",
   "password": "passw0rd"
 }

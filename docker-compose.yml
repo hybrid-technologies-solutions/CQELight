@@ -19,7 +19,7 @@ services:
     image: mongo    
     restart: unless-stopped
     environment:
-      MONGO_INITDB_ROOT_USERNAME: 'root'
+      MONGO_INITDB_ROOT_USERNAME: 'hts-test'
       MONGO_INITDB_ROOT_PASSWORD: 'passw0rd'
     ports:
       - '27017:27017'

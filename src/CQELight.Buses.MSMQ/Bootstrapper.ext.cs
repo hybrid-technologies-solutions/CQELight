@@ -2,6 +2,7 @@
 using CQELight.Buses.MSMQ;
 using CQELight.Buses.MSMQ.Client;
 using CQELight.IoC;
+using System;
 using System.Linq;
 
 namespace CQELight
@@ -15,6 +16,7 @@ namespace CQELight
         /// </summary>
         /// <param name="bootstrapper">Bootstrapper instance.</param>
         /// <returns>Bootstrapper instance.</returns>
+        [Obsolete("MSMQ extension is no more supported and will be removed in V2")]
         public static Bootstrapper UseMSMQClientBus(this Bootstrapper bootstrapper, MSMQClientBusConfiguration configuration)
         {
             var service = MSMQBootstrappService.Instance;

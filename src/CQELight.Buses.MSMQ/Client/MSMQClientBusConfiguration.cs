@@ -9,6 +9,7 @@ namespace CQELight.Buses.MSMQ.Client
     /// <summary>
     /// Configuration for MSMQ client bus.
     /// </summary>
+    [Obsolete("MSMQ extension is no more supported and will be removed in V2")]
     public sealed class MSMQClientBusConfiguration
     {
 

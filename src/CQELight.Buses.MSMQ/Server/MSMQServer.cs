@@ -15,6 +15,7 @@ namespace CQELight.Buses.MSMQ.Client
     /// Server instance that pumps message from MSMQ and dispatch them within
     /// the system
     /// </summary>
+    [Obsolete("MSMQ extension is no more supported and will be removed in V2")]
     public class MSMQServer : DisposableObject
     {
 

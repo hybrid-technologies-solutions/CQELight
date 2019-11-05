@@ -15,6 +15,7 @@ namespace CQELight.Buses.MSMQ.Client
     /// MSMQ client bus instance. It uses specific configuration to push on a 
     /// MSMQ instance.
     /// </summary>
+    [Obsolete("MSMQ extension is no more supported and will be removed in V2")]
     public class MSMQClientBus : IDomainEventBus
     {
 

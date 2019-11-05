@@ -52,3 +52,9 @@ Spécificités EF Core
 Breaking changes
 ^^^^^^^^^^^^^^^^
 - Le paramètre "includes" du ``GetAsync`` a été supprimé. Ce dernier n'étant réservé qu'à EF Core, il est supprimé pour s'ouvrir à la généricité. Si vous avez besoin de faire de l'eager-loading dans votre code, il est conseillé d'écrire une fonction pour cela dans votre implémentation de repository.
+
+
+Abandon de MSMQ
+^^^^^^^^^^^^^^^
+A cause du fait que MSMQ ne répond pas aux problématiques des systèmes modernes, son support officiel et open-source est abandonné à partir de la v1.1 et sera supprimé en v2.
+Si vous utilisez l'extension MSMQ, vous pouvez nous contacter pour qu'on définisse ensemble un plan de migration ou de support.

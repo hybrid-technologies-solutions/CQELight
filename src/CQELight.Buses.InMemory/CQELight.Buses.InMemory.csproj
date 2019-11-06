@@ -1,9 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
     
-    <Version>1.0.3</Version>
+    <Version>1.1.0</Version>
     <Authors>Christophe Mommer</Authors>
     <Company>Hybrid Technologies</Company>
     <Description>CQELight.Buses.InMemory provides two buses, one for command and one for events, use to dispatch events and commands in the same in-memory process.</Description>
@@ -16,13 +16,6 @@
     <PackageIconUrl>http://cqelight.net/images/cqelight-base.png</PackageIconUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <LangVersion>latest</LangVersion>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
 

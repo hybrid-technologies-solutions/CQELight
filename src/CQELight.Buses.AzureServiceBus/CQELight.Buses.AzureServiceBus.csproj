@@ -1,8 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <Version>1.0.0-rc2</Version>
+    <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
+    <Version>1.1.0</Version>
     <Authors>Christophe Mommer</Authors>
     <Company>Hybrid Technologies Solutions</Company>
     <Description>Bus implementation using Azure Service Bus to dispatch message</Description>
@@ -13,13 +13,11 @@
     <PackageTags>azure-service-bus, cqelight, bus, messaging</PackageTags>
     <PackageIconUrl>http://cqelight.net/images/cqelight-base.png</PackageIconUrl>
     <PackageReleaseNotes></PackageReleaseNotes>
-    
-    <PackageIconUrl>http://cqelight.net/images/cqelight-azure-bus.png</PackageIconUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Azure.ServiceBus" Version="4.0.0" />
+    <PackageReference Include="Microsoft.Azure.ServiceBus" Version="4.1.0" />
   </ItemGroup>
 
   <ItemGroup>

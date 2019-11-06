@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     
-    <Version>1.0.0</Version>
+    <Version>1.1.0</Version>
     <Authors>Christophe Mommer</Authors>
     <Company>Hybrid Technologies Solutions</Company>
     <Description>A bunch of tools to use CQELight for MVVM apps</Description>
@@ -13,10 +13,9 @@
     <RepositoryUrl>https://github.com/cdie/CQELight</RepositoryUrl>
     <PackageTags>mvvm view-models observable</PackageTags>
     <PackageReleaseNotes></PackageReleaseNotes>
-    <PackageIconUrl>http://cqelight.net/images/cqelight-mvvm.png</PackageIconUrl>
+    <PackageIconUrl>http://cqelight.net/images/cqelight-base.png</PackageIconUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <LangVersion>latest</LangVersion>
-    <PackageIconUrl>http://cqelight.net/images/cqelight-base.png</PackageIconUrl>
   </PropertyGroup>
 
   <ItemGroup>

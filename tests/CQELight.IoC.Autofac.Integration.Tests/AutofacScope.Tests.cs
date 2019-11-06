@@ -375,7 +375,7 @@ namespace CQELight.IoC.Autofac.Integration.Tests
             }
             ReferenceEquals(classA1, classA2).Should().BeTrue();
         }
-
+        
         #endregion
 
         #region ParameterResolver

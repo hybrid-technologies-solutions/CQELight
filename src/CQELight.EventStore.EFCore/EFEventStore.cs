@@ -508,7 +508,8 @@ namespace CQELight.EventStore.EFCore
             }
             using (var ctx = new EventStoreDbContext(_dbContextOptions))
             {
-                var events = await ctx.Set<Event>().Where(e => archiveEvents.Any(ev => ev.Id == e.Id)).ToListAsync().ConfigureAwait(false);
+                var archiveEventsIds = archiveEvents.Select(e => e.Id).ToList();
+                var events = await ctx.Set<Event>().Where(e => archiveEventsIds.Contains(e.Id)).ToListAsync().ConfigureAwait(false);
                 if (events.Count > 0)
                 {
                     ctx.RemoveRange(events);

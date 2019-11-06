@@ -65,7 +65,7 @@ namespace CQELight
             bootstrapper.AddService(service);
             return bootstrapper;
         }
-        
+
         /// <summary>
         /// Configure the bootstrapper to use Autofac as IoC, by using
         /// a defining a scope to be used a root scope for CQELight.
@@ -98,8 +98,8 @@ namespace CQELight
         #region Internal static methods
 
         internal static void ConfigureAutofacContainer(
-            Bootstrapper bootstrapper, 
-            Action<ContainerBuilder> containerBuilderConfiguration, 
+            Bootstrapper bootstrapper,
+            Action<ContainerBuilder> containerBuilderConfiguration,
             string[] excludedAutoRegisterTypeDLLs)
         {
             var containerBuilder = new ContainerBuilder();
@@ -147,9 +147,22 @@ namespace CQELight
                 }
                 else if (item is TypeRegistration typeRegistration)
                 {
-                    containerBuilder.RegisterType(typeRegistration.InstanceType)
-                        .As(typeRegistration.AbstractionTypes.ToArray())
-                        .FindConstructorsWith(fullCtorFinder);
+                    foreach (var serviceType in typeRegistration.AbstractionTypes)
+                    {
+                        if (serviceType.IsGenericTypeDefinition)
+                        {
+                            var registration = containerBuilder.RegisterGeneric(typeRegistration.InstanceType)
+                                .As(serviceType)
+                                .FindConstructorsWith(new FullConstructorFinder());
+                        }
+                        else
+                        {
+                            var registration = containerBuilder.RegisterType(typeRegistration.InstanceType)
+                                .As(serviceType)
+                                .FindConstructorsWith(new FullConstructorFinder());
+                        }
+                    }
+
                 }
                 else if (item is FactoryRegistration factoryRegistration)
                 {

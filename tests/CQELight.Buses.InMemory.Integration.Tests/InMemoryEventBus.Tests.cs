@@ -6,18 +6,14 @@ using CQELight.Buses.InMemory.Events;
 using CQELight.Dispatcher;
 using CQELight.IoC.Exceptions;
 using CQELight.MVVM;
-using CQELight.MVVM.Interfaces;
 using CQELight.TestFramework;
 using CQELight.TestFramework.IoC;
+using CQELight.TestFramework.Logging;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Internal;
 using Moq;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -270,10 +266,10 @@ namespace CQELight.Buses.InMemory.Integration.Tests
         public async Task InMemoryEventBus_PublishEventAsync_ResolutionException_Should_NotTryToResolveTwice()
         {
             var scopeMock = new Mock<IScope>();
-            var loggerMock = new Mock<ILogger>();
             var loggerFactoryMock = new Mock<ILoggerFactory>();
+            var fakeLogger = new FakeLogger(LogLevel.Error);
 
-            loggerFactoryMock.Setup(m => m.CreateLogger(It.IsAny<string>())).Returns(loggerMock.Object);
+            loggerFactoryMock.Setup(m => m.CreateLogger(It.IsAny<string>())).Returns(fakeLogger);
 
             scopeMock.Setup(m => m.Resolve<ILoggerFactory>(It.IsAny<IResolverParameter[]>()))
                 .Returns(loggerFactoryMock.Object);
@@ -289,9 +285,8 @@ namespace CQELight.Buses.InMemory.Integration.Tests
             (await b.PublishEventAsync(new UnresolvableEvent()).ConfigureAwait(false)).IsSuccess.Should().BeFalse();
 
             scopeMock.Verify(m => m.Resolve(typeof(UnresolvableEventHandler), It.IsAny<IResolverParameter[]>()), Times.Once());
-            loggerMock.Verify(x =>
-                x.Log(LogLevel.Error, It.IsAny<EventId>(), It.IsAny<FormattedLogValues>(), It.IsAny<Exception>(), It.IsAny<Func<object, Exception, string>>()), Times.Once());
-
+            fakeLogger.CurrentLogValue.Should().NotBeNullOrEmpty();
+            fakeLogger.NbLogs.Should().Be(1);
         }
 
         public class VMEvent : BaseDomainEvent { }
@@ -315,10 +310,10 @@ namespace CQELight.Buses.InMemory.Integration.Tests
         public async Task InMemoryEventBus_ResolutionError_Type_IsViewModel_Should_NotLogAnything()
         {
             var scopeMock = new Mock<IScope>();
-            var loggerMock = new Mock<ILogger>();
+            var fakeLogger = new FakeLogger(LogLevel.Error);
             var loggerFactoryMock = new Mock<ILoggerFactory>();
 
-            loggerFactoryMock.Setup(m => m.CreateLogger(It.IsAny<string>())).Returns(loggerMock.Object);
+            loggerFactoryMock.Setup(m => m.CreateLogger(It.IsAny<string>())).Returns(fakeLogger);
 
             scopeMock.Setup(m => m.Resolve<ILoggerFactory>(It.IsAny<IResolverParameter[]>()))
                 .Returns(loggerFactoryMock.Object);
@@ -328,18 +323,18 @@ namespace CQELight.Buses.InMemory.Integration.Tests
             var b = new InMemoryEventBus(null, new TestScopeFactory(scopeMock.Object));
             (await b.PublishEventAsync(new VMEvent()).ConfigureAwait(false)).IsSuccess.Should().BeFalse();
 
-            loggerMock.Verify(x =>
-                x.Log(LogLevel.Error, It.IsAny<EventId>(), It.IsAny<FormattedLogValues>(), It.IsAny<Exception>(), It.IsAny<Func<object, Exception, string>>()), Times.Never());
+            fakeLogger.CurrentLogValue.Should().BeNullOrEmpty();
+            fakeLogger.NbLogs.Should().Be(0);
         }
 
         [Fact]
         public async Task InMemoryEventBus_ResolutionError_Type_IsSubViewModel_Should_NotLogAnything()
         {
             var scopeMock = new Mock<IScope>();
-            var loggerMock = new Mock<ILogger>();
+            var fakeLogger = new FakeLogger(LogLevel.Error);
             var loggerFactoryMock = new Mock<ILoggerFactory>();
 
-            loggerFactoryMock.Setup(m => m.CreateLogger(It.IsAny<string>())).Returns(loggerMock.Object);
+            loggerFactoryMock.Setup(m => m.CreateLogger(It.IsAny<string>())).Returns(fakeLogger);
 
             scopeMock.Setup(m => m.Resolve<ILoggerFactory>(It.IsAny<IResolverParameter[]>()))
                 .Returns(loggerFactoryMock.Object);
@@ -349,8 +344,8 @@ namespace CQELight.Buses.InMemory.Integration.Tests
             var b = new InMemoryEventBus(null, new TestScopeFactory(scopeMock.Object));
             (await b.PublishEventAsync(new SubVMEvent()).ConfigureAwait(false)).IsSuccess.Should().BeFalse();
 
-            loggerMock.Verify(x =>
-                x.Log(LogLevel.Error, It.IsAny<EventId>(), It.IsAny<FormattedLogValues>(), It.IsAny<Exception>(), It.IsAny<Func<object, Exception, string>>()), Times.Never());
+            fakeLogger.CurrentLogValue.Should().BeNullOrEmpty();
+            fakeLogger.NbLogs.Should().Be(0);
 
         }
 

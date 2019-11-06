@@ -17,44 +17,23 @@ namespace CQELight.IoC
         #region Ctor
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="TypeRegistration"/> class.
+        /// Create a new type as type(s) registration for IoC container.
         /// </summary>
         /// <param name="registrationTypes">Registration types.</param>
-        public TypeRegistration(params Type[] registrationTypes)
+        public TypeRegistration(params Type[] registrationTypes) 
             : base(typeof(T), registrationTypes)
         {
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="TypeRegistration"/> class.
-        /// </summary>
-        /// <param name="registrationTypes">Registration types.</param>
-        /// <param name="lifetime">Lifetime to consider for this type registration.</param>
-        public TypeRegistration(RegistrationLifetime lifetime, params Type[] registrationTypes)
-            : base(typeof(T), lifetime, registrationTypes)
-        {
-        }
-
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="TypeRegistration"/> class.
+        /// Create a new type as everything possible (self + all interfaces).
         /// </summary>
         /// <param name="forEverything">Flag that indicates if should register has everything possible.</param>
-        public TypeRegistration(bool forEverything) :
+        public TypeRegistration(bool forEverything) : 
             base(typeof(T), forEverything)
         {
         }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="TypeRegistration"/> class.
-        /// </summary>
-        /// <param name="forEverything">Flag that indicates if should register has everything possible.</param>
-        /// <param name="lifetime">Lifetime to consider for this type registration.</param>
-        public TypeRegistration(bool forEverything, RegistrationLifetime lifetime) :
-            base(typeof(T), forEverything, lifetime)
-        {
-        }
-
 
         #endregion
 

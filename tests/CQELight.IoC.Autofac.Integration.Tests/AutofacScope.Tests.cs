@@ -418,7 +418,7 @@ namespace CQELight.IoC.Autofac.Integration.Tests
 
         #region AutoRegisterHandler
 
-        private class EventAutoReg : BaseDomainEvent { }
+        private class EventAutoReg: BaseDomainEvent { }
         private class CommandAutoReg : ICommand { }
         private class EventHandlerAutoReg : IDomainEventHandler<EventAutoReg>
         {
@@ -448,7 +448,7 @@ namespace CQELight.IoC.Autofac.Integration.Tests
                 result2.Should().NotBeNull();
             }
         }
-
+        
         #endregion
 
     }

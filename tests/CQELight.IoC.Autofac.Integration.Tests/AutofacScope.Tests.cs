@@ -300,6 +300,23 @@ namespace CQELight.IoC.Autofac.Integration.Tests
             }
         }
 
+        public interface IGenericInterface<T> { }
+        public class GenericClass<T> : IGenericInterface<T> { }
+
+        [Fact]
+        public void GenericTypeRegistration_Handle_Generic()
+        {
+            var registration = new TypeRegistration(typeof(GenericClass<>), typeof(IGenericInterface<>));
+            new Bootstrapper().UseAutofacAsIoC(new ContainerBuilder()).AddIoCRegistration(registration).Bootstrapp();
+
+            using (var scope = DIManager.BeginScope())
+            {
+                var instance = scope.Resolve<IGenericInterface<int>>();
+                instance.Should().NotBeNull();
+                instance.Should().BeOfType<GenericClass<int>>();
+            }
+        }
+
         #endregion
 
         #region ParameterResolver
@@ -342,7 +359,7 @@ namespace CQELight.IoC.Autofac.Integration.Tests
 
         #region AutoRegisterHandler
 
-        private class EventAutoReg: BaseDomainEvent { }
+        private class EventAutoReg : BaseDomainEvent { }
         private class CommandAutoReg : ICommand { }
         private class EventHandlerAutoReg : IDomainEventHandler<EventAutoReg>
         {
@@ -372,7 +389,7 @@ namespace CQELight.IoC.Autofac.Integration.Tests
                 result2.Should().NotBeNull();
             }
         }
-        
+
         #endregion
 
     }

@@ -96,12 +96,23 @@ namespace CQELight
 
                     bootstrapper.AddIoCRegistration(new TypeRegistration<EFCoreDataReaderAdapter>(true));
                     bootstrapper.AddIoCRegistration(new TypeRegistration<EFCoreDataWriterAdapter>(true));
-                    bootstrapper.AddIoCRegistration(new TypeRegistration(typeof(BaseDbContext), typeof(BaseDbContext)));
                     bootstrapper.AddIoCRegistration(new InstanceTypeRegistration(dbContextOptionsBuilder.Options, typeof(DbContextOptions), typeof(DbContextOptions<BaseDbContext>)));
+
                     if (options != null)
                     {
                         bootstrapper.AddIoCRegistration(new InstanceTypeRegistration(options, typeof(EFCoreOptions)));
                     }
+
+                    var customDbContexts = ReflectionTools.GetAllTypes().Where(t => t.IsInHierarchySubClassOf(typeof(BaseDbContext)) && !t.IsAbstract && t.IsClass && t != typeof(BaseDbContext));
+                    if (customDbContexts.Any())
+                    {
+                        customDbContexts.DoForEach(c => bootstrapper.AddIoCRegistration(new TypeRegistration(c, true)));
+                    }
+                    else
+                    {
+                        bootstrapper.AddIoCRegistration(new TypeRegistration(typeof(BaseDbContext), typeof(BaseDbContext)));
+                    }
+                   
 
                     foreach (var item in ReflectionTools.GetAllTypes().Where(t => typeof(IPersistableEntity).IsAssignableFrom(t) && !t.IsAbstract && t.IsClass).ToList())
                     {
@@ -123,6 +134,9 @@ namespace CQELight
                                 .Where(t => t.Assembly.FullName == item.Assembly.FullName)
                                 .FirstOrDefault(c => c.IsSubclassOf(typeof(BaseDbContext)));
                             s_ContextTypesPerAssembly[item.Assembly.FullName] = ctxType;
+
+                            bootstrapper
+                                .AddIoCRegistration(new FactoryRegistration(() => ctxType.CreateInstance(dbContextOptionsBuilder.Options), ctxType));
                         }
 
                         if (ctxType == null)
@@ -131,10 +145,6 @@ namespace CQELight
                                 $"No DbContext found for assembly {item.Assembly.FullName}, but this assembly contains a " +
                                 "some persistence entities. You need to create a specific class that inherits from BaseDbContext in this assembly to use this configuration method.");
                         }
-
-
-                        bootstrapper
-                            .AddIoCRegistration(new FactoryRegistration(() => ctxType.CreateInstance(dbContextOptionsBuilder.Options), ctxType));
 
                         bootstrapper
                             .AddIoCRegistration(new FactoryRegistration(() =>

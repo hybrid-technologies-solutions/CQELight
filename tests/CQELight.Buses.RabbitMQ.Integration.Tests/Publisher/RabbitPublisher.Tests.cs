@@ -218,7 +218,7 @@ namespace CQELight.Buses.RabbitMQ.Integration.Tests.Publisher
             {
                 var fakeRoutingKeyFactory = new Mock<IRoutingKeyFactory>();
                 fakeRoutingKeyFactory
-                    .Setup(m => m.GetRoutingKeyForCommand(It.IsAny<object>()))
+                    .Setup(m => m.GetRoutingKeyForEvent(It.IsAny<object>()))
                     .Returns("cqelight.events.testevent");
 
                 var networkInfos = RabbitNetworkInfos.GetConfigurationFor("CQELight", RabbitMQExchangeStrategy.Custom);

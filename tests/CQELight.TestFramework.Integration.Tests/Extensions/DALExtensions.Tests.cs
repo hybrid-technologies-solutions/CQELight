@@ -50,7 +50,7 @@ namespace CQELight.TestFramework.Integration.Tests.Extensions
         {
             public async Task<IEnumerable<object>> GetAsync(IRepo repo)
             {
-                return await repo.GetAsync().ToList();
+                return await repo.GetAsync().ToListAsync();
             }
         }
 

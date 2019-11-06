@@ -1,16 +1,24 @@
 pool:
-  vmImage: 'Ubuntu-16.04'
+  vmImage: 'ubuntu-latest'
 
 variables:
   buildConfiguration: 'Debug'
 
+trigger:
+- develop
+
 steps:
-- task : DotNetCoreInstaller@0
+- task : DotNetCoreInstaller@1
   inputs: 
    packageType: 'sdk'
-   version: 3.0.100-preview8-013656
+   version: 3.0.100
 
-- script: dotnet tool install --global --add-source https://nuget.hybrid-technologies-solutions.com/nuget HTS_Packer
+- task : DotNetCoreInstaller@1
+  inputs: 
+   packageType: 'sdk'
+   version: 2.1.802
+
+- script: dotnet tool install --global --add-source https://nuget.hybrid-technologies-solutions.com/v3/index.json --version 1.0.0-pre20191015162004 HTS_Packer
   displayName: 'dotnet install HTS_Packer tool'
 
 - task: DockerCompose@0

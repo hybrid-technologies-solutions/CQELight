@@ -2,6 +2,7 @@
 using CQELight.Abstractions.CQS.Interfaces;
 using CQELight.Abstractions.Events.Interfaces;
 using CQELight.Abstractions.IoC.Interfaces;
+using CQELight.IoC.Attributes;
 using CQELight.Tools;
 using CQELight.Tools.Extensions;
 using System;
@@ -37,35 +38,47 @@ namespace CQELight.IoC.Autofac
             base.Load(builder);
 
             foreach (var type in ReflectionTools.GetAllTypes(_excludedAutoRegisterTypeDlls)
-                .Where(t => 
+                .Where(t =>
                     (t.ImplementsRawGenericInterface(typeof(ICommandHandler<>)) || t.ImplementsRawGenericInterface(typeof(IDomainEventHandler<>))) && t.IsClass && !t.IsAbstract).ToList())
             {
-                builder.RegisterType(type)
+                var registration = builder.RegisterType(type)
                     .IfNotRegistered(type)
                     .AsImplementedInterfaces()
-                    .AsSelf()
-                    .FindConstructorsWith(new FullConstructorFinder());
+                    .AsSelf();
+                if (!type.IsDefined(typeof(DefineTypeResolutionModeAttribute))
+                    || type.GetCustomAttribute<DefineTypeResolutionModeAttribute>()?.Mode == TypeResolutionMode.Full)
+                {
+                    registration.FindConstructorsWith(new FullConstructorFinder());
+                }
             }
 
             foreach (var type in ReflectionTools.GetAllTypes(_excludedAutoRegisterTypeDlls)
                 .Where(t => typeof(IAutoRegisterType).IsAssignableFrom(t) && t.IsClass && !t.IsAbstract).ToList())
             {
-                builder.RegisterType(type)
+                var registration = builder.RegisterType(type)
                     .IfNotRegistered(type)
                     .AsImplementedInterfaces()
-                    .AsSelf()
-                    .FindConstructorsWith(new FullConstructorFinder());
+                    .AsSelf();
+                if (!type.IsDefined(typeof(DefineTypeResolutionModeAttribute))
+                    || type.GetCustomAttribute<DefineTypeResolutionModeAttribute>()?.Mode == TypeResolutionMode.Full)
+                {
+                    registration.FindConstructorsWith(new FullConstructorFinder());
+                }
             }
 
             foreach (var type in ReflectionTools.GetAllTypes(_excludedAutoRegisterTypeDlls)
                 .Where(t => typeof(IAutoRegisterTypeSingleInstance).IsAssignableFrom(t) && t.IsClass && !t.IsAbstract).ToList())
             {
-                builder.RegisterType(type)
+                var registration = builder.RegisterType(type)
                     .IfNotRegistered(type)
                     .AsImplementedInterfaces()
                     .AsSelf()
-                    .SingleInstance()
-                    .FindConstructorsWith(new FullConstructorFinder());
+                    .SingleInstance();
+                if (!type.IsDefined(typeof(DefineTypeResolutionModeAttribute))
+                    || type.GetCustomAttribute<DefineTypeResolutionModeAttribute>()?.Mode == TypeResolutionMode.Full)
+                {
+                    registration.FindConstructorsWith(new FullConstructorFinder());
+                }
             }
         }
 

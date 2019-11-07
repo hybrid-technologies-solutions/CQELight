@@ -6,6 +6,7 @@ using CQELight.Abstractions.Events;
 using CQELight.Abstractions.Events.Interfaces;
 using CQELight.Abstractions.IoC.Interfaces;
 using CQELight.Bootstrapping.Notifications;
+using CQELight.IoC.Attributes;
 using CQELight.TestFramework;
 using FluentAssertions;
 using System;
@@ -389,7 +390,7 @@ namespace CQELight.IoC.Autofac.Integration.Tests
         public void Registration_With_Mode_Should_Be_Considered_OnlyPublic()
         {
             var registration = new TypeRegistration<PrivateCtorClass>(true, RegistrationLifetime.Transient, TypeResolutionMode.OnlyUsePublicCtors);
-            new Bootstrapper().UseAutofacAsIoC(new ContainerBuilder()).AddIoCRegistration(registration).Bootstrapp();
+            new Bootstrapper().UseAutofacAsIoC().AddIoCRegistration(registration).Bootstrapp();
 
             using (var scope = DIManager.BeginScope())
             {
@@ -401,11 +402,31 @@ namespace CQELight.IoC.Autofac.Integration.Tests
         public void Registration_With_Mode_Should_Be_Considered_Full()
         {
             var registration = new TypeRegistration<PrivateCtorClass>(true, RegistrationLifetime.Transient, TypeResolutionMode.Full);
-            new Bootstrapper().UseAutofacAsIoC(new ContainerBuilder()).AddIoCRegistration(registration).Bootstrapp();
+            new Bootstrapper().UseAutofacAsIoC().AddIoCRegistration(registration).Bootstrapp();
 
             using (var scope = DIManager.BeginScope())
             {
                 scope.Resolve<PrivateCtorClass>().Should().NotBeNull();
+            }
+        }
+
+        [DefineTypeResolutionMode(TypeResolutionMode.OnlyUsePublicCtors)]
+        public class PrivateCtorClassAutoRegister : IAutoRegisterType
+        {
+            private PrivateCtorClassAutoRegister()
+            {
+
+            }
+        }
+
+        [Fact]
+        public void Registration_With_Mode_AsAttribute_Should_Be_Considered_OnlyPublicCtors()
+        {
+            new Bootstrapper().UseAutofacAsIoC().Bootstrapp();
+
+            using (var scope = DIManager.BeginScope())
+            {
+                Assert.Throws<DependencyResolutionException>(() => scope.Resolve<PrivateCtorClassAutoRegister>());
             }
         }
 

@@ -66,7 +66,7 @@ namespace CQELight
             bootstrapper.AddService(service);
             return bootstrapper;
         }
-        
+
         /// <summary>
         /// Configure the bootstrapper to use Autofac as IoC, by using
         /// a defining a scope to be used a root scope for CQELight.
@@ -99,8 +99,8 @@ namespace CQELight
         #region Internal static methods
 
         internal static void ConfigureAutofacContainer(
-            Bootstrapper bootstrapper, 
-            Action<ContainerBuilder> containerBuilderConfiguration, 
+            Bootstrapper bootstrapper,
+            Action<ContainerBuilder> containerBuilderConfiguration,
             string[] excludedAutoRegisterTypeDLLs)
         {
             var containerBuilder = new ContainerBuilder();
@@ -148,7 +148,7 @@ namespace CQELight
                             .Register(c => instanceTypeRegistration.Value)
                             .As(instanceTypeRegistration.AbstractionTypes.ToArray()),
                         instanceTypeRegistration.Lifetime);
-                    
+
                 }
                 else if (item is TypeRegistration typeRegistration)
                 {
@@ -156,21 +156,25 @@ namespace CQELight
                     {
                         if (serviceType.IsGenericTypeDefinition)
                         {
-                            AddLifetime(
-                                containerBuilder
+                            var registration = containerBuilder
                                     .RegisterGeneric(typeRegistration.InstanceType)
-                                    .As(serviceType)
-                                    .FindConstructorsWith(new FullConstructorFinder()),
-                                typeRegistration.Lifetime);
+                                    .As(serviceType);
+                            if (typeRegistration.Mode == TypeResolutionMode.Full)
+                            {
+                                registration = registration.FindConstructorsWith(new FullConstructorFinder());
+                            }
+                            AddLifetime(registration, typeRegistration.Lifetime);
                         }
                         else
                         {
-                            AddLifetime(
-                                containerBuilder
+                            var registration = containerBuilder
                                     .RegisterType(typeRegistration.InstanceType)
-                                    .As(serviceType)
-                                    .FindConstructorsWith(new FullConstructorFinder()),
-                                typeRegistration.Lifetime);
+                                    .As(serviceType);
+                            if (typeRegistration.Mode == TypeResolutionMode.Full)
+                            {
+                                registration = registration.FindConstructorsWith(new FullConstructorFinder());
+                            }
+                            AddLifetime(registration, typeRegistration.Lifetime);
                         }
                     }
                 }
@@ -185,7 +189,7 @@ namespace CQELight
             }
         }
 
-        private static void AddLifetime<TLimit, TActivatorData, TRegistrationStyle>(IRegistrationBuilder<TLimit, TActivatorData, TRegistrationStyle> registration, RegistrationLifetime lifetime)
+        private static IRegistrationBuilder<TLimit, TActivatorData, TRegistrationStyle> AddLifetime<TLimit, TActivatorData, TRegistrationStyle>(IRegistrationBuilder<TLimit, TActivatorData, TRegistrationStyle> registration, RegistrationLifetime lifetime)
         {
             switch (lifetime)
             {
@@ -196,6 +200,7 @@ namespace CQELight
                     registration.SingleInstance();
                     break;
             }
+            return registration;
         }
 
         #endregion

@@ -1,4 +1,5 @@
 ﻿using Autofac;
+using Autofac.Core;
 using CQELight.Abstractions.CQS.Interfaces;
 using CQELight.Abstractions.DDD;
 using CQELight.Abstractions.Events;
@@ -375,7 +376,39 @@ namespace CQELight.IoC.Autofac.Integration.Tests
             }
             ReferenceEquals(classA1, classA2).Should().BeTrue();
         }
-        
+
+        public class PrivateCtorClass
+        {
+            private PrivateCtorClass()
+            {
+
+            }
+        }
+
+        [Fact]
+        public void Registration_With_Mode_Should_Be_Considered_OnlyPublic()
+        {
+            var registration = new TypeRegistration<PrivateCtorClass>(true, RegistrationLifetime.Transient, TypeResolutionMode.OnlyUsePublicCtors);
+            new Bootstrapper().UseAutofacAsIoC(new ContainerBuilder()).AddIoCRegistration(registration).Bootstrapp();
+
+            using (var scope = DIManager.BeginScope())
+            {
+                Assert.Throws<DependencyResolutionException>(() => scope.Resolve<PrivateCtorClass>());
+            }
+        }
+
+        [Fact]
+        public void Registration_With_Mode_Should_Be_Considered_Full()
+        {
+            var registration = new TypeRegistration<PrivateCtorClass>(true, RegistrationLifetime.Transient, TypeResolutionMode.Full);
+            new Bootstrapper().UseAutofacAsIoC(new ContainerBuilder()).AddIoCRegistration(registration).Bootstrapp();
+
+            using (var scope = DIManager.BeginScope())
+            {
+                scope.Resolve<PrivateCtorClass>().Should().NotBeNull();
+            }
+        }
+
         #endregion
 
         #region ParameterResolver
@@ -418,7 +451,7 @@ namespace CQELight.IoC.Autofac.Integration.Tests
 
         #region AutoRegisterHandler
 
-        private class EventAutoReg: BaseDomainEvent { }
+        private class EventAutoReg : BaseDomainEvent { }
         private class CommandAutoReg : ICommand { }
         private class EventHandlerAutoReg : IDomainEventHandler<EventAutoReg>
         {
@@ -448,7 +481,7 @@ namespace CQELight.IoC.Autofac.Integration.Tests
                 result2.Should().NotBeNull();
             }
         }
-        
+
         #endregion
 
     }

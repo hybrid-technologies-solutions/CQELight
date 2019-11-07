@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\CQELight.AspCore\CQELight.AspCore.csproj" />
+    <ProjectReference Include="..\..\..\src\CQELight.IoC.Autofac\CQELight.IoC.Autofac.csproj" />
+  </ItemGroup>
+
+</Project>

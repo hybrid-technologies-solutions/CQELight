@@ -53,7 +53,7 @@ namespace CQELight.AspCore.Internal
                 }
             }
             bootstrapper.Bootstrapp();
-            return DIManager.BeginScope().Resolve<IScopeFactory>();
+            return DIManager._scopeFactory;
         }
 
         public IServiceProvider CreateServiceProvider(IScopeFactory containerBuilder)

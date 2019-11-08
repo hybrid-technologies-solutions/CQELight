@@ -37,7 +37,6 @@ namespace CQELight.TestFramework
                   It.IsAny<bool>(), It.IsAny<Expression<Func<TEntity, object>>[]>())).Returns(expectedResult.ToAsyncEnumerable());
         }
 
-
         /// <summary>
         /// Perform an assertion that GetAsync has been called upon the specified mock of repository.
         /// </summary>

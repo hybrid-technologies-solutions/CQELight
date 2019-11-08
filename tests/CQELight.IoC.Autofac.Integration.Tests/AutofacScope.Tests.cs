@@ -12,6 +12,7 @@ using FluentAssertions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
@@ -427,6 +428,41 @@ namespace CQELight.IoC.Autofac.Integration.Tests
             using (var scope = DIManager.BeginScope())
             {
                 Assert.Throws<DependencyResolutionException>(() => scope.Resolve<PrivateCtorClassAutoRegister>());
+            }
+        }
+
+        private interface IInnerInterface { }
+        private class InnerClass : IInnerInterface { }
+
+        private class ComplexClass
+        {
+            public readonly IInnerInterface inner;
+            public readonly string data;
+
+            public ComplexClass(
+                IInnerInterface inner,
+                string data)
+            {
+                this.inner = inner;
+                this.data = data;
+            }
+        }
+
+        [Fact]
+        public void ScopedFactoryRegistration_Should_ResolveFromScope()
+        {
+            new Bootstrapper()
+                .UseAutofacAsIoC()
+                .AddIoCRegistration(new TypeRegistration<InnerClass>(true))
+                .AddIoCRegistration(new FactoryRegistration(scope => new ComplexClass(scope.Resolve<IInnerInterface>(), "data"), typeof(ComplexClass)))
+                .Bootstrapp();
+
+            using (var scope = DIManager.BeginScope())
+            {
+                var complexClass = scope.Resolve<ComplexClass>();
+                complexClass.Should().NotBeNull();
+                complexClass.inner.Should().NotBeNull();
+                complexClass.data.Should().Be("data");
             }
         }
 

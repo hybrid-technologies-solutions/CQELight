@@ -15,8 +15,8 @@ namespace CQELight.IoC.Autofac
     {
         #region Members
 
-        private readonly ILifetimeScope scope;
         private static MethodInfo s_GetAllInstancesMethod;
+        private readonly IComponentContext componentContext;
 
         #endregion
 
@@ -50,7 +50,13 @@ namespace CQELight.IoC.Autofac
 
         internal AutofacScope(ILifetimeScope scope)
         {
-            this.scope = scope;
+            this.componentContext = scope;
+            Id = Guid.NewGuid();
+        }
+
+        internal AutofacScope(IComponentContext context)
+        {
+            this.componentContext = context;
             Id = Guid.NewGuid();
         }
 
@@ -70,33 +76,25 @@ namespace CQELight.IoC.Autofac
         /// <returns>Child scope.</returns>
         public IScope CreateChildScope(Action<ITypeRegister> typeRegisterAction = null)
         {
-            Action<ContainerBuilder> act = null;
-            if (typeRegisterAction != null)
+            if (componentContext is ILifetimeScope scope)
             {
-                var typeRegister = new TypeRegister();
-                typeRegisterAction.Invoke(typeRegister);
-                act += b => AutofacTools.RegisterContextTypes(b, typeRegister);
+                Action<ContainerBuilder> act = null;
+                if (typeRegisterAction != null)
+                {
+                    var typeRegister = new TypeRegister();
+                    typeRegisterAction.Invoke(typeRegister);
+                    act += b => AutofacTools.RegisterContextTypes(b, typeRegister);
+                }
+                if (act != null)
+                {
+                    return new AutofacScope(scope.BeginLifetimeScope(act));
+                }
+                return new AutofacScope(scope.BeginLifetimeScope());
             }
-            if (act != null)
+            else
             {
-                return new AutofacScope(scope.BeginLifetimeScope(act));
+                throw new InvalidOperationException("Autofac cannot create a child scope from IComponentContext. Parent scope should be created with the ctor that takes an ILifeTimeScope parameter");
             }
-            return new AutofacScope(scope.BeginLifetimeScope());
-        }
-
-        #endregion
-
-        #region IDisposable methods
-
-        protected override void Dispose(bool disposing)
-        {
-            IsDisposed = true;
-            scope.Dispose();
-            if (disposing)
-            {
-                GC.SuppressFinalize(this);
-            }
-            base.Dispose(disposing);
         }
 
         #endregion
@@ -110,7 +108,7 @@ namespace CQELight.IoC.Autofac
         /// <param name="parameters">Parameters for resolving.</param>
         /// <returns></returns>
         public T Resolve<T>(params IResolverParameter[] parameters) where T : class
-            => scope.ResolveOptional<T>(GetParams(parameters));
+            => componentContext.ResolveOptional<T>(GetParams(parameters));
 
         /// <summary>
         /// Resolve instance of type.
@@ -119,7 +117,7 @@ namespace CQELight.IoC.Autofac
         /// <param name="parameters">Parameters for resolving.</param>
         /// <returns>Instance of resolved type.</returns>
         public object Resolve(Type type, params IResolverParameter[] parameters)
-            => scope.ResolveOptional(type, GetParams(parameters));
+            => componentContext.ResolveOptional(type, GetParams(parameters));
 
         /// <summary>
         /// Retrieve all instances of a specific type from IoC container.
@@ -127,7 +125,7 @@ namespace CQELight.IoC.Autofac
         /// <typeparam name="T">Excepted types.</typeparam>
         /// <returns>Collection of implementations for type.</returns>
         public IEnumerable<T> ResolveAllInstancesOf<T>() where T : class
-            => scope.ResolveOptional<IEnumerable<T>>();
+            => componentContext.ResolveOptional<IEnumerable<T>>();
 
         /// <summary>
         /// Retrieve all instances of a specific type from IoC container.

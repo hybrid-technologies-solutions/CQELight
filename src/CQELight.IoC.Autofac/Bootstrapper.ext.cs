@@ -182,7 +182,18 @@ namespace CQELight
                 {
                     AddLifetime(
                         containerBuilder
-                            .Register(c => factoryRegistration.Factory.Invoke())
+                            .Register(c =>
+                            {
+                                if (factoryRegistration.Factory != null)
+                                {
+                                    return factoryRegistration.Factory.Invoke();
+                                }
+                                else if (factoryRegistration.ScopedFactory != null)
+                                {
+                                    return factoryRegistration.ScopedFactory.Invoke(new AutofacScope(c));
+                                }
+                                throw new InvalidOperationException("FactoryRegistration has not been correctly configured (both Factory and ScopedFactory are null).");
+                            })
                             .As(factoryRegistration.AbstractionTypes.ToArray()),
                         factoryRegistration.Lifetime);
                 }

@@ -1,9 +1,9 @@
-﻿using CQELight.Abstractions.Dispatcher.Interfaces;
+﻿using CQELight.Abstractions.DAL.Interfaces;
+using CQELight.Abstractions.Dispatcher.Interfaces;
 using CQELight.Abstractions.IoC.Interfaces;
 using CQELight.Bootstrapping;
 using CQELight.Bootstrapping.Notifications;
 using CQELight.DAL;
-using CQELight.DAL.Interfaces;
 using CQELight.Dispatcher;
 using CQELight.Dispatcher.Configuration;
 using CQELight.IoC;

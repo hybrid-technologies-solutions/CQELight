@@ -1,5 +1,5 @@
-﻿using CQELight.DAL.Common;
-using CQELight.DAL.Interfaces;
+﻿using CQELight.Abstractions.DAL.Interfaces;
+using CQELight.DAL.Common;
 using CQELight.Tools;
 using CQELight.Tools.Extensions;
 using System;

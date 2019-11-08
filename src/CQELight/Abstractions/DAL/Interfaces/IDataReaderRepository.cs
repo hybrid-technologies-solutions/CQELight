@@ -7,7 +7,7 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CQELight.DAL.Interfaces
+namespace CQELight.Abstractions.DAL.Interfaces
 {
     /// <summary>
     /// Base contract interface for reader repository.

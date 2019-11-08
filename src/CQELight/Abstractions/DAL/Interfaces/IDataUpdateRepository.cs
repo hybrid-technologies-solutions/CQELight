@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CQELight.DAL.Interfaces
+namespace CQELight.Abstractions.DAL.Interfaces
 {
     /// <summary>
     /// Contrat interface for repositories that performs data updates.

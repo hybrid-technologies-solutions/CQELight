@@ -4,7 +4,7 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CQELight.DAL.Interfaces
+namespace CQELight.Abstractions.DAL.Interfaces
 {
     /// <summary>
     /// Contract interface for DAL DataReader Adapter.

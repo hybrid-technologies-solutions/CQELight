@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace CQELight.DAL.Interfaces
+namespace CQELight.Abstractions.DAL.Interfaces
 {
     /// <summary>
     /// Contract interface for repository upon database.

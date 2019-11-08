@@ -1,4 +1,4 @@
-﻿using CQELight.DAL.Interfaces;
+﻿using CQELight.Abstractions.DAL.Interfaces;
 using CQELight.DAL.MongoDb.Extensions;
 using CQELight.DAL.MongoDb.Mapping;
 using CQELight.Tools;

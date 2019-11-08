@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CQELight.DAL.Interfaces
+namespace CQELight.Abstractions.DAL.Interfaces
 {
     /// <summary>
     /// Contract interface for DAL DataWriter adapter.

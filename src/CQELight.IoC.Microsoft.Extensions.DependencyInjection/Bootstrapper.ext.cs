@@ -12,7 +12,6 @@ namespace CQELight
 {
     public static class BootstrapperExtensions
     {
-
         #region Public static methods
 
         public static Bootstrapper UseMicrosoftDependencyInjection(this Bootstrapper bootstrapper,
@@ -159,18 +158,30 @@ namespace CQELight
                 }
                 else if (item is FactoryRegistration factoryRegistration)
                 {
+                    object AddFactoryRegistration(IServiceProvider serviceProvider)
+                    {
+                        if (factoryRegistration.Factory != null)
+                        {
+                           return factoryRegistration.Factory();
+                        }
+                        else if (factoryRegistration.ScopedFactory != null)
+                        {
+                            return factoryRegistration.ScopedFactory(new MicrosoftScope(serviceProvider.CreateScope(), services));
+                        }
+                        throw new InvalidOperationException("FactoryRegistration has not been correctly configured (both Factory and ScopedFactory are null).");
+                    }
                     foreach (var type in item.AbstractionTypes)
                     {
                         switch (factoryRegistration.Lifetime)
                         {
                             case RegistrationLifetime.Scoped:
-                                services.AddScoped(type, _ => factoryRegistration.Factory());
+                                services.AddScoped(type, serviceProvider => AddFactoryRegistration(serviceProvider));
                                 break;
                             case RegistrationLifetime.Singleton:
-                                services.AddSingleton(type, _ => factoryRegistration.Factory());
+                                services.AddSingleton(type, serviceProvider => AddFactoryRegistration(serviceProvider));
                                 break;
                             case RegistrationLifetime.Transient:
-                                services.AddTransient(type, _ => factoryRegistration.Factory());
+                                services.AddTransient(type, serviceProvider => AddFactoryRegistration(serviceProvider));
                                 break;
                         }
                     }

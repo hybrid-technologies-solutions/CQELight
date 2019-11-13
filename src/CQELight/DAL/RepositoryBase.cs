@@ -50,25 +50,26 @@ namespace CQELight.DAL
 
         public virtual void MarkForDelete<T>(T entityToDelete, bool physicalDeletion = false) where T : class
         {
-            if (physicalDeletion)
-            {
-                markingTasks.Add(dataWriterAdapter.DeleteAsync(entityToDelete));
-            }
-            else
-            {
-                if (entityToDelete is BasePersistableEntity basePersistableEntity)
-                {
-                    basePersistableEntity.Deleted = true;
-                    basePersistableEntity.DeletionDate = DateTime.UtcNow;
-                    markingTasks.Add(dataWriterAdapter.UpdateAsync(entityToDelete));
-                }
-                else
-                {
-                    throw new InvalidOperationException(
-                        $"Unable to perform soft deletion of object of type {typeof(T).FullName}. " +
-                        "You should override MarkForDelete to implement it by yourself.");
-                }
-            }
+            markingTasks.Add(dataWriterAdapter.DeleteAsync(entityToDelete, physicalDeletion));
+            //if (physicalDeletion)
+            //{
+            //    markingTasks.Add(dataWriterAdapter.DeleteAsync(entityToDelete));
+            //}
+            //else
+            //{
+            //    if (entityToDelete is BasePersistableEntity basePersistableEntity)
+            //    {
+            //        basePersistableEntity.Deleted = true;
+            //        basePersistableEntity.DeletionDate = DateTime.UtcNow;
+            //        markingTasks.Add(dataWriterAdapter.UpdateAsync(entityToDelete));
+            //    }
+            //    else
+            //    {
+            //        throw new InvalidOperationException(
+            //            $"Unable to perform soft deletion of object of type {typeof(T).FullName}. " +
+            //            "You should override MarkForDelete to implement it by yourself.");
+            //    }
+            //}
         }
 
         public virtual void MarkForDeleteRange<T>(IEnumerable<T> entitiesToDelete, bool physicalDeletion = false) where T : class

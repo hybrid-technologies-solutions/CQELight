@@ -40,27 +40,45 @@ namespace CQELight.DAL.EFCore.Adapters
 
         public Task UpdateAsync<T>(T entity) where T : class
         {
-            bool CheckIfLogicalDeletionIsDisabled()
+            //bool CheckIfLogicalDeletionIsDisabled()
+            //{
+            //    return options?.DisableLogicalDeletion == true
+            //                    && entity.GetType().IsInHierarchySubClassOf(typeof(BasePersistableEntity))
+            //                    && (entity as BasePersistableEntity).Deleted
+            //                    && DateTime.UtcNow.Subtract((entity as BasePersistableEntity).DeletionDate ?? DateTime.MinValue).TotalSeconds < 10;
+            //}
+            //if (CheckIfLogicalDeletionIsDisabled())
+            //{
+            //    return DeleteAsync(entity, true);
+            //}
+            //else
+            //{
+            dbContext.Update(entity);
+            //}
+            return Task.CompletedTask;
+        }
+
+        public Task DeleteAsync<T>(T entity, bool physicalDeletion) where T : class
+        {
+            if (physicalDeletion || options?.DisableLogicalDeletion == true)
             {
-                return options?.DisableLogicalDeletion == true
-                                && entity.GetType().IsInHierarchySubClassOf(typeof(BasePersistableEntity))
-                                && (entity as BasePersistableEntity).Deleted
-                                && DateTime.UtcNow.Subtract((entity as BasePersistableEntity).DeletionDate ?? DateTime.MinValue).TotalSeconds < 10;
-            }
-            if (CheckIfLogicalDeletionIsDisabled())
-            {
-                return DeleteAsync(entity);
+                dbContext.Remove(entity);
             }
             else
             {
-                dbContext.Update(entity);
+                if (entity is BasePersistableEntity basePersistableEntity)
+                {
+                    basePersistableEntity.Deleted = true;
+                    basePersistableEntity.DeletionDate = DateTime.UtcNow;
+                    dbContext.Update(entity);
+                }
+                else
+                {
+                    throw new InvalidOperationException(
+                        $"Unable to perform soft deletion of object of type {typeof(T).FullName}. " +
+                        "You should do it by yourself and update this object instead of deleting it.");
+                }
             }
-            return Task.CompletedTask;
-        }
-        
-        public Task DeleteAsync<T>(T entity) where T : class
-        {
-            dbContext.Remove(entity);
             return Task.CompletedTask;
         }
         public Task<int> SaveAsync()

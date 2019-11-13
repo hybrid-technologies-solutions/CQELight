@@ -1,4 +1,5 @@
 ﻿using CQELight.Abstractions.DAL.Interfaces;
+using CQELight.DAL.Common;
 using CQELight.DAL.MongoDb.Extensions;
 using CQELight.DAL.MongoDb.Mapping;
 using CQELight.Tools;
@@ -120,13 +121,31 @@ namespace CQELight.DAL.MongoDb.Adapters
 
         #region DataWriterAdapter
 
-        public async Task DeleteAsync<T>(T entity) where T : class
+        public async Task DeleteAsync<T>(T entity, bool physicalDeletion) where T : class
         {
-            await CheckIfSessionIsStartedAsync().ConfigureAwait(false);
-            var entityType = entity.GetType();
-            var deletionFilter = ExtractIdValue(entity).GetIdFilterFromIdValue<T>(entityType);
-            await GetCollection<T>(entityType).DeleteOneAsync(deletionFilter).ConfigureAwait(false);
-            actions++;
+            if (physicalDeletion)
+            {
+                await CheckIfSessionIsStartedAsync().ConfigureAwait(false);
+                var entityType = entity.GetType();
+                var deletionFilter = ExtractIdValue(entity).GetIdFilterFromIdValue<T>(entityType);
+                await GetCollection<T>(entityType).DeleteOneAsync(deletionFilter).ConfigureAwait(false);
+                actions++;
+            }
+            else
+            {
+                if (entity is BasePersistableEntity basePersistableEntity)
+                {
+                    basePersistableEntity.Deleted = true;
+                    basePersistableEntity.DeletionDate = DateTime.UtcNow;
+                    await UpdateAsync(entity);
+                }
+                else
+                {
+                    throw new InvalidOperationException(
+                        $"Unable to perform soft deletion of object of type {typeof(T).FullName}. " +
+                        "You should do it by yourself and update this object instead of deleting it.");
+                }
+            }
         }
 
         public async Task InsertAsync<T>(T entity) where T : class

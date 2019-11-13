@@ -27,7 +27,8 @@ namespace CQELight.Abstractions.DAL.Interfaces
         /// </summary>
         /// <typeparam name="T">Typeof entity to delete</typeparam>
         /// <param name="entity">Entity to delete</param>
-        Task DeleteAsync<T>(T entity) where T : class;
+        /// <param name="physicalDelettion">Flag that indicates if physical deletion should be applied</param>
+        Task DeleteAsync<T>(T entity, bool physicalDelettion) where T : class;
 
 
     }

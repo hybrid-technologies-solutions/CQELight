@@ -10,6 +10,8 @@ namespace CQELight.DAL.MongoDb
         #region Properties
 
         public static MongoClient MongoClient { get; set; }
+        public static IMongoDatabase Database => MongoClient.GetDatabase(DatabaseName ?? "DefaultDatabase");
+        public static string DatabaseName { get; set; } = null;
 
         #endregion
 

@@ -24,6 +24,7 @@ namespace CQELight.DAL.MongoDb.Mapping
 
         public Type EntityType { get; private set; }
         public string CollectionName { get; private set; }
+        [Obsolete]
         public string DatabaseName { get; private set; }
         public string IdProperty { get; private set; }
         public IEnumerable<string> IdProperties { get; internal set; }

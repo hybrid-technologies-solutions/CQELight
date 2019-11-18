@@ -38,7 +38,7 @@ namespace CQELight
                     {
                         BsonSerializer.RegisterSerializer(typeof(Guid), new GuidSerializer());
                     }
-
+                    MongoDbContext.DatabaseName = options.DatabaseName;
                     MongoDbContext.MongoClient = new MongoDB.Driver.MongoClient(options.Url);
 
                     var pack = new ConventionPack();

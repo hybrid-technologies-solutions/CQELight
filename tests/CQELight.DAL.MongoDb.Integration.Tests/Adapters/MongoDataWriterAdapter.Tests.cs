@@ -17,16 +17,18 @@ namespace CQELight.DAL.MongoDb.Integration.Tests.Adapters
     {
         #region Ctor & members
 
+        private const string DatabaseName = "WriteTestDatabase";
+
         public MongoDataWriterAdapterTests()
         {
             var c = new ConfigurationBuilder().AddJsonFile("test-config.json").Build();
-            new Bootstrapper().UseMongoDbAsMainRepository(new MongoDbOptions(c["user"], c["password"], $"{c["host"]}:{c["port"]}")).Bootstrapp();
+            new Bootstrapper().UseMongoDbAsMainRepository(new MongoDbOptions(
+                c["user"], c["password"], DatabaseName, new MongoServerAddress(c["host"], int.Parse(c["port"])))).Bootstrapp();
             DeleteAll();
         }
 
         private IMongoCollection<T> GetCollection<T>()
-            => MongoDbContext.MongoClient
-                    .GetDatabase("DefaultDatabase")
+            => MongoDbContext.Database
                     .GetCollection<T>(MongoDbMapper.GetMapping<T>().CollectionName);
 
         private void DeleteAll()

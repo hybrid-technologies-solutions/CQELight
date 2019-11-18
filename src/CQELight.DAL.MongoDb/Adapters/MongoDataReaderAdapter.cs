@@ -92,17 +92,16 @@ namespace CQELight.DAL.MongoDb.Adapters
             return data.FirstOrDefault();
         }
 
-#endregion
+        #endregion
 
-#region Private methods
+        #region Private methods
 
         private IMongoCollection<T> GetCollection<T>()
             where T : class
         {
             var mappingInfo = MongoDbMapper.GetMapping<T>();
             var collection = MongoDbContext
-                  .MongoClient
-                  .GetDatabase(mappingInfo.DatabaseName)
+                  .Database
                   .GetCollection<T>(mappingInfo.CollectionName);
             foreach (var item in mappingInfo.Indexes)
             {
@@ -125,6 +124,6 @@ namespace CQELight.DAL.MongoDb.Adapters
             return collection;
         }
 
-#endregion
+        #endregion
     }
 }

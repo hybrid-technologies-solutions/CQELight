@@ -70,8 +70,7 @@ namespace CQELight.DAL.MongoDb.Adapters
         {
             var mappingInfo = MongoDbMapper.GetMapping(entityType);
             var collection = MongoDbContext
-                 .MongoClient
-                 .GetDatabase(mappingInfo.DatabaseName)
+                 .Database
                  .GetCollection<T>(mappingInfo.CollectionName);
             foreach (var item in mappingInfo.Indexes)
             {

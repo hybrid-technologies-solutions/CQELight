@@ -11,7 +11,10 @@ using System.Threading.Tasks;
 
 namespace CQELight.DAL.EFCore.Adapters
 {
-    class EFCoreDataReaderAdapter : DisposableObject, IDataReaderAdapter
+    /// <summary>
+    /// Data-reading adapter to use with EF Core.
+    /// </summary>
+    public class EFCoreDataReaderAdapter : DisposableObject, IDataReaderAdapter
     {
         #region Members
 
@@ -22,6 +25,11 @@ namespace CQELight.DAL.EFCore.Adapters
 
         #region Ctor
 
+        /// <summary>
+        /// Initializes a new <see cref="EFCoreDataReaderAdapter"/> instance.
+        /// </summary>
+        /// <param name="dbContext">DbContext to use.</param>
+        /// <param name="options">Custom working options.</param>
         public EFCoreDataReaderAdapter(
             BaseDbContext dbContext,
             EFCoreOptions options = null)
@@ -34,6 +42,14 @@ namespace CQELight.DAL.EFCore.Adapters
 
         #region IDataReaderAdapter methods
 
+        /// <summary>
+        /// Get asynchronously a bunch of entites from repository, by applying filter, order and some other.
+        /// </summary>
+        /// <param name="filter">Specific filter to apply on entities.</param>
+        /// <param name="orderBy">Order to apply when retrieving entities.</param>
+        /// <param name="includeDeleted">Flag to indicates if soft deleted entites should be included.</param>
+        /// <typeparam name="T">Type of entity to look for</typeparam>
+        /// <returns>Bunch of entites that respects defined parameters.</returns>
         public IAsyncEnumerable<T> GetAsync<T>(
             Expression<Func<T, bool>> filter = null,
             Expression<Func<T, object>> orderBy = null,
@@ -45,6 +61,12 @@ namespace CQELight.DAL.EFCore.Adapters
             .AsAsyncEnumerable();
 #endif
 
+        /// <summary>
+        /// Get asynchronously an entity by its id.
+        /// </summary>
+        /// <typeparam name="T">Type of entity to retrieve by Id</typeparam>
+        /// <param name="value">Id value.</param>
+        /// <returns>Entity that matches Id value.</returns>
         public async Task<T> GetByIdAsync<T>(object value) where T : class
             => await dbContext.Set<T>().FindAsync(value).ConfigureAwait(false);
 

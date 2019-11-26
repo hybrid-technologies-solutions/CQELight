@@ -9,7 +9,10 @@ using System.Threading.Tasks;
 
 namespace CQELight.DAL.EFCore.Adapters
 {
-    class EFCoreDataWriterAdapter : DisposableObject, IDataWriterAdapter
+    /// <summary>
+    /// Data-writing adapter to use with EF Core.
+    /// </summary>
+    public class EFCoreDataWriterAdapter : DisposableObject, IDataWriterAdapter
     {
         #region Members
 
@@ -20,6 +23,11 @@ namespace CQELight.DAL.EFCore.Adapters
 
         #region Ctor
 
+        /// <summary>
+        /// Initializes a new <see cref="EFCoreDataWriterAdapter"/> instance.
+        /// </summary>
+        /// <param name="dbContext">DbContext to use.</param>
+        /// <param name="options">Custom EF Options to consider.</param>
         public EFCoreDataWriterAdapter(
             BaseDbContext dbContext,
             EFCoreOptions options = null)

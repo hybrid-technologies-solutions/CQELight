@@ -173,6 +173,13 @@ namespace CQELight
                             efRepoType, dataUpdateRepoType, databaseRepoType, dataReaderRepoType));
                     }
                 }
+                else
+                {
+                    bootstrapper.AddNotification(new Bootstrapping.Notifications.BootstrapperNotification(Bootstrapping.Notifications.BootstrapperNotificationType.Warning,
+                        "No IoC has been configured in your system, it means that all EF DAL will no works 'automatically'," +
+                        " you will need to use it with EFCoreDataReaderAdapter and EFCoreDataWriterAdapter with the RepositoryBase class. " +
+                        "While this will work, it's not a recommended option and configuring IoC should be strongly considered."));
+                }
             }, options);
             return bootstrapper;
         }

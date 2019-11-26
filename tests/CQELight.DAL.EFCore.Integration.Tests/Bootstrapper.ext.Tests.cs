@@ -1,4 +1,5 @@
-﻿using CQELight.DAL.EFCore.Adapters;
+﻿using CQELight.Bootstrapping.Notifications;
+using CQELight.DAL.EFCore.Adapters;
 using CQELight.DAL.Interfaces;
 using CQELight.IoC;
 using CQELight.TestFramework;
@@ -178,6 +179,20 @@ namespace CQELight.DAL.EFCore.Integration.Tests
                     File.Delete(DbName);
                 }
             }
+        }
+
+        [Fact]
+        public void No_IoC_Should_Generate_Warning_Notification()
+        {
+            var notifs = new Bootstrapper()
+                      .UseEFCoreAsMainRepository(opt => opt.UseSqlite($"Filename={DbName}"), new EFCoreOptions
+                      {
+                          DisableLogicalDeletion = true
+                      })
+                      .Bootstrapp();
+
+            notifs.Should().HaveCount(1);
+            notifs.First().Type.Should().Be(BootstrapperNotificationType.Warning);
         }
 
         #endregion

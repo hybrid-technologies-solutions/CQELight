@@ -17,7 +17,7 @@ CQELight Base
 
 Dispatcher
 ^^^^^^^^^^ 
-Il existe dorénavant un event (au sens C#) pour pouvoir gérer une collection d'événements dispatchés. Cet event n'est disponible que sur le ``CoreDispatcher``, comme pour ceux qui travaillent de façon unitaire. Pour pouvoir l'utiliesr, il suffit de s'abonner à la méthode ``OnEventsDispatched``. Lorsque le code fera un ``PublishEventRange``, c'est cet event qui sera invoqué.
+Il existe dorénavant un event (au sens C#) pour pouvoir gérer une collection d'événements dispatchés. Cet event n'est disponible que sur le ``CoreDispatcher``, comme pour ceux qui travaillent de façon unitaire. Pour pouvoir l'utiliser, il suffit de s'abonner à la méthode ``OnEventsDispatched``. Lorsque le code fera un ``PublishEventRange``, c'est cet event qui sera invoqué.
 
 A noter que le TestFramework a été mis à jour pour supporter l'utilisation de cet appel particulier.
 

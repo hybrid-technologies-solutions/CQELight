@@ -23,17 +23,17 @@ A noter que le TestFramework a été mis à jour pour supporter l'utilisation de
 
 Performance du log
 ^^^^^^^^^^^^^^^^^^
-Il arrive que certaines données à logguer puissent ralentir le flux d'exécution. C'est le cas par exemple lorsqu'on active le mode début et que l'on veut sérialiser un événement de façon complète pour le tracer. Afin de limiter l'impact sur le déroulement du code, il existe des overloads qui prennent en paramètre une ``Func<string>`` qui sera évaluée uniquement si le mode est activé, permet de retarder l'évaluation (voire de ne carrément pas la faire) si le niveau de log n'est pas actif.
+Il arrive que certaines données à logguer puissent ralentir le flux d'exécution. C'est le cas par exemple lorsqu'on active le mode débug et que l'on veut sérialiser un événement de façon complète pour le tracer. Afin de limiter l'impact sur le déroulement du code, il existe des overloads qui prennent en paramètre une ``Func<string>`` qui sera évaluée uniquement si le mode est activé, et permet de retarder l'évaluation (voire de ne carrément pas la faire) si le niveau de log n'est pas actif.
 
 DAL
 ^^^
 La couche DAL a été réécrite pour permettre une extension et une utilisation plus facile, permettant de couvrir tous les cas. A cet effet, la classe ``RepositoryBase`` est dorénavant disponible comme unique point d'entrée à vos données, mais il reste possible (mais non plus nécessaire) d'en faire un héritage pour chacun de vos modèles.
-L'utilisation des classes modèles de base n'est d'ailleurs plus obligatoire, mais fortement recommandé pour bénéficier des améliorations natives (comme la suppression logique).
+L'utilisation des classes modèles de base n'est d'ailleurs plus obligatoire, mais fortement recommandée pour bénéficier des améliorations natives (comme la suppression logique).
 
 IoC
 ^^^
 Afin d'être compatible avec des exigences un peu plus poussées au niveau de l'IoC, il est maintenant possible de
- * préciser la durée de vie de l'élément grâce à l'énumaration RegistrationLifetime lors d'un enregistrement. 3 sont fournis : Scoped, Singleton et Transient, pour calquer le nommage ASP.NET Core
+ * préciser la durée de vie de l'élément grâce à l'énumération RegistrationLifetime lors d'un enregistrement. 3 sont fournies : Scoped, Singleton et Transient, pour calquer le nommage ASP.NET Core
  * définir une stratégie de recherche des constructeurs (si le plugin le supporte) : Full (tous les constructeurs, privés ou protected) ou OnlyPublicCtor (constructeurs publics uniquement, obligatoire pour les enregistrements ASP.NET Core)
  * d'avoir un enregistrement de type "FactoryRegistration" qui permet de résoudre un élément du container pendant l'évaluation de la factory
  
@@ -45,11 +45,11 @@ Un événément (au sens C#) est disponible pour se brancher post-bootstrapping.
 
 Support de MEF
 """"""""""""""
-L'utilisation de MEF est dorénavant possible, le bootstrapper est capable de trouver seul les plugins pouvant être configurés de façon automatique avec MEF. Afin de ne pas faire mention à une technologie particulière, un flag appelé ``AutoLoad`` est utilisé. Seul les plugins qui marque le support comme explicite (grâce à l'attribut ``[Export(typeof(IBootstrapperService))]`` au dessus de la classe héritant de ``IBoostrapperService``) seront chargés de façon automatique. Les autres seront ignorés.
+L'utilisation de MEF est dorénavant possible, le bootstrapper est capable de trouver seul les plugins pouvant être configurés de façon automatique avec MEF. Afin de ne pas faire mention à une technologie particulière, un flag appelé ``AutoLoad`` est utilisé. Seuls les plugins qui marquent le support comme explicite (grâce à l'attribut ``[Export(typeof(IBootstrapperService))]`` au dessus de la classe héritant de ``IBoostrapperService``) seront chargés de façon automatique. Les autres seront ignorés.
 
 Classe dédiée pour les options
 """"""""""""""""""""""""""""""
-Auparavant, le bootstrapper prenait en paramètre plusieurs booléens pour se configurer. Cette approche, bien que facile, ne respectait pas correctement les bonnes pratiques de l'architecture et du modeling de système. De ce fait, ces constructeurs ont été conservés dans la période de migration, mais une classe a été créée pour hébergé la valeur des options de configuration du Bootstrapper. C'est d'ailleurs par cette classe uniquement que l'on peut utiliser l'autoload (voir point ci-dessus).
+Auparavant, le bootstrapper prenait en paramètres plusieurs booléens pour se configurer. Cette approche, bien que facile, ne respectait pas correctement les bonnes pratiques de l'architecture et du modeling de système. De ce fait, ces constructeurs ont été conservés dans la période de migration, mais une classe a été créée pour héberger la valeur des options de configuration du Bootstrapper. C'est d'ailleurs par cette classe uniquement que l'on peut utiliser l'autoload (voir point ci-dessus).
 
 
 ASP.NET Core
@@ -58,4 +58,4 @@ La version 1.1 est la première a supporter nativement et facilement ASP.NET Cor
 
 RabbitMQ
 --------
-RabbitMQ a subit une refonte permettant de décrire avec précision une topologie de réseau. La migration est détaillée dans la documentation dédiée (disponible ici : :doc:`../migrations/v1_1_1`) et le détails dans la documentation de l'extension (disponible ici : :doc:`../extensions/bus-rabbitmq`).
+RabbitMQ a subi une refonte permettant de décrire avec précision une topologie de réseau. La migration est détaillée dans la documentation dédiée (disponible ici : :doc:`../migrations/v1_1_1`) et le détail dans la documentation de l'extension (disponible ici : :doc:`../extensions/bus-rabbitmq`).

@@ -11,7 +11,7 @@
     <PackageProjectUrl>https://www.hybrid-technologies-solutions.com</PackageProjectUrl>
     <PackageTags>rabbitmq, rabbit-mq, messaging, cqelight, event</PackageTags>
     
-    <PackageReleaseNotes>See https://github.com/cdie/CQELight/milestone/21?closed=1 for details</PackageReleaseNotes>
+    <PackageReleaseNotes>Update to .NET Core 3.1</PackageReleaseNotes>
     <PackageIconUrl>http://cqelight.net/images/cqelight-base.png</PackageIconUrl>
     <RepositoryUrl>https://github.com/cdie/CQELight</RepositoryUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>

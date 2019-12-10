@@ -13,7 +13,7 @@
     
     <Company>Hybrid Technologies Solutions</Company>
     <Product>CQELight.EventStore.EFCore</Product>
-    <PackageReleaseNotes>See https://github.com/cdie/CQELight/milestone/21?closed=1 for details</PackageReleaseNotes>
+    <PackageReleaseNotes>Update to .NET Core 3.1</PackageReleaseNotes>
     <LangVersion>latest</LangVersion>
     <PackageIconUrl>http://cqelight.net/images/cqelight-base.png</PackageIconUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>

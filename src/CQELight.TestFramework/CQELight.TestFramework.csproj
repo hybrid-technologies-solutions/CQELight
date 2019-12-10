@@ -12,7 +12,7 @@
     <PackageProjectUrl>https://www.hybrid-technologies-solutions.com</PackageProjectUrl>
     <RepositoryUrl>https://github.com/cdie/CQELight</RepositoryUrl>
     <PackageTags>unit-test test</PackageTags>
-    <PackageReleaseNotes>See https://github.com/cdie/CQELight/milestone/21?closed=1 for details</PackageReleaseNotes>
+    <PackageReleaseNotes>Update to .NET Core 3.1</PackageReleaseNotes>
     <PackageIconUrl>http://cqelight.net/images/cqelight-base.png</PackageIconUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>

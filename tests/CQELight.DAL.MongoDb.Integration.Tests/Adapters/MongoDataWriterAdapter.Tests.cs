@@ -379,5 +379,25 @@ namespace CQELight.DAL.MongoDb.Integration.Tests.Adapters
         }
 
         #endregion
+
+        #region SaveAsync
+
+        [Fact]
+        public async Task SaveAsync_Without_Updates_Should_Not_Throws()
+        {
+            try
+            {
+                using (var repo = new RepositoryBase(new MongoDataReaderAdapter(), new MongoDataWriterAdapter()))
+                {
+                    await repo.SaveAsync().ConfigureAwait(false);
+                }
+            }
+            finally
+            {
+                DeleteAll();
+            }
+        }
+
+        #endregion
     }
 }

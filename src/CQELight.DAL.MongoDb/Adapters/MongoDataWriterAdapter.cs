@@ -173,6 +173,7 @@ namespace CQELight.DAL.MongoDb.Adapters
 
         public async Task<int> SaveAsync()
         {
+            await CheckIfSessionIsStartedAsync().ConfigureAwait(false);
             try
             {
                 await session.CommitTransactionAsync().ConfigureAwait(false);

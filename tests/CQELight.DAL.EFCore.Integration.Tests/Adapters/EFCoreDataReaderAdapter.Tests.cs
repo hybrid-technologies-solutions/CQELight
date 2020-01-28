@@ -2,6 +2,7 @@
 using CQELight.TestFramework;
 using FluentAssertions;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
@@ -53,6 +54,41 @@ namespace CQELight.DAL.EFCore.Integration.Tests.Adapters
                 );
 
         #endregion
+
+        [Fact]
+        public async Task RepositoryBase_Must_Be_ThreadSafe()
+        {
+            try
+            {
+                var repo = GetRepository();
+
+                var tasks = new List<Task>();
+
+                for (int i = 0; i < 10; i++)
+                {
+                    tasks.Add(Task.Run(async () =>
+                    {
+                        for (int j = 0; j < 10; j++)
+                        {
+                            repo.MarkForInsert(new AzureLocation
+                            {
+                                Country = "country" + Guid.NewGuid(),
+                                DataCenter = "center" + Guid.NewGuid()
+                            });
+                        }
+                        await repo.SaveAsync();
+                    }));
+                }
+
+                await Task.WhenAll(tasks);
+
+                (await repo.GetAsync<AzureLocation>().CountAsync()).Should().Be(100);
+            }
+            finally
+            {
+                DeleteAll();
+            }
+        }
 
         #region GetAsync
 

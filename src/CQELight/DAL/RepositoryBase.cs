@@ -5,6 +5,7 @@ using CQELight.Tools.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CQELight.DAL
@@ -19,8 +20,7 @@ namespace CQELight.DAL
         protected readonly IDataReaderAdapter dataReaderAdapter;
         protected readonly IDataWriterAdapter dataWriterAdapter;
         protected List<Task> markingTasks = new List<Task>();
-
-        private bool saveInProgress;
+        private SemaphoreSlim threadSafety = new SemaphoreSlim(1);
 
         #endregion
 
@@ -47,8 +47,18 @@ namespace CQELight.DAL
         public virtual Task<T> GetByIdAsync<T>(object value) where T : class
             => dataReaderAdapter.GetByIdAsync<T>(value);
 
-        public virtual void MarkForDelete<T>(T entityToDelete, bool physicalDeletion = false) where T : class 
-            => markingTasks.Add(dataWriterAdapter.DeleteAsync(entityToDelete, physicalDeletion));
+        public virtual void MarkForDelete<T>(T entityToDelete, bool physicalDeletion = false) where T : class
+        {
+            threadSafety.Wait();
+            try
+            {
+                markingTasks.Add(dataWriterAdapter.DeleteAsync(entityToDelete, physicalDeletion));
+            }
+            finally
+            {
+                threadSafety.Release();
+            }
+        }
 
         public virtual void MarkForDeleteRange<T>(IEnumerable<T> entitiesToDelete, bool physicalDeletion = false) where T : class
             => entitiesToDelete.DoForEach(e => MarkForDelete(e, physicalDeletion));
@@ -81,11 +91,7 @@ namespace CQELight.DAL
 
         public virtual async Task<int> SaveAsync()
         {
-            if (saveInProgress)
-            {
-                throw new InvalidOperationException("A save operation is currently in progress on this repository instance. You'll have to wait before doing a new one on the same repository or add more operation in the same unit of work scope.");
-            }
-            saveInProgress = true;
+            await threadSafety.WaitAsync();
             try
             {
                 await Task.WhenAll(markingTasks);
@@ -94,7 +100,7 @@ namespace CQELight.DAL
             }
             finally
             {
-                saveInProgress = false;
+                threadSafety.Release();
             }
         }
 
@@ -109,7 +115,15 @@ namespace CQELight.DAL
             {
                 basePersistableEntity.EditDate = DateTime.Now;
             }
-            markingTasks.Add(dataWriterAdapter.UpdateAsync(entity));
+            threadSafety.Wait();
+            try
+            {
+                markingTasks.Add(dataWriterAdapter.UpdateAsync(entity));
+            }
+            finally
+            {
+                threadSafety.Release();
+            }
         }
 
         protected virtual void MarkEntityForInsert<TEntity>(TEntity entity)
@@ -119,7 +133,15 @@ namespace CQELight.DAL
             {
                 basePersistableEntity.EditDate = DateTime.Now;
             }
-            markingTasks.Add(dataWriterAdapter.InsertAsync(entity));
+            threadSafety.Wait();
+            try
+            {
+                markingTasks.Add(dataWriterAdapter.InsertAsync(entity));
+            }
+            finally
+            {
+                threadSafety.Release();
+            }
         }
 
         protected virtual void MarkEntityForSoftDeletion<TEntity>(TEntity entityToDelete)
@@ -130,7 +152,15 @@ namespace CQELight.DAL
                 basePersistableEntity.Deleted = true;
                 basePersistableEntity.DeletionDate = DateTime.Now;
             }
-            markingTasks.Add(dataWriterAdapter.UpdateAsync(entityToDelete));
+            threadSafety.Wait();
+            try
+            {
+                markingTasks.Add(dataWriterAdapter.UpdateAsync(entityToDelete));
+            }
+            finally
+            {
+                threadSafety.Release();
+            }
         }
 
         #endregion

@@ -22,7 +22,12 @@ namespace CQELight.DAL.MongoDb.Integration.Tests.Adapters
         {
             var c = new ConfigurationBuilder().AddJsonFile("test-config.json").Build();
             new Bootstrapper().UseMongoDbAsMainRepository(new MongoDbOptions(
-                c["user"], c["password"], DatabaseName, new MongoServerAddress(c["host"], int.Parse(c["port"])))).Bootstrapp();
+                new MongoUrlBuilder
+                {
+                    Username = c["user"],
+                    Password = c["password"],
+                    Server = new MongoServerAddress(c["host"], int.Parse(c["port"]))
+                }.ToMongoUrl(), DatabaseName)).Bootstrapp();
             DeleteAll();
         }
 

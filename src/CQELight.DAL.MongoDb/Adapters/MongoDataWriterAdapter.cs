@@ -12,13 +12,31 @@ using System.Threading.Tasks;
 
 namespace CQELight.DAL.MongoDb.Adapters
 {
-    class MongoDataWriterAdapter : DisposableObject, IDataWriterAdapter
+    /// <summary>
+    /// Data-writing adapter to use with MongoDb.
+    /// </summary>
+    public class MongoDataWriterAdapter : DisposableObject, IDataWriterAdapter
     {
         #region Members
 
         private IClientSessionHandle session;
         private int actions = 0;
         private SemaphoreSlim sessionLock = new SemaphoreSlim(1);
+
+        #endregion
+
+        #region Ctor
+
+        /// <summary>
+        /// Creates a new instance of <see cref="MongoDataWriterAdapter"/>.
+        /// </summary>
+        public MongoDataWriterAdapter()
+        {
+            if(MongoDbContext.MongoClient == null)
+            {
+                throw new InvalidOperationException("MongoDbClient hasn't been initialized yet. Please, ensure that you've bootstrapped extension before attempting creating a new instance of MongoDataWriterAdapter");
+            }
+        }
 
         #endregion
 

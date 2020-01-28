@@ -13,8 +13,26 @@ using CQELight.Abstractions.DAL.Interfaces;
 
 namespace CQELight.DAL.MongoDb.Adapters
 {
-    class MongoDataReaderAdapter : DisposableObject, IDataReaderAdapter
+    /// <summary>
+    /// Data-reading adapter to use with MongoDb.
+    /// </summary>
+    public class MongoDataReaderAdapter : DisposableObject, IDataReaderAdapter
     {
+        #region Ctor
+
+        /// <summary>
+        /// Creates a new instance of <see cref="MongoDataReaderAdapter"/>.
+        /// </summary>
+        public MongoDataReaderAdapter()
+        {
+            if (MongoDbContext.MongoClient == null)
+            {
+                throw new InvalidOperationException("MongoDbClient hasn't been initialized yet. Please, ensure that you've bootstrapped extension before attempting creating a new instance of MongoDataWriterAdapter");
+            }
+        }
+
+        #endregion
+        
         #region IDataReaderAdapter
 
 #if NETSTANDARD2_0

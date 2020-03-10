@@ -74,6 +74,16 @@ namespace CQELight.IoC.Microsoft.Extensions.DependencyInjection
 
         public IEnumerable ResolveAllInstancesOf(Type t) => scope.ServiceProvider.GetServices(t);
 
+        public T ResolveRequired<T>(params IResolverParameter[] parameters) where T : class
+        {
+            throw new NotImplementedException();
+        }
+
+        public object ResolveRequired(Type type, params IResolverParameter[] parameters)
+        {
+            throw new NotImplementedException();
+        }
+
         #endregion
 
         #region Overriden methods

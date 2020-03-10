@@ -3,6 +3,7 @@ using Autofac.Builder;
 using CQELight.Abstractions.IoC.Interfaces;
 using CQELight.IoC;
 using CQELight.IoC.Autofac;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -114,12 +115,14 @@ namespace CQELight
         private static void CreateConfigWithContainer(Bootstrapper bootstrapper, ContainerBuilder containerBuilder, string[] excludedAutoRegisterTypeDLLs)
         {
             AddRegistrationsToContainerBuilder(bootstrapper, containerBuilder, excludedAutoRegisterTypeDLLs);
-            InitDIManagerAndCreateScopeFactory(containerBuilder.Build());
+            var container = containerBuilder.Build();
+            InitDIManagerAndCreateScopeFactory(container);
+            AutofacScopeFactory.AutofacContainer = container;
         }
 
         private static void InitDIManagerAndCreateScopeFactory(ILifetimeScope scope)
         {
-            var factory = new AutofacScopeFactory(scope);
+            var factory = new AutofacScopeFactory(scope, scope.ResolveOptional<ILoggerFactory>());
             DIManager.Init(factory);
         }
 
@@ -128,7 +131,10 @@ namespace CQELight
 
             containerBuilder.RegisterModule(new AutoRegisterModule(excludedAutoRegisterTypeDLLs));
             AddComponentRegistrationToContainer(containerBuilder, bootstrapper.IoCRegistrations);
-            containerBuilder.Register(c => AutofacScopeFactory.Instance).AsImplementedInterfaces();
+            containerBuilder
+                .Register(c => new AutofacScopeFactory(AutofacScopeFactory.AutofacContainer, c.Resolve<ILoggerFactory>()))
+                .AsSelf()
+                .AsImplementedInterfaces();
         }
 
         private static void AddComponentRegistrationToContainer(ContainerBuilder containerBuilder, IEnumerable<ITypeRegistration> customRegistration)

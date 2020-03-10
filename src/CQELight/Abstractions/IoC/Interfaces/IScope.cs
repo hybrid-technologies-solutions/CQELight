@@ -7,7 +7,7 @@ namespace CQELight.Abstractions.IoC.Interfaces
     /// <summary>
     /// Definition of a scope to resolve thing during a determined lifetime.
     /// </summary>
-    public interface IScope : IDisposable, ITypeResolver, IEventContext, ICommandContext
+    public interface IScope : IDisposable, ITypeResolver, IRequiredTypeResolver, IEventContext, ICommandContext
     {
         /// <summary>
         /// Indicates if scope is disposed or not.

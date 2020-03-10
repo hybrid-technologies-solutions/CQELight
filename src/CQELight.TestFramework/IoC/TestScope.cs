@@ -54,7 +54,7 @@ namespace CQELight.TestFramework.IoC
             => _instances.Where(t => _typeComparer.Equals(t.Key, type)).Select(v => v.Value);
 
         public T ResolveRequired<T>(params IResolverParameter[] parameters) where T : class
-            => _instances.First(t => _typeComparer.Equals(t.Key, typeof(T))).Value as T;
+            => (T)_instances.First(t => _typeComparer.Equals(t.Key, typeof(T))).Value;
 
         public object ResolveRequired(Type type, params IResolverParameter[] parameters)
             => _instances.First(t => _typeComparer.Equals(t.Key, type)).Value;

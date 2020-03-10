@@ -9,8 +9,8 @@ namespace CQELight.IoC.Autofac
     {
         #region Members
 
-        private readonly ILifetimeScope _rootScope;
-        private readonly ILoggerFactory loggerFactory;
+        private readonly ILifetimeScope rootScope;
+        private readonly ILoggerFactory? loggerFactory;
 
         #endregion
 
@@ -28,7 +28,7 @@ namespace CQELight.IoC.Autofac
         /// <param name="autofacContainer">Autofac container.</param>
         public AutofacScopeFactory(ILifetimeScope autofacContainer)
         {
-            _rootScope = autofacContainer ?? throw new ArgumentNullException(nameof(autofacContainer),
+            rootScope = autofacContainer ?? throw new ArgumentNullException(nameof(autofacContainer),
                 "AutofacScopeFactory.ctor() : Autofac container should be provided.");
         }
 
@@ -36,7 +36,7 @@ namespace CQELight.IoC.Autofac
         /// Default constructor with a logger instance.
         /// </summary>
         /// <param name="autofacContainer">Autofac container.</param>
-        /// <param name="logger">Logger.</param>
+        /// <param name="loggerFactory">Logger factory</param>
         public AutofacScopeFactory(ILifetimeScope autofacContainer, ILoggerFactory loggerFactory)
             : this(autofacContainer)
         {
@@ -52,7 +52,9 @@ namespace CQELight.IoC.Autofac
         /// </summary>
         /// <returns>New instance of scope.</returns>
         public IScope CreateScope()
-            => new AutofacScope(_rootScope.BeginLifetimeScope(), loggerFactory?.CreateLogger<AutofacScope>());
+            => loggerFactory != null
+                ? new AutofacScope(rootScope.BeginLifetimeScope(), loggerFactory.CreateLogger<AutofacScope>())
+                : new AutofacScope(rootScope.BeginLifetimeScope());
 
         #endregion
 

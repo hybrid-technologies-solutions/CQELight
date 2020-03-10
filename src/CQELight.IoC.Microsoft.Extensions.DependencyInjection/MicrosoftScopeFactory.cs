@@ -3,9 +3,8 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace CQELight.IoC.Microsoft.Extensions.DependencyInjection
 {
-    class MicrosoftScopeFactory : IScopeFactory
+    internal class MicrosoftScopeFactory : IScopeFactory
     {
-
         #region Members
 
         private readonly ServiceProvider serviceProvider;

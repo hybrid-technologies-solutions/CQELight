@@ -1,5 +1,6 @@
 ﻿using CQELight.Abstractions.IoC.Interfaces;
 using CQELight.Implementations.IoC;
+using CQELight.IoC.Exceptions;
 using CQELight.Tools;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -8,7 +9,7 @@ using System.Collections.Generic;
 
 namespace CQELight.IoC.Microsoft.Extensions.DependencyInjection
 {
-    class MicrosoftScope : DisposableObject, IScope
+    internal class MicrosoftScope : DisposableObject, IScope
     {
         #region Members
 
@@ -33,26 +34,26 @@ namespace CQELight.IoC.Microsoft.Extensions.DependencyInjection
 
         public bool IsDisposed { get; private set; }
 
-        public IScope CreateChildScope(Action<ITypeRegister> typeRegisterAction = null)
+        public IScope CreateChildScope(Action<ITypeRegister>? typeRegisterAction = null)
         {
-            if (typeRegisterAction != null)
+            if (typeRegisterAction == null)
             {
-                var childrenCollection = services.Clone();
-
-                var typeRegister = new TypeRegister();
-                typeRegisterAction(typeRegister);
-                MicrosoftRegistrationHelper.RegisterContextTypes(childrenCollection, typeRegister);
-
                 return new MicrosoftScope(
-                    childrenCollection.BuildServiceProvider().CreateScope(),
-                    childrenCollection);
+                                scope,
+                                services);
             }
+            var childrenCollection = services.Clone();
+
+            var typeRegister = new TypeRegister();
+            typeRegisterAction(typeRegister);
+            MicrosoftRegistrationHelper.RegisterContextTypes(childrenCollection, typeRegister);
+
             return new MicrosoftScope(
-                scope,
-                services);
+                childrenCollection.BuildServiceProvider().CreateScope(),
+                childrenCollection);
         }
 
-        public T Resolve<T>(params IResolverParameter[] parameters) where T : class
+        public T? Resolve<T>(params IResolverParameter[] parameters) where T : class
         {
             if (parameters.Length > 0)
             {
@@ -61,7 +62,7 @@ namespace CQELight.IoC.Microsoft.Extensions.DependencyInjection
             return scope.ServiceProvider.GetService<T>();
         }
 
-        public object Resolve(Type type, params IResolverParameter[] parameters)
+        public object? Resolve(Type type, params IResolverParameter[] parameters)
         {
             if (parameters.Length > 0)
             {
@@ -70,18 +71,23 @@ namespace CQELight.IoC.Microsoft.Extensions.DependencyInjection
             return scope.ServiceProvider.GetService(type);
         }
 
-        public IEnumerable<T> ResolveAllInstancesOf<T>() where T : class => scope.ServiceProvider.GetServices<T>();
+        public IEnumerable<T>? ResolveAllInstancesOf<T>() where T : class => scope.ServiceProvider.GetServices<T>();
 
-        public IEnumerable ResolveAllInstancesOf(Type t) => scope.ServiceProvider.GetServices(t);
+        public IEnumerable? ResolveAllInstancesOf(Type type) => scope.ServiceProvider.GetServices(type);
 
         public T ResolveRequired<T>(params IResolverParameter[] parameters) where T : class
-        {
-            throw new NotImplementedException();
-        }
+            => (T)ResolveRequired(typeof(T), parameters);
 
         public object ResolveRequired(Type type, params IResolverParameter[] parameters)
         {
-            throw new NotImplementedException();
+            try
+            {
+                return scope.ServiceProvider.GetRequiredService(type);
+            }
+            catch (InvalidOperationException e)
+            {
+                throw new IoCResolutionException($"Unable to retrieve an instance of required service of type {type.FullName}", e);
+            }
         }
 
         #endregion

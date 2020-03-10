@@ -7,6 +7,7 @@ using FluentAssertions;
 using System.Linq;
 using CQELight.Abstractions.IoC.Interfaces;
 using CQELight.Bootstrapping.Notifications;
+using CQELight.IoC.Exceptions;
 
 namespace CQELight.IoC.Microsoft.Extensions.DependencyInjection.Tests
 {
@@ -396,5 +397,17 @@ namespace CQELight.IoC.Microsoft.Extensions.DependencyInjection.Tests
         }
         #endregion
 
+        #region ResolveRequired
+
+        [Fact]
+        public void ResolveRequired_Should_Throws_IfTypeIsNotRegistered()
+        {
+            var services = new ServiceCollection();
+            var scope = new MicrosoftScope(services.BuildServiceProvider().CreateScope(), services);
+            Assert.Throws<IoCResolutionException>(() => scope.ResolveRequired<ComplexClass>());
+            Assert.Throws<IoCResolutionException>(() => scope.ResolveRequired(typeof(ComplexClass)));
+        }
+
+        #endregion
     }
 }

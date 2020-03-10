@@ -13,7 +13,7 @@ namespace CQELight.IoC.Autofac
     {
         #region Members
 
-        private static readonly ConcurrentDictionary<Type, ConstructorInfo[]> _defaultPublicConstructorsCache
+        private static readonly ConcurrentDictionary<Type, ConstructorInfo[]> s_DefaultPublicConstructorsCache
             = new ConcurrentDictionary<Type, ConstructorInfo[]>();
 
         #endregion
@@ -27,7 +27,7 @@ namespace CQELight.IoC.Autofac
         /// <returns>Array of available constructors.</returns>
         public ConstructorInfo[] FindConstructors(Type targetType)
             =>
-            _defaultPublicConstructorsCache.GetOrAdd(targetType, t => t.GetTypeInfo().DeclaredConstructors.Where(c => !c.IsStatic).ToArray());
+            s_DefaultPublicConstructorsCache.GetOrAdd(targetType, t => t.GetTypeInfo().DeclaredConstructors.Where(c => !c.IsStatic).ToArray());
 
         #endregion
     }

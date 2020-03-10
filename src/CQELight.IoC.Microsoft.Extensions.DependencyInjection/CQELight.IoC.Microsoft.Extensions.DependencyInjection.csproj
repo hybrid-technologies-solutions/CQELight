@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(targetframework)'=='netstandard2.1'">
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="3.1.2" />
   </ItemGroup>
   
   <ItemGroup>

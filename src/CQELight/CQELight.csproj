@@ -42,8 +42,8 @@
     <PackageReference Include="System.Composition" Version="1.2.0" />
   </ItemGroup>
   <ItemGroup Condition="'$(targetframework)'=='netstandard2.1'">
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="3.1.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="3.1.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="3.1.2" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="3.1.2" />
     <PackageReference Include="System.Collections.Immutable" Version="1.7.0" />
     <PackageReference Include="System.Composition" Version="1.4.0" />
   </ItemGroup>

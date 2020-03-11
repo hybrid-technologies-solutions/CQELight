@@ -133,7 +133,7 @@ namespace CQELight
             containerBuilder.RegisterModule(new AutoRegisterModule(excludedAutoRegisterTypeDLLs));
             AddComponentRegistrationToContainer(containerBuilder, bootstrapper.IoCRegistrations.ToList());
             containerBuilder
-                .Register(c => new AutofacScopeFactory(AutofacScopeFactory.AutofacContainer, c.Resolve<ILoggerFactory>()))
+                .Register(c => new AutofacScopeFactory(AutofacScopeFactory.AutofacContainer, c.ResolveOptional<ILoggerFactory>()))
                 .AsSelf()
                 .AsImplementedInterfaces();
         }

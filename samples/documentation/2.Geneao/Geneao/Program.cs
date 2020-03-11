@@ -27,9 +27,7 @@ namespace Geneao
             new Bootstrapper()
                 .UseInMemoryEventBus()
                 .UseInMemoryCommandBus()
-                .UseAutofacAsIoC(c =>
-                {
-                })
+                .UseAutofacAsIoC()
                 .UseEFCoreAsEventStore(
                 new CQELight.EventStore.EFCore.EFEventStoreOptions(
                     c => c.UseSqlite("FileName=events.db", opts => opts.MigrationsAssembly(typeof(Program).Assembly.GetName().Name)),

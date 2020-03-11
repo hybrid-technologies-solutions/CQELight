@@ -28,7 +28,7 @@ namespace Geneao.Handlers.Commands
             if(result && result is Result<NomFamille> resultFamille)
             {
                 await CoreDispatcher.PublishEventAsync(new FamilleCreee(resultFamille.Value));
-                return Result.Fail();
+                return Result.Ok();
             }
             return result; 
         }

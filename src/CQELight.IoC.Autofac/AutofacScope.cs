@@ -25,7 +25,7 @@ namespace CQELight.IoC.Autofac
 
         #region Properties
 
-        private static MethodInfo GetAllInstancesMethod 
+        private static MethodInfo GetAllInstancesMethod
             => s_GetAllInstancesMethod ??= Array.Find(typeof(AutofacScope).GetMethods(), m => m.Name == nameof(ResolveAllInstancesOf) && m.IsGenericMethod);
 
         /// <summary>
@@ -112,7 +112,7 @@ namespace CQELight.IoC.Autofac
         /// <typeparam name="T">Instance of type we want to resolve.</typeparam>
         /// <param name="parameters">Parameters for resolving.</param>
         /// <returns>Instance of T if any, null otherwise</returns>
-        public T Resolve<T>(params IResolverParameter[] parameters) where T : class
+        public T? Resolve<T>(params IResolverParameter[] parameters) where T : class
             => componentContext.ResolveOptional<T>(GetParams(parameters));
 
         /// <summary>
@@ -142,7 +142,7 @@ namespace CQELight.IoC.Autofac
 
         /// <inheritdoc />
         public T ResolveRequired<T>(params IResolverParameter[] parameters) where T : class
-            => (T) ResolveRequired(typeof(T), parameters);
+            => (T)ResolveRequired(typeof(T), parameters);
 
         /// <inheritdoc />
         public object ResolveRequired(Type type, params IResolverParameter[] parameters)

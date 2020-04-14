@@ -3,6 +3,11 @@ using Xunit;
 using Autofac;
 using FluentAssertions;
 using CQELight.Abstractions.IoC.Interfaces;
+using System;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using System.Reflection;
+using System.Linq;
 
 namespace CQELight.IoC.Autofac.Integration.Tests
 {
@@ -153,12 +158,50 @@ namespace CQELight.IoC.Autofac.Integration.Tests
         {
             new Bootstrapper(new BootstrapperOptions { AutoLoad = true }).Bootstrapp();
             DIManager.IsInit.Should().BeTrue();
-            using(var scope = DIManager.BeginScope())
+            using (var scope = DIManager.BeginScope())
             {
                 scope.Resolve<IAutoLoadTest>().Should().NotBeNull();
             }
         }
 
+        #endregion
+
+        #region Basic Registered Types
+
+        [Fact]
+        public void SomeTypes_Should_Alwasy_Be_Resolvable_When_Using_Bootstrapper()
+        {
+            new Bootstrapper().UseAutofacAsIoC().Bootstrapp();
+            DIManager.IsInit.Should().BeTrue();
+
+            using (var scope = DIManager.BeginScope())
+            {
+                var scopeFactory = scope.Resolve<IScopeFactory>();
+                scopeFactory.Should().NotBeNull();
+                scopeFactory.Should().BeOfType<AutofacScopeFactory>();
+
+                AutofacScopeFactory.AutofacContainer.Should().NotBeNull();
+            }
+        }
+
+        [Fact]
+        public void SomeTypes_Should_Alwasy_Be_Resolvable_When_Using_Bootstrapper_WithLoggerFactory()
+        {
+            var lg = new LoggerFactory();
+            new Bootstrapper().UseAutofacAsIoC(c => c.RegisterInstance(lg).AsSelf().AsImplementedInterfaces()).Bootstrapp();
+            DIManager.IsInit.Should().BeTrue();
+
+            using (var scope = DIManager.BeginScope())
+            {
+                var scopeFactory = scope.Resolve<IScopeFactory>();
+                scopeFactory.Should().NotBeNull();
+                scopeFactory.Should().BeOfType<AutofacScopeFactory>();
+
+                ((FieldInfo)typeof(AutofacScope).GetTypeInfo().DeclaredMembers.First(m => m.Name == "logger")).GetValue(scope).Should().NotBeNull();
+
+                AutofacScopeFactory.AutofacContainer.Should().NotBeNull();
+            }
+        }
         #endregion
 
     }

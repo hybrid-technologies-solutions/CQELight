@@ -13,7 +13,6 @@ namespace CQELight.IoC.Autofac
 {
     internal class AutoRegisterModule : A.Module
     {
-
         #region Members
 
         private readonly string[] excludedAutoRegisterTypeDlls;

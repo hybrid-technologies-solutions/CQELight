@@ -58,10 +58,7 @@ namespace CQELight
         {
             var service = new AutofacBootstrappService
             {
-                BootstrappAction = (ctx) =>
-                {
-                    ConfigureAutofacContainer(bootstrapper, containerBuilderConfiguration, excludedAutoRegisterTypeDLLs);
-                }
+                BootstrappAction = (_) => ConfigureAutofacContainer(bootstrapper, containerBuilderConfiguration, excludedAutoRegisterTypeDLLs)
             };
             bootstrapper.AddService(service);
             return bootstrapper;
@@ -83,7 +80,7 @@ namespace CQELight
         {
             var service = new AutofacBootstrappService
             {
-                BootstrappAction = (ctx) =>
+                BootstrappAction = (_) =>
                 {
                     var childScope =
                         scope.BeginLifetimeScope(cb => AddRegistrationsToContainerBuilder(bootstrapper, cb, excludedAutoRegisterTypeDLLs));
@@ -129,11 +126,18 @@ namespace CQELight
 
         private static void AddRegistrationsToContainerBuilder(Bootstrapper bootstrapper, ContainerBuilder containerBuilder, string[] excludedAutoRegisterTypeDLLs)
         {
-
             containerBuilder.RegisterModule(new AutoRegisterModule(excludedAutoRegisterTypeDLLs));
             AddComponentRegistrationToContainer(containerBuilder, bootstrapper.IoCRegistrations.ToList());
             containerBuilder
-                .Register(c => new AutofacScopeFactory(AutofacScopeFactory.AutofacContainer, c.ResolveOptional<ILoggerFactory>()))
+                .Register(c =>
+                {
+                    var loggerFactory = c.ResolveOptional<ILoggerFactory>();
+                    if (loggerFactory != null)
+                    {
+                        return new AutofacScopeFactory(AutofacScopeFactory.AutofacContainer!, loggerFactory);
+                    }
+                    return new AutofacScopeFactory(AutofacScopeFactory.AutofacContainer!);
+                })
                 .AsSelf()
                 .AsImplementedInterfaces();
         }
@@ -151,7 +155,7 @@ namespace CQELight
                     case InstanceTypeRegistration instanceTypeRegistration:
                         AddLifetime(
                             containerBuilder
-                                .Register(c => instanceTypeRegistration.Value)
+                                .Register(_ => instanceTypeRegistration.Value)
                                 .As(instanceTypeRegistration.AbstractionTypes.ToArray()),
                             instanceTypeRegistration.Lifetime);
                         break;

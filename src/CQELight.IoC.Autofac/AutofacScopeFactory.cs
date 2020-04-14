@@ -16,7 +16,7 @@ namespace CQELight.IoC.Autofac
 
         #region Static properties
 
-        internal static IContainer AutofacContainer { get; set; }
+        internal static IContainer? AutofacContainer { get; set; }
 
         #endregion
 

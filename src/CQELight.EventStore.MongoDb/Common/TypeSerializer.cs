@@ -28,7 +28,7 @@ namespace CQELight.EventStore.MongoDb.Common
             {
                 return Type.GetType(typeAsString);
             }
-            return null;
+            return null!;
         }
 
         #endregion

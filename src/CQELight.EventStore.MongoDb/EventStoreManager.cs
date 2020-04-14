@@ -12,52 +12,37 @@ namespace CQELight.EventStore.MongoDb
 {
     internal static class EventStoreManager
     {
-
         #region Static members
 
-        private static MongoClient _client;
+        private static MongoClient? s_client;
+        private static bool s_Active;
 
         #endregion
 
         #region Internal static properties
 
-        internal static MongoEventStoreOptions Options;
+        internal static MongoEventStoreOptions Options = default!;
 
         internal static MongoClient Client
         {
             get
             {
-                if (_client == null)
+                if (!s_Active)
                 {
-                    _client = new MongoClient(ExtractUrlFromOptions());
+                    throw new InvalidOperationException("MongoDbEventStore has been deactivated. Therefore, access to its Client is impossible.");
                 }
-                return _client;
+                return s_client ??= new MongoClient(ExtractUrlFromOptions());
             }
             set
             {
-                _client = value;
+                s_client = value;
             }
         }
 
-        private static readonly ILogger _logger;
-
-        #endregion
-
-        #region Static accessor
-
-        static EventStoreManager()
-        {
-            if (DIManager.IsInit)
-            {
-                _logger = DIManager.BeginScope().Resolve<ILoggerFactory>()?.CreateLogger("EventStore");
-            }
-            else
-            {
-                var loggerFactory = new LoggerFactory();
-                loggerFactory.AddProvider(new DebugLoggerProvider());
-                _logger = loggerFactory.CreateLogger(nameof(EventStoreManager));
-            }
-        }
+        private static readonly ILogger? _logger =
+            DIManager.IsInit
+            ? DIManager.BeginScope().Resolve<ILoggerFactory>()?.CreateLogger(nameof(EventStoreManager))
+            : new LoggerFactory(new[] { new DebugLoggerProvider() }).CreateLogger(nameof(EventStoreManager));
 
         #endregion
 
@@ -82,12 +67,13 @@ namespace CQELight.EventStore.MongoDb
         {
             CoreDispatcher.OnEventDispatched += OnEventDispatchedMethod;
             Client = new MongoClient(ExtractUrlFromOptions());
+            s_Active = true;
         }
 
         internal static void Deactivate()
         {
             CoreDispatcher.OnEventDispatched -= OnEventDispatchedMethod;
-            Client = null;
+            s_Active = false;
         }
 
         internal static async Task OnEventDispatchedMethod(IDomainEvent @event)

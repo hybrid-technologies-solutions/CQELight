@@ -7,8 +7,8 @@ namespace CQELight.EventStore.MongoDb.Common
 {
     internal class SerializedObject
     {
-        public string Data { get; set; }
-        public string Type { get; set; }
+        public string? Data { get; set; }
+        public string? Type { get; set; }
     }
 
     internal class ObjectSerializer : SerializerBase<object>
@@ -29,11 +29,10 @@ namespace CQELight.EventStore.MongoDb.Common
                     return serialized.Data.FromJson(Type.GetType(serialized.Type));
                 }
             }
-            return null;
+            return null!;
         }
 
         #endregion
 
     }
-
 }

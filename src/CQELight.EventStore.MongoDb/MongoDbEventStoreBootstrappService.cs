@@ -8,7 +8,16 @@ namespace CQELight.EventStore.MongoDb
 
         public BootstrapperServiceType ServiceType => BootstrapperServiceType.EventStore;
 
-        public Action<BootstrappingContext> BootstrappAction { get; internal set; }
+        public Action<BootstrappingContext> BootstrappAction { get; }
+
+        #endregion
+
+        #region Ctor
+
+        public MongoDbEventStoreBootstrappService(Action<BootstrappingContext> bootstrappAction)
+        {
+            BootstrappAction = bootstrappAction ?? throw new ArgumentNullException(nameof(bootstrappAction));
+        }
 
         #endregion
     }

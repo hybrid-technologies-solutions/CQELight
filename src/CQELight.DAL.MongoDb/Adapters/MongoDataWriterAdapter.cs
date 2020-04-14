@@ -19,9 +19,9 @@ namespace CQELight.DAL.MongoDb.Adapters
     {
         #region Members
 
-        private IClientSessionHandle session;
+        private IClientSessionHandle? session;
         private int actions = 0;
-        private SemaphoreSlim sessionLock = new SemaphoreSlim(1);
+        private readonly SemaphoreSlim sessionLock = new SemaphoreSlim(1);
 
         #endregion
 
@@ -46,7 +46,7 @@ namespace CQELight.DAL.MongoDb.Adapters
         {
             if (session == null)
             {
-                await sessionLock.WaitAsync();
+                await sessionLock.WaitAsync().ConfigureAwait(false);
                 try
                 {
                     if (session == null)
@@ -150,7 +150,7 @@ namespace CQELight.DAL.MongoDb.Adapters
                 {
                     basePersistableEntity.Deleted = true;
                     basePersistableEntity.DeletionDate = DateTime.UtcNow;
-                    await UpdateAsync(entity);
+                    await UpdateAsync(entity).ConfigureAwait(false);
                 }
                 else
                 {
@@ -174,8 +174,6 @@ namespace CQELight.DAL.MongoDb.Adapters
             var idValue = ExtractIdValue(entity);
             var idFilter = idValue.GetIdFilterFromIdValue<T>(entityType);
 
-            var data = (await GetCollection<T>(entityType).FindAsync(idFilter)).FirstOrDefault();
-
             var result = await GetCollection<T>(entityType).ReplaceOneAsync(idFilter, entity).ConfigureAwait(false);
             if (result.ModifiedCount == 0)
             {
@@ -183,7 +181,6 @@ namespace CQELight.DAL.MongoDb.Adapters
             }
             actions += Convert.ToInt32(result.ModifiedCount);
         }
-
 
         public async Task<int> SaveAsync()
         {

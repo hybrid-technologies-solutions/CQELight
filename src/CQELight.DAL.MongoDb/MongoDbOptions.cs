@@ -16,18 +16,18 @@ namespace CQELight.DAL.MongoDb
         /// <summary>
         /// URL to connect to Mongo server.
         /// </summary>
-        public MongoUrl Url { get; private set; }
+        public MongoUrl Url { get; }
 
         /// <summary>
         /// Collection of custom serializers
         /// </summary>
-        public IEnumerable<IBsonSerializer> CustomSerializers { get; set; }
+        public IEnumerable<IBsonSerializer> CustomSerializers { get; set; } = Enumerable.Empty<IBsonSerializer>();
 
         /// <summary>
         /// Name of used database.
         /// If not set by user, "DefaultDatabase" is used
         /// </summary>
-        public string DatabaseName { get; private set; } = "DefaultDatabase";
+        public string DatabaseName { get; } = "DefaultDatabase";
 
         #endregion
 
@@ -44,7 +44,6 @@ namespace CQELight.DAL.MongoDb
                 Servers = serversUrls.Select(u => new MongoServerAddress(u))
             }.ToMongoUrl())
         {
-
         }
 
         /// <summary>
@@ -57,7 +56,6 @@ namespace CQELight.DAL.MongoDb
                 Servers = serversUrls
             }.ToMongoUrl())
         {
-
         }
 
         /// <summary>
@@ -75,7 +73,6 @@ namespace CQELight.DAL.MongoDb
                 Password = password
             }.ToMongoUrl())
         {
-
         }
 
         /// <summary>
@@ -92,7 +89,6 @@ namespace CQELight.DAL.MongoDb
                 Password = password
             }.ToMongoUrl())
         {
-
         }
 
         /// <summary>

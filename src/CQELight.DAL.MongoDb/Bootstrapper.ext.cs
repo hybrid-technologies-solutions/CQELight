@@ -19,7 +19,7 @@ namespace CQELight
         #region Private static members
 
         private static bool s_MongoStaticInit;
-        private static SemaphoreSlim s_ThreadSafety = new SemaphoreSlim(1);
+        private static readonly SemaphoreSlim s_ThreadSafety = new SemaphoreSlim(1);
 
         #endregion
 
@@ -33,8 +33,7 @@ namespace CQELight
             }
 
             var service = new MongoDbDALBootstrapperService
-            {
-                BootstrappAction = (ctx) =>
+            (ctx =>
                 {
                     InitiMongoDbStaticStuff();
                     MongoDbContext.DatabaseName = options.DatabaseName;
@@ -62,7 +61,7 @@ namespace CQELight
                         }
                     }
                 }
-            };
+            );
             bootstrapper.AddService(service);
             return bootstrapper;
         }
@@ -82,8 +81,10 @@ namespace CQELight
                     {
                         BsonSerializer.RegisterSerializer(typeof(Type), new TypeSerializer());
                         BsonSerializer.RegisterSerializer(typeof(Guid), new GuidSerializer());
-                        var pack = new ConventionPack();
-                        pack.Add(new IgnoreExtraElementsConvention(true));
+                        var pack = new ConventionPack
+                        {
+                            new IgnoreExtraElementsConvention(true)
+                        };
                         ConventionRegistry.Register("CQELight conventions", pack, _ => true);
 
                         s_MongoStaticInit = true;

@@ -13,20 +13,20 @@ namespace CQELight.DAL.MongoDb.Mapping
     {
         #region Members
 
-        private ILogger _logger;
-        private List<PropertyInfo> _properties;
-        private List<IndexDetail> _indexes = new List<IndexDetail>();
+        private readonly ILogger _logger;
+        private readonly List<PropertyInfo> _properties;
+        private readonly List<IndexDetail> _indexes = new List<IndexDetail>();
 
         #endregion
 
         #region Properties
 
-        public Type EntityType { get; private set; }
-        public string CollectionName { get; private set; }
-        [Obsolete]
-        public string DatabaseName { get; private set; }
-        public string IdProperty { get; private set; }
-        public IEnumerable<string> IdProperties { get; internal set; }
+        public Type EntityType { get; }
+        public string? CollectionName { get; private set; }
+        [Obsolete("Database must be configured to configuration level, not entity level")]
+        public string? DatabaseName { get; private set; }
+        public string? IdProperty { get; private set; }
+        public IEnumerable<string>? IdProperties { get; internal set; }
         public IEnumerable<IndexDetail> Indexes => _indexes.AsEnumerable();
 
         #endregion
@@ -34,17 +34,12 @@ namespace CQELight.DAL.MongoDb.Mapping
         #region Ctor
 
         public MappingInfo(Type type)
-            : this(type, null)
+            : this(type, new LoggerFactory(new[] { new DebugLoggerProvider() }))
         {
         }
 
         public MappingInfo(Type type, ILoggerFactory loggerFactory)
         {
-            if (loggerFactory == null)
-            {
-                loggerFactory = new LoggerFactory();
-                loggerFactory.AddProvider(new DebugLoggerProvider());
-            }
             _properties = type.GetAllProperties().ToList();
             _logger = loggerFactory.CreateLogger("CQELight.DAL.MongoDb");
             EntityType = type;
@@ -65,7 +60,7 @@ namespace CQELight.DAL.MongoDb.Mapping
             var composedKeyAttribute = EntityType.GetCustomAttribute<ComposedKeyAttribute>();
             if (composedKeyAttribute == null)
             {
-                var idProperty = _properties.FirstOrDefault(p =>
+                var idProperty = _properties.Find(p =>
                     p.IsDefined(typeof(PrimaryKeyAttribute)) || p.Name == "Id");
                 if (idProperty != null)
                 {
@@ -116,11 +111,12 @@ namespace CQELight.DAL.MongoDb.Mapping
             var tableAttr = EntityType.GetCustomAttribute<TableAttribute>();
             CollectionName =
                 !string.IsNullOrWhiteSpace(tableAttr?.TableName)
-                ? tableAttr.TableName
+                ? tableAttr!.TableName
                 : EntityType.Name;
+            Log($"Entity of type {EntityType.FullName} for to Collection '{CollectionName}'");
             if (!string.IsNullOrWhiteSpace(tableAttr?.SchemaName))
             {
-                DatabaseName = tableAttr.SchemaName;
+                DatabaseName = tableAttr!.SchemaName;
             }
             else
             {

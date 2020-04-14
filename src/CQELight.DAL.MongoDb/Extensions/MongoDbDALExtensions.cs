@@ -9,7 +9,7 @@ using System.Reflection;
 
 namespace CQELight.DAL.MongoDb.Extensions
 {
-    static class MongoDbDALExtensions
+    internal static class MongoDbDALExtensions
     {
         public static FilterDefinition<T> GetIdFilterFromIdValue<T>(this object idValue, Type entityType)
               where T : class

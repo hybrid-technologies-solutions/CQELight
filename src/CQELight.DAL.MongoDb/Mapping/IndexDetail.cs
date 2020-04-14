@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace CQELight.DAL.MongoDb.Mapping
 {
@@ -6,7 +7,7 @@ namespace CQELight.DAL.MongoDb.Mapping
     {
         #region Properties
 
-        public IEnumerable<string> Properties { get; set; }
+        public IEnumerable<string> Properties { get; set; } = Enumerable.Empty<string>();
         public bool Unique { get; set; }
 
         #endregion

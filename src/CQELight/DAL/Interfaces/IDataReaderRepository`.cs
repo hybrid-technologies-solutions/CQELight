@@ -22,9 +22,9 @@ namespace CQELight.DAL.Interfaces
         /// <param name="includeDeleted">Flag to indicates if soft deleted entites should be included.</param>
         /// <param name="includes">Array of properties of linked elements that should be eager loaded.</param>
         /// <returns>Bunch of entites that respects defined parameters.</returns>
-        IAsyncEnumerable<T> GetAsync(   
-            Expression<Func<T, bool>> filter = null,
-            Expression<Func<T, object>> orderBy = null,
+        IAsyncEnumerable<T> GetAsync(
+            Expression<Func<T, bool>>? filter = null,
+            Expression<Func<T, object>>? orderBy = null,
             bool includeDeleted = false,
             params Expression<Func<T, object>>[] includes);
 
@@ -34,6 +34,6 @@ namespace CQELight.DAL.Interfaces
         /// <typeparam name="TId">Type of Id.</typeparam>
         /// <param name="value">Id value.</param>
         /// <returns>Entity that matches Id value.</returns>
-        Task<T> GetByIdAsync<TId>(TId value);
+        Task<T> GetByIdAsync<TId>(TId value) where TId : notnull;
     }
 }

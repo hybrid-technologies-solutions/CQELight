@@ -80,10 +80,16 @@ namespace CQELight.DAL.MongoDb
         }
 
 #if NETSTANDARD2_0
-        public IAsyncEnumerable<T> GetAsync(Expression<Func<T, bool>> filter = null,
-                                            Expression<Func<T, object>> orderBy = null,
+        public IAsyncEnumerable<T> GetAsync(Expression<Func<T, bool>>? filter = null,
+                                            Expression<Func<T, object>>? orderBy = null,
                                             bool includeDeleted = false,
                                             params Expression<Func<T, object>>[] includes)
+#elif NETSTANDARD2_1
+        public async IAsyncEnumerable<T> GetAsync(Expression<Func<T, bool>>? filter = null,
+                                            Expression<Func<T, object>>? orderBy = null,
+                                            bool includeDeleted = false,
+                                            params Expression<Func<T, object>>[] includes)
+#endif
         {
             var collection = GetCollection();
             FilterDefinition<T> whereFilter = FilterDefinition<T>.Empty;
@@ -98,48 +104,26 @@ namespace CQELight.DAL.MongoDb
             }
             var result = collection
                 .Find(new FilterDefinitionBuilder<T>().And(whereFilter, deletedFilter));
-            IOrderedFindFluent<T, T> sortedResult = null;
+            IOrderedFindFluent<T, T>? sortedResult = null;
             if (orderBy != null)
             {
                 sortedResult = result.SortBy(orderBy);
             }
+
+#if NETSTANDARD2_0
             return (sortedResult ?? result)
                 .ToEnumerable()
                 .ToAsyncEnumerable();
-        }
 #elif NETSTANDARD2_1
-        public async IAsyncEnumerable<T> GetAsync(Expression<Func<T, bool>> filter = null,
-                                            Expression<Func<T, object>> orderBy = null,
-                                            bool includeDeleted = false,
-                                            params Expression<Func<T, object>>[] includes)
-        {
-            var collection = GetCollection();
-            FilterDefinition<T> whereFilter = FilterDefinition<T>.Empty;
-            FilterDefinition<T> deletedFilter = FilterDefinition<T>.Empty;
-            if (filter != null)
-            {
-                whereFilter = new FilterDefinitionBuilder<T>().Where(filter);
-            }
-            if (!includeDeleted && typeof(T).IsInHierarchySubClassOf(typeof(PersistableEntity)))
-            {
-                deletedFilter = new FilterDefinitionBuilder<T>().Eq("Deleted", false);
-            }
-            var result = collection
-                .Find(new FilterDefinitionBuilder<T>().And(whereFilter, deletedFilter));
-            IOrderedFindFluent<T, T> sortedResult = null;
-            if (orderBy != null)
-            {
-                sortedResult = result.SortBy(orderBy);
-            }
             foreach (var item in await (sortedResult ?? result).ToListAsync().ConfigureAwait(false))
             {
                 yield return item;
             }
+#endif
         }
 
-#endif
-
         public async Task<T> GetByIdAsync<TId>(TId value)
+            where TId : notnull
         {
             if (string.IsNullOrWhiteSpace(_mappingInfo.IdProperty) && _mappingInfo.IdProperties?.Any() == false)
             {
@@ -211,6 +195,7 @@ namespace CQELight.DAL.MongoDb
             => entities.DoForEach(MarkForUpdate);
 
         public void MarkIdForDelete<TId>(TId id, bool physicalDeletion = false)
+            where TId : notnull
         {
             var entity = GetByIdAsync(id).GetAwaiter().GetResult();
             MarkForDelete(entity, physicalDeletion);
@@ -218,7 +203,7 @@ namespace CQELight.DAL.MongoDb
 
         public async Task<int> SaveAsync()
         {
-            using (var session = await MongoDbContext.MongoClient.StartSessionAsync())
+            using (var session = await MongoDbContext.MongoClient.StartSessionAsync().ConfigureAwait(false))
             {
                 var actions = _toInsert.Count + _physicalToDelete.Count + _toUpdate.Count;
                 var collection = GetCollection();
@@ -226,10 +211,9 @@ namespace CQELight.DAL.MongoDb
                 session.StartTransaction();
                 try
                 {
-
                     if (_toInsert.Count > 0)
                     {
-                        await collection.InsertManyAsync(_toInsert);
+                        await collection.InsertManyAsync(_toInsert).ConfigureAwait(false);
                     }
                     if (_toUpdate.Count > 0)
                     {
@@ -251,16 +235,16 @@ namespace CQELight.DAL.MongoDb
                         {
                             deletionFilter &= GetIdFilterFromIdValue(item.GetKeyValue());
                         }
-                        await collection.DeleteManyAsync(deletionFilter);
+                        await collection.DeleteManyAsync(deletionFilter).ConfigureAwait(false);
                     }
-                    await session.CommitTransactionAsync();
+                    await session.CommitTransactionAsync().ConfigureAwait(false);
                     _toInsert = new ConcurrentBag<T>();
                     _physicalToDelete = new ConcurrentBag<T>();
                     _toUpdate = new ConcurrentBag<T>();
                 }
                 catch
                 {
-                    await session.AbortTransactionAsync();
+                    await session.AbortTransactionAsync().ConfigureAwait(false);
                 }
 
                 return actions;
@@ -272,6 +256,7 @@ namespace CQELight.DAL.MongoDb
         #region Private methods
 
         private FilterDefinition<T> GetIdFilterFromIdValue<TId>(TId value)
+            where TId : notnull
         {
             var filterBuilder = Builders<T>.Filter;
             FilterDefinition<T> filter = FilterDefinition<T>.Empty;

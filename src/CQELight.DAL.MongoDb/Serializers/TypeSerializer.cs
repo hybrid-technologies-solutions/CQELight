@@ -17,7 +17,7 @@ namespace CQELight.DAL.MongoDb.Serializers
             }
             else
             {
-                context.Writer.WriteString(string.Empty);
+                context.Writer.WriteString(typeof(object).AssemblyQualifiedName);
             }
         }
 
@@ -28,7 +28,7 @@ namespace CQELight.DAL.MongoDb.Serializers
             {
                 return Type.GetType(typeAsString);
             }
-            return null;
+            return typeof(object);
         }
 
         #endregion

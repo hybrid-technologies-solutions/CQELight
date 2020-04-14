@@ -2,13 +2,15 @@
 
 namespace CQELight.DAL.MongoDb
 {
-    class MongoDbDALBootstrapperService : IBootstrapperService
+    internal class MongoDbDALBootstrapperService : IBootstrapperService
     {
         public BootstrapperServiceType ServiceType => BootstrapperServiceType.DAL;
 
-        public Action<BootstrappingContext> BootstrappAction
+        public Action<BootstrappingContext> BootstrappAction { get; }
+
+        public MongoDbDALBootstrapperService(Action<BootstrappingContext> bootstrappAction)
         {
-            get; internal set;
+            BootstrappAction = bootstrappAction ?? throw new ArgumentNullException(nameof(bootstrappAction));
         }
     }
 }

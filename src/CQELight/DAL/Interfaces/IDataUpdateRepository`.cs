@@ -53,6 +53,6 @@ namespace CQELight.DAL.Interfaces
         /// </summary>
         /// <param name="id">Id of the entity to delete.</param>
         /// <param name="physicalDeletion">Flag to use physical deletion.</param>
-        void MarkIdForDelete<TId>(TId id, bool physicalDeletion = false);
+        void MarkIdForDelete<TId>(TId id, bool physicalDeletion = false) where TId : notnull;
     }
 }

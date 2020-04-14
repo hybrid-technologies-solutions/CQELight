@@ -19,8 +19,8 @@ namespace CQELight.Abstractions.DAL.Interfaces
         /// <typeparam name="T">Type of entity to look for</typeparam>
         /// <returns>Bunch of entites that respects defined parameters.</returns>
         IAsyncEnumerable<T> GetAsync<T>(
-            Expression<Func<T, bool>> filter = null,
-            Expression<Func<T, object>> orderBy = null,
+            Expression<Func<T, bool>>? filter = null,
+            Expression<Func<T, object>>? orderBy = null,
             bool includeDeleted = false)
             where T : class;
 

@@ -4,9 +4,8 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace CQELight.IoC.Microsoft.Extensions.DependencyInjection
 {
-    static class MicrosoftRegistrationHelper
+    internal static class MicrosoftRegistrationHelper
     {
-
         public static IServiceCollection Clone(this IServiceCollection services)
         {
             var clonedCollection = new ServiceCollection();

@@ -2,9 +2,14 @@
 
 namespace CQELight.IoC.Microsoft.Extensions.DependencyInjection
 {
-    class MicrosoftDependencyInjectionService : IBootstrapperService
+    internal class MicrosoftDependencyInjectionService : IBootstrapperService
     {
         public BootstrapperServiceType ServiceType => BootstrapperServiceType.IoC;
-        public Action<BootstrappingContext> BootstrappAction { get; internal set; }
+        public Action<BootstrappingContext> BootstrappAction { get; }
+
+        public MicrosoftDependencyInjectionService(Action<BootstrappingContext> bootstrappAction)
+        {
+            BootstrappAction = bootstrappAction ?? throw new ArgumentNullException(nameof(bootstrappAction));
+        }
     }
 }

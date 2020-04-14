@@ -23,14 +23,13 @@ namespace CQELight
             }
 
             var service = new MicrosoftDependencyInjectionService
-            {
-                BootstrappAction = (_) =>
+            (_ =>
                 {
                     AddComponentRegistrationToContainer(services, bootstrapper.IoCRegistrations.ToList());
                     AddAutoRegisteredTypes(bootstrapper, services, excludedDllsForAutoRegistration);
                     DIManager.Init(new MicrosoftScopeFactory(services));
                 }
-            };
+            );
 
             bootstrapper.AddService(service);
             return bootstrapper;
@@ -206,7 +205,6 @@ namespace CQELight
                 }
             }
         }
-
 
         #endregion
 

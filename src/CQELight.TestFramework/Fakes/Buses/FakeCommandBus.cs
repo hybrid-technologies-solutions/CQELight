@@ -11,15 +11,10 @@ namespace CQELight.TestFramework.Fakes.Buses
     /// </summary>
     public class FakeCommandBus : ICommandBus
     {
-        #region Static members
-
-        internal static FakeCommandBus Instance;
-
-        #endregion
-
         #region Members
 
         internal IList<ICommand> _commands = new List<ICommand>();
+        private readonly Result? expectedResult;
 
         #endregion
 
@@ -34,9 +29,13 @@ namespace CQELight.TestFramework.Fakes.Buses
 
         #region Ctor
 
-        public FakeCommandBus(Result expectedResult)
+        /// <summary>
+        /// Creates an new <see cref="FakeCommandBus"/> with expected result for dispatch calls.
+        /// </summary>
+        /// <param name="expectedResult">Predefined result to returns. If null, ok will be returned</param>
+        public FakeCommandBus(Result? expectedResult = null)
         {
-            Instance = this;
+            this.expectedResult = expectedResult;
         }
 
         #endregion
@@ -49,10 +48,10 @@ namespace CQELight.TestFramework.Fakes.Buses
         /// <param name="command">Command to dispatch.</param>
         /// <param name="context">Context associated to command.</param>
         /// <returns>List of launched tasks from handler.</returns>
-        public Task<Result> DispatchAsync(ICommand command, ICommandContext context = null)
+        public Task<Result> DispatchAsync(ICommand command, ICommandContext? context = null)
         {
             _commands.Add(command);
-            return Task.FromResult(Result.Ok());
+            return Task.FromResult(expectedResult ?? Result.Ok());
         }
 
         #endregion

@@ -21,14 +21,14 @@ namespace CQELight.TestFramework
         #region Members
 
         private readonly Action _action;
-        private readonly Mock<IDispatcher> _dispatcherMock;
+        private readonly Mock<IDispatcher>? _dispatcherMock;
         private static readonly SemaphoreSlim s_Semaphore = new SemaphoreSlim(1);
 
         #endregion
 
         #region Ctor
 
-        internal TestFrameworkActionAssertion(Action action, Mock<IDispatcher> dispatcherMock = null)
+        internal TestFrameworkActionAssertion(Action action, Mock<IDispatcher>? dispatcherMock = null)
         {
             _action = action ?? throw new ArgumentNullException(nameof(action), "TestFrameworkAssertion.ctor() : Action for assertion must be specified.");
             _dispatcherMock = dispatcherMock;
@@ -82,11 +82,11 @@ namespace CQELight.TestFramework
             {
                 _dispatcherMock.Setup(m => m.PublishEventAsync(It.IsAny<IDomainEvent>(), It.IsAny<IEventContext>(),
                     It.IsAny<string>()))
-                    .Callback((IDomainEvent evt, IEventContext ctx, string str) => events.Add(evt))
+                    .Callback((IDomainEvent evt, IEventContext _, string __) => events.Add(evt))
                     .Returns(Task.CompletedTask);
                 _dispatcherMock.Setup(m => m.PublishEventsRangeAsync(It.IsAny<IEnumerable<(IDomainEvent, IEventContext)>>(),
                     It.IsAny<string>()))
-                    .Callback((IEnumerable<(IDomainEvent, IEventContext)> data, string str) => events.AddRange(data.Select(e => e.Item1)))
+                    .Callback((IEnumerable<(IDomainEvent, IEventContext)> data, string _) => events.AddRange(data.Select(e => e.Item1)))
                     .Returns(Task.CompletedTask);
 
                 Task.Run(() => _action.Invoke(), new CancellationTokenSource((int)timeout).Token)
@@ -133,7 +133,7 @@ namespace CQELight.TestFramework
             {
                 _dispatcherMock.Setup(m => m.DispatchCommandAsync(It.IsAny<ICommand>(), It.IsAny<ICommandContext>(),
                     It.IsAny<string>()))
-                    .Callback((ICommand cmd, ICommandContext ctx, string str) => commands.Add(cmd))
+                    .Callback((ICommand cmd, ICommandContext _, string __) => commands.Add(cmd))
                     .Returns(Task.FromResult(Result.Ok()));
 
                 Task.Run(() => _action.Invoke(), new CancellationTokenSource((int)timeout).Token)
@@ -154,7 +154,7 @@ namespace CQELight.TestFramework
         /// <param name="timeout">Timeout.</param>
         public T ThenEventShouldBeRaised<T>(ulong timeout = 1000) where T : class, IDomainEvent
         {
-            T @event = null;
+            T? @event = null;
             if (_dispatcherMock == null)
             {
                 s_Semaphore.Wait();
@@ -198,7 +198,7 @@ namespace CQELight.TestFramework
             {
                 _dispatcherMock.Setup(m => m.PublishEventAsync(It.IsAny<IDomainEvent>(), It.IsAny<IEventContext>(),
                        It.IsAny<string>()))
-                       .Callback((IDomainEvent evt2, IEventContext ctx, string str) => @event = evt2 as T)
+                       .Callback((IDomainEvent evt2, IEventContext _, string __) => @event = evt2 as T)
                        .Returns(Task.CompletedTask);
 
                 Task.Run(() => _action.Invoke(), new CancellationTokenSource((int)timeout).Token)
@@ -255,11 +255,11 @@ namespace CQELight.TestFramework
             {
                 _dispatcherMock.Setup(m => m.PublishEventAsync(It.IsAny<IDomainEvent>(), It.IsAny<IEventContext>(),
                     It.IsAny<string>()))
-                    .Callback((IDomainEvent evt, IEventContext ctx, string str) => events.Add(evt))
+                    .Callback((IDomainEvent evt, IEventContext _, string __) => events.Add(evt))
                     .Returns(Task.CompletedTask);
                 _dispatcherMock.Setup(m => m.PublishEventsRangeAsync(It.IsAny<IEnumerable<(IDomainEvent, IEventContext)>>(),
                     It.IsAny<string>()))
-                    .Callback((IEnumerable<(IDomainEvent, IEventContext)> data, string str) => events.AddRange(data.Select(e => e.Item1)))
+                    .Callback((IEnumerable<(IDomainEvent, IEventContext)> data, string _) => events.AddRange(data.Select(e => e.Item1)))
                     .Returns(Task.CompletedTask);
 
                 Task.Run(() => _action.Invoke(), new CancellationTokenSource((int)timeout).Token)
@@ -304,9 +304,9 @@ namespace CQELight.TestFramework
             }
             else
             {
-                _dispatcherMock.Setup(m => m.DispatchCommandAsync(It.IsAny<ICommand>(), It.IsAny<ICommandContext>(),
-                    It.IsAny<string>()))
-                    .Callback((ICommand cmd, ICommandContext ctx, string str) => commands.Add(cmd))
+                _ = _dispatcherMock.Setup(m => m.DispatchCommandAsync(It.IsAny<ICommand>(), It.IsAny<ICommandContext>(),
+                      It.IsAny<string>()))
+                    .Callback((ICommand cmd, ICommandContext __, string _) => commands.Add(cmd))
                     .Returns(Task.FromResult(Result.Ok()));
 
                 Task.Run(() => _action.Invoke(), new CancellationTokenSource((int)timeout).Token)
@@ -327,7 +327,7 @@ namespace CQELight.TestFramework
         /// <returns>Dispatched command.</returns>
         public T ThenCommandIsDispatched<T>(ulong timeout = 1000) where T : class, ICommand
         {
-            T command = null;
+            T? command = null;
             if (_dispatcherMock == null)
             {
                 s_Semaphore.Wait();
@@ -360,7 +360,7 @@ namespace CQELight.TestFramework
             {
                 _dispatcherMock.Setup(m => m.DispatchCommandAsync(It.IsAny<ICommand>(), It.IsAny<ICommandContext>(),
                     It.IsAny<string>()))
-                    .Callback((ICommand cmd, ICommandContext ctx, string str) => command = cmd as T)
+                    .Callback((ICommand cmd, ICommandContext _, string __) => command = cmd as T)
                     .Returns(Task.FromResult(Result.Ok()));
 
                 Task.Run(() => _action.Invoke(), new CancellationTokenSource((int)timeout).Token)
@@ -374,8 +374,9 @@ namespace CQELight.TestFramework
         }
 
         /// <summary>
-        /// Check that no 
+        /// Check that no message are raison.
         /// </summary>
+        /// <param name="waitTime">Milliseconds to wait before timeout.</param>
         public void ThenNoMessageShouldBeRaised(ulong waitTime = 1000)
         {
             s_Semaphore.Wait();
@@ -417,7 +418,7 @@ namespace CQELight.TestFramework
         public T ThenMessageShouldBeRaised<T>(ulong waitTime = 1000) where T : class, IMessage
         {
             s_Semaphore.Wait();
-            T appMessage = null;
+            T? appMessage = null;
             try
             {
                 var lambda = new Func<IMessage, Task>(e =>

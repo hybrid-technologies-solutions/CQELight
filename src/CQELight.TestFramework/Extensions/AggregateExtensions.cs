@@ -8,7 +8,6 @@ namespace CQELight.TestFramework.Extensions
     /// </summary>
     public static class AggregateExtensions
     {
-
         #region Public static methods
 
         /// <summary>

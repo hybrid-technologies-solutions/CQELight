@@ -5,6 +5,8 @@ using FluentAssertions;
 using System;
 using Xunit;
 
+[assembly: CollectionBehavior(DisableTestParallelization = true)]
+
 namespace CQELight.TestFramework.Integration.Tests.Extensions
 {
     public class AggregateExtensionsTests : BaseUnitTestClass

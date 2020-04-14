@@ -27,7 +27,7 @@ namespace CQELight
         public static IHostBuilder ConfigureCQELight(
             this IHostBuilder hostBuilder,
             Action<Bootstrapper> bootstrapperConf,
-            BootstrapperOptions bootstrapperOptions = null)
+            BootstrapperOptions? bootstrapperOptions = null)
         {
             if (bootstrapperConf == null)
             {
@@ -48,7 +48,7 @@ namespace CQELight
         public static IHostBuilder ConfigureCQELight(
             this IHostBuilder hostBuilder,
             Action<Bootstrapper, IConfiguration> bootstrapperConf,
-            BootstrapperOptions bootstrapperOptions = null)
+            BootstrapperOptions? bootstrapperOptions = null)
         {
             if (bootstrapperConf == null)
             {
@@ -72,9 +72,9 @@ namespace CQELight
         /// <param name="bootstrapperOptions">Bootstrapper options.</param>
         /// <returns>Configured ASP.NET Core host builder</returns>
         public static IServiceProvider ConfigureCQELight(
-            this IServiceCollection services, 
+            this IServiceCollection services,
             Action<Bootstrapper> bootstrapperConf,
-            BootstrapperOptions bootstrapperOptions = null)
+            BootstrapperOptions? bootstrapperOptions = null)
         {
             if (bootstrapperConf == null)
             {

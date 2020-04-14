@@ -10,13 +10,12 @@
     <PackageProjectUrl>https://www.hybrid-technologies-solutions.com</PackageProjectUrl>
     <PackageIconUrl>http://cqelight.net/images/cqelight-base.png</PackageIconUrl>
     <RepositoryUrl>https://github.com/cdie/CQELight</RepositoryUrl>
-    <PackageTags>asp core, asp mvc</PackageTags>
-    
+    <PackageTags>asp core, asp mvc</PackageTags>    
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    
-    <PackageReleaseNotes>Update to .NET Core 3.1</PackageReleaseNotes>
-    
+    <PackageReleaseNotes>See concerned milestone on GitHub for informations</PackageReleaseNotes>    
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <LangVersion>latest</LangVersion>
+    <Nullable>Enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(targetframework)'=='netstandard2.0'">

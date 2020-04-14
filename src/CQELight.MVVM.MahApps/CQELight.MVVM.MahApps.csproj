@@ -15,6 +15,7 @@
     <PackageReleaseNotes></PackageReleaseNotes>
     <PackageIconUrl>https://www.hybrid-technologies-solutions.com/images/CQELight_logo_only.png</PackageIconUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Nullable>Enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

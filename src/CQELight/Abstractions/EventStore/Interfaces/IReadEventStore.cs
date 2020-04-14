@@ -39,7 +39,8 @@ namespace CQELight.Abstractions.EventStore.Interfaces
         /// <param name="id">Value of the id of the aggregate.</param>
         /// <returns>AsyncEnumerable of events.</returns>
         IAsyncEnumerable<IDomainEvent> GetAllEventsByAggregateId<TAggregateType, TAggregateId>(TAggregateId id)
-            where TAggregateType : AggregateRoot<TAggregateId>;
+            where TAggregateType : AggregateRoot<TAggregateId>
+            where TAggregateId : notnull;
         /// <summary>
         /// Retrieve an asynchronous stream for all events of a specific aggregate
         /// type with a specified aggregate id.

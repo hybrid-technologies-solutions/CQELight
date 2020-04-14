@@ -11,7 +11,7 @@
     <PackageProjectUrl>https://www.hybrid-technologies-solutions.com</PackageProjectUrl>
     <RepositoryUrl>https://github.com/cdie/CQELight</RepositoryUrl>
     <PackageTags>event-store, events, event, mongodb, mongodbcsharp</PackageTags>
-    <PackageReleaseNotes>See concerned milestone on GitHub</PackageReleaseNotes>    <PackageReleaseNotes>See concerned milestone on GitHub</PackageReleaseNotes>
+    <PackageReleaseNotes>See concerned milestone on GitHub</PackageReleaseNotes>   
     <PackageIconUrl>http://cqelight.net/images/cqelight-base.png</PackageIconUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>

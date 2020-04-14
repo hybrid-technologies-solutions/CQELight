@@ -8,16 +8,6 @@ namespace CQELight
 {
     public static class BootstrapperExt
     {
-        #region Private class
-
-        private class EFEventStoreBootstrappService : IBootstrapperService
-        {
-            public BootstrapperServiceType ServiceType => BootstrapperServiceType.EventStore;
-            public Action<BootstrappingContext> BootstrappAction { get; internal set; }
-        }
-
-        #endregion
-
         #region Extension methods
 
         /// <summary>
@@ -36,8 +26,7 @@ namespace CQELight
             }
 
             var service = new EFEventStoreBootstrappService
-            {
-                BootstrappAction = (ctx) =>
+            (ctx =>
                 {
                     if (ctx.IsServiceRegistered(BootstrapperServiceType.IoC))
                     {
@@ -50,7 +39,7 @@ namespace CQELight
                             bootstrapper.AddIoCRegistration(
                                 new InstanceTypeRegistration(options.SnapshotBehaviorProvider, typeof(ISnapshotBehaviorProvider)));
                         }
-                        if(options.ArchiveBehavior == EventStore.SnapshotEventsArchiveBehavior.StoreToNewDatabase
+                        if (options.ArchiveBehavior == EventStore.SnapshotEventsArchiveBehavior.StoreToNewDatabase
                         && options.ArchiveDbContextOptions != null)
                         {
                             bootstrapper.AddIoCRegistration(new FactoryRegistration(() =>
@@ -59,9 +48,8 @@ namespace CQELight
                     }
                     EventStoreManager.s_Options = options;
                     EventStoreManager.Activate();
-
                 }
-            };
+            );
             bootstrapper.AddService(service);
             return bootstrapper;
         }

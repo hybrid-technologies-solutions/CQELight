@@ -7,7 +7,6 @@ namespace CQELight.EventStore.EFCore
     /// </summary>
     public class BufferInfo
     {
-
         #region Static properties
 
         /// <summary>
@@ -39,7 +38,7 @@ namespace CQELight.EventStore.EFCore
         public TimeSpan AbsoluteTimeOut { get; private set; }
         /// <summary>
         /// Sliding timeout of buffer usage.
-        /// Starting first event, counter begins. If next event comes before 
+        /// Starting first event, counter begins. If next event comes before
         /// counter reach slidingTimeout, counter is reset, else, event(s) are
         /// persisted.
         /// </summary>
@@ -50,7 +49,7 @@ namespace CQELight.EventStore.EFCore
         #region Ctor
 
         /// <summary>
-        /// Creates a new buffer info that use 
+        /// Creates a new buffer info that use
         /// two specific TimeSpan. Using buffer might not be
         /// appropriate if fresh events are needed as soon as they're
         /// dispatched.

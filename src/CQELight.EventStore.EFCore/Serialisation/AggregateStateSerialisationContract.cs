@@ -5,13 +5,13 @@ using System.Reflection;
 
 namespace CQELight.EventStore.EFCore.Serialisation
 {
-    class AggregateStateSerialisationContract : IJsonContractDefinition
+    internal class AggregateStateSerialisationContract : IJsonContractDefinition
     {
         #region IJsonContractDefinion
 
         public void SetDeserialisationPropertyContractDefinition(JsonProperty property, MemberInfo memberInfo)
         {
-            if(memberInfo.IsDefined(typeof(IgnoreAttribute)))
+            if (memberInfo.IsDefined(typeof(IgnoreAttribute)))
             {
                 property.ShouldDeserialize = _ => false;
             }

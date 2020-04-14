@@ -5,7 +5,6 @@ namespace CQELight.EventStore.EFCore.Common
 {
     public class EventStoreDbContext : DbContext
     {
-
         #region Members
 
         private readonly SnapshotEventsArchiveBehavior _behavior;

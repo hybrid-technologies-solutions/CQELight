@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Debug;
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace CQELight.EventStore.EFCore
@@ -15,10 +16,10 @@ namespace CQELight.EventStore.EFCore
     {
         #region Internal static properties
 
-        internal static EFEventStoreOptions s_Options;
+        internal static EFEventStoreOptions s_Options = default!;
 
-        private static readonly ILogger _logger;
-        private static readonly ILoggerFactory _loggerFactory;
+        private static readonly ILogger s_Logger;
+        private static readonly ILoggerFactory s_LoggerFactory = default!;
 
         #endregion
 
@@ -28,15 +29,13 @@ namespace CQELight.EventStore.EFCore
         {
             if (DIManager.IsInit)
             {
-                _loggerFactory = DIManager.BeginScope().Resolve<ILoggerFactory>();
-                _logger = _loggerFactory?.CreateLogger("EventStore");
+                s_LoggerFactory = DIManager.BeginScope().Resolve<ILoggerFactory>();
             }
-            else
+            if (s_LoggerFactory == null)
             {
-                _loggerFactory = new LoggerFactory();
-                _loggerFactory.AddProvider(new DebugLoggerProvider());
-                _logger = _loggerFactory.CreateLogger(nameof(EventStoreManager));
+                s_LoggerFactory = new LoggerFactory(new[] { new DebugLoggerProvider() });
             }
+            s_Logger = s_LoggerFactory.CreateLogger(nameof(EventStoreManager));
         }
 
         #endregion
@@ -72,23 +71,23 @@ namespace CQELight.EventStore.EFCore
         {
             try
             {
-                await new EFEventStore(s_Options, _loggerFactory).StoreDomainEventAsync(@event).ConfigureAwait(false);
+                await new EFEventStore(s_Options, s_LoggerFactory).StoreDomainEventAsync(@event).ConfigureAwait(false);
             }
             catch (Exception exc)
             {
-                _logger?.LogError($"EventHandler.OnEventDispatchedMethod() : Exception {exc}");
+                s_Logger?.LogError($"EventHandler.OnEventDispatchedMethod() : Exception {exc}");
             }
         }
-        
+
         internal static async Task OnEventsDispatchedMethod(IEnumerable<IDomainEvent> events)
         {
             try
             {
-                await new EFEventStore(s_Options, _loggerFactory).StoreDomainEventRangeAsync(events).ConfigureAwait(false);
+                await new EFEventStore(s_Options, s_LoggerFactory).StoreDomainEventRangeAsync(events).ConfigureAwait(false);
             }
             catch (Exception exc)
             {
-                _logger?.LogError($"EventHandler.OnEventsDispatchedMethod() : Exception {exc}");
+                s_Logger?.LogError($"EventHandler.OnEventsDispatchedMethod() : Exception {exc}");
             }
         }
 

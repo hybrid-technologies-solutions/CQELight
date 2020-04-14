@@ -18,11 +18,11 @@ namespace CQELight.Abstractions.Events.Interfaces
         /// <summary>
         /// Linked aggregate Id if any.
         /// </summary>
-        object AggregateId { get; }
+        object? AggregateId { get; }
         /// <summary>
         /// Type of aggregate linked to event.
         /// </summary>
-        Type AggregateType{ get; }
+        Type? AggregateType{ get; }
         /// <summary>
         /// Current sequence within aggregate's events stream.
         /// </summary>

@@ -13,7 +13,7 @@ namespace CQELight.MVVM
         /// <summary>
         /// Test to execute to see if command is runnable.
         /// </summary>
-        private readonly Predicate<object> canExecute;
+        private readonly Predicate<object>? canExecute;
         /// <summary>
         /// Associated async action.
         /// </summary>
@@ -22,16 +22,17 @@ namespace CQELight.MVVM
         /// <summary>
         /// Handler to notify CommandManagers that CanExecute predicate has changed.
         /// </summary>
-        public event EventHandler CanExecuteChanged;
+        public event EventHandler? CanExecuteChanged;
 
         #endregion
 
         #region Properties
 
         /// <summary>
-        /// Current command execution task
+        /// Current command execution task.
+        /// Will remains null until <see cref="Execute(object)"/> is called.
         /// </summary>
-        public Task ExecutionTask { get; private set; }
+        public Task? ExecutionTask { get; private set; }
 
         #endregion
 
@@ -42,7 +43,7 @@ namespace CQELight.MVVM
         /// </summary>
         /// <param name="execute">Command to execute.</param>
         /// <param name="canExecute">Test to verify if command is runnable.</param>
-        public AsyncDelegateCommand(Func<object, Task> execute, Predicate<object> canExecute = null)
+        public AsyncDelegateCommand(Func<object, Task> execute, Predicate<object>? canExecute = null)
         {
             this.execute = execute ?? throw new ArgumentNullException(nameof(execute));
             this.canExecute = canExecute;
@@ -71,7 +72,7 @@ namespace CQELight.MVVM
         /// <returns>True if the predicate returns true or doesn't exists, false otherwise.</returns>
         public bool CanExecute(object parameter)
         {
-            return this.canExecute != null ? this.canExecute(parameter) : true;
+            return canExecute == null || canExecute(parameter);
         }
 
         /// <summary>

@@ -12,7 +12,7 @@ namespace CQELight.MVVM
         /// <summary>
         /// Test to execute to see if command is runnable.
         /// </summary>
-        private readonly Predicate<object> canExecute;
+        private readonly Predicate<object>? canExecute;
         /// <summary>
         /// Associated action.
         /// </summary>
@@ -21,7 +21,7 @@ namespace CQELight.MVVM
         /// <summary>
         /// Handler to notify CommandManagers that CanExecute predicate has changed.
         /// </summary>
-        public virtual event EventHandler CanExecuteChanged;
+        public virtual event EventHandler? CanExecuteChanged;
 
         #endregion 
 
@@ -32,13 +32,13 @@ namespace CQELight.MVVM
         /// </summary>
         /// <param name="execute">Command to execute.</param>
         /// <param name="canExecute">Test to verify if command is runnable.</param>
-        public DelegateCommand(Action<object> execute, Predicate<object> canExecute = null)
+        public DelegateCommand(Action<object> execute, Predicate<object>? canExecute = null)
         {
             this.execute = execute ?? throw new ArgumentNullException(nameof(execute));
             this.canExecute = canExecute;
         }
-        
-        #endregion 
+
+        #endregion
 
         #region Public methods
 
@@ -61,7 +61,7 @@ namespace CQELight.MVVM
         /// <returns>True if the predicate returns true or doesn't exists, false otherwise.</returns>
         public bool CanExecute(object parameter)
         {
-            return this.canExecute != null ? this.canExecute(parameter) : true;
+            return canExecute == null || canExecute(parameter);
         }
 
         /// <summary>

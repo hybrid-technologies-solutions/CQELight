@@ -15,7 +15,7 @@
     <PackageTags>mvvm, unit testing</PackageTags>
     <PackageIconUrl>http://cqelight.net/images/cqelight-base.png</PackageIconUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageReleaseNotes>Update to .NET Core 3.1</PackageReleaseNotes>
+    <PackageReleaseNotes>See concerned milestone on GitHub for informations</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>

@@ -45,7 +45,7 @@ namespace CQELight.MVVM
         /// <summary>
         /// Callback to invoke when user is cancelling.
         /// </summary>
-        public Action CancelCallback { get; set; }
+        public Action? CancelCallback { get; set; }
 
         #endregion
 

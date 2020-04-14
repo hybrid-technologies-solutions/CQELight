@@ -39,17 +39,17 @@ namespace CQELight.MVVM
         /// <summary>
         /// Gets the info if there's any informations.
         /// </summary>
-        public bool HasErrors => _errors.Any();
+        public bool HasErrors => _errors.Count > 0;
         /// <summary>
         /// Event to fire when error collection are changed.
         /// </summary>
-        public event EventHandler<DataErrorsChangedEventArgs> ErrorsChanged;
+        public event EventHandler<DataErrorsChangedEventArgs>? ErrorsChanged;
         /// <summary>
         /// Get errors based on property names.
         /// </summary>
         /// <param name="propertyName">Property name on which we wnat errors..</param>
         /// <returns>All errors for this property name, or empty collection, or null if none.</returns>
-        public IEnumerable GetErrors(string propertyName)
+        public IEnumerable? GetErrors(string propertyName)
         {
             if (!string.IsNullOrWhiteSpace(propertyName))
             {
@@ -65,8 +65,8 @@ namespace CQELight.MVVM
         /// <summary>
         /// Add an error in the collection.
         /// </summary>
-        /// <param name="propertyName">Name of the property. Can be retrieve by the calling member.</param>
         /// <param name="error">Error info to add to collection.</param>
+        /// <param name="propertyName">Name of the property. Can be retrieve by the calling member.</param>
         protected void AddError(string error, [CallerMemberName]string propertyName = "")
         {
             if (!_errors.ContainsKey(propertyName))

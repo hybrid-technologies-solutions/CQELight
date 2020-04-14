@@ -10,6 +10,7 @@
     <PackageLicenseUrl></PackageLicenseUrl>
     <PackageProjectUrl>https://www.hybrid-technologies-solutions.com</PackageProjectUrl>
     <RepositoryUrl>https://github.com/cdie/CQELight</RepositoryUrl>
+    <PackageReleaseNotes>See concerned milestone on GitHub for informations</PackageReleaseNotes>
     <PackageTags>mahapps, mvvm</PackageTags>
     <LangVersion>latest</LangVersion>
     <PackageReleaseNotes></PackageReleaseNotes>

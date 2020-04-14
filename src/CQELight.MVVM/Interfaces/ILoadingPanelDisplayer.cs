@@ -13,7 +13,7 @@ namespace CQELight.MVVM.Interfaces
         /// </summary>
         /// <param name="waitMessage">Message.</param>
         /// <param name="options">Options for loading panel.</param>
-        Task ShowLoadingPanelAsync(string waitMessage, LoadingPanelOptions options = null);
+        Task ShowLoadingPanelAsync(string waitMessage, LoadingPanelOptions? options = null);
         /// <summary>
         /// Hide the loading panel.
         /// </summary>

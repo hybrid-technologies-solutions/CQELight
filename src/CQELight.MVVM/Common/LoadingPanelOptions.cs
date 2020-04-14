@@ -5,7 +5,6 @@
     /// </summary>
     public class LoadingPanelOptions
     {
-
         #region Properties
 
         /// <summary>
@@ -15,7 +14,7 @@
         /// <summary>
         /// An error message
         /// </summary>
-        public string TimeoutErrorMessage { get; set; }
+        public string TimeoutErrorMessage { get; set; } = "";
 
         #endregion
 

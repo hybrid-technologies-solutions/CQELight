@@ -65,6 +65,8 @@ namespace CQELight.MVVM.Integration.Tests
             await CoreDispatcher.DispatchMessageAsync(message).ConfigureAwait(false);
 
             TestViewModel.IsHandled.Should().BeTrue();
+
+            vm = null;
         }
 
         #endregion

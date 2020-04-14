@@ -14,7 +14,7 @@ namespace CQELight.MVVM
         /// <summary>
         /// Event to notify of change
         /// </summary>
-        public event PropertyChangedEventHandler PropertyChanged;
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         #endregion
 

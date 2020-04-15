@@ -138,10 +138,18 @@ namespace CQELight.Buses.RabbitMQ.Server
                                 if (objType.GetInterfaces().Any(i => i.Name == nameof(IDomainEvent)))
                                 {
                                     var evt = _config.QueueConfiguration.Serializer.DeserializeEvent(enveloppe.Data, objType);
-                                    _config.QueueConfiguration.Callback?.Invoke(evt);
-                                    if (_config.QueueConfiguration.DispatchInMemory && _inMemoryEventBus != null)
+                                    if (evt != null)
                                     {
-                                        await _inMemoryEventBus.PublishEventAsync(evt).ConfigureAwait(false);
+                                        _config.QueueConfiguration.Callback?.Invoke(evt);
+                                        if (_config.QueueConfiguration.DispatchInMemory && _inMemoryEventBus != null)
+                                        {
+                                            await _inMemoryEventBus.PublishEventAsync(evt).ConfigureAwait(false);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        _logger.LogWarning("An event has been received by RabbitMQ and cannot be deserialized. " +
+                                            $"Envelope data : {enveloppe.Data}");
                                     }
                                     consumer.Model.BasicAck(args.DeliveryTag, false);
                                 }

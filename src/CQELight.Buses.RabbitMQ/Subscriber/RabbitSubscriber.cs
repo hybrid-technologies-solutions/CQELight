@@ -120,51 +120,64 @@ namespace CQELight.Buses.RabbitMQ.Subscriber
                                 if (typeof(IDomainEvent).IsAssignableFrom(objType))
                                 {
                                     var evt = serializer.DeserializeEvent(enveloppe.Data, objType);
-                                    try
+                                    if (evt != null)
                                     {
-                                        _config.EventCustomCallback?.Invoke(evt);
-                                    }
-                                    catch (Exception e)
-                                    {
-                                        _logger.LogError(
-                                            $"Error when executing custom callback for event {objType.AssemblyQualifiedName}. {e}");
-                                        result = Result.Fail();
-                                    }
-                                    if (scopeFactory != null)
-                                    {
-                                        using (var scope = scopeFactory.CreateScope())
+                                        try
                                         {
-                                            var bus = scope.Resolve<InMemoryEventBus>();
-                                            if (_config.DispatchInMemory && bus != null)
+                                            _config.EventCustomCallback?.Invoke(evt);
+                                        }
+                                        catch (Exception e)
+                                        {
+                                            _logger.LogError(
+                                                $"Error when executing custom callback for event {objType.AssemblyQualifiedName}. {e}");
+                                            result = Result.Fail();
+                                        }
+                                        if (scopeFactory != null)
+                                        {
+                                            using (var scope = scopeFactory.CreateScope())
                                             {
-                                                result = await bus.PublishEventAsync(evt).ConfigureAwait(false);
+                                                var bus = scope.Resolve<InMemoryEventBus>();
+                                                if (_config.DispatchInMemory && bus != null)
+                                                {
+                                                    result = await bus.PublishEventAsync(evt).ConfigureAwait(false);
+                                                }
                                             }
                                         }
+                                    }
+                                    else
+                                    {
+                                        _logger.LogWarning($"An event received by RabbitMQ wasn't deserialized. Envelope body : {enveloppe.Data}");
                                     }
                                 }
                                 else if (typeof(ICommand).IsAssignableFrom(objType))
                                 {
                                     var cmd = serializer.DeserializeCommand(enveloppe.Data, objType);
-                                    try
+                                    if (cmd != null)
                                     {
-                                        _config.CommandCustomCallback?.Invoke(cmd);
-                                    }
-                                    catch (Exception e)
-                                    {
-                                        _logger.LogError(
-                                            $"Error when executing custom callback for command {objType.AssemblyQualifiedName}. {e}");
-                                        result = Result.Fail();
-                                    }
-                                    if (scopeFactory != null)
-                                    {
-                                        using (var scope = scopeFactory.CreateScope())
+                                        try
                                         {
-                                            var bus = scope.Resolve<InMemoryCommandBus>();
-                                            if (_config.DispatchInMemory && bus != null)
+                                            _config.CommandCustomCallback?.Invoke(cmd);
+                                        }
+                                        catch (Exception e)
+                                        {
+                                            _logger.LogError(e, $"Error when executing custom callback for command {objType.AssemblyQualifiedName}");
+                                            result = Result.Fail();
+                                        }
+                                        if (scopeFactory != null)
+                                        {
+                                            using (var scope = scopeFactory.CreateScope())
                                             {
-                                                result = await bus.DispatchAsync(cmd).ConfigureAwait(false);
+                                                var bus = scope.Resolve<InMemoryCommandBus>();
+                                                if (_config.DispatchInMemory && bus != null)
+                                                {
+                                                    result = await bus.DispatchAsync(cmd).ConfigureAwait(false);
+                                                }
                                             }
                                         }
+                                    }
+                                    else
+                                    {
+                                        _logger.LogWarning($"A command received by RabbitMQ wasn't deserialized. Envelope body : {enveloppe.Data}");
                                     }
                                 }
                             }

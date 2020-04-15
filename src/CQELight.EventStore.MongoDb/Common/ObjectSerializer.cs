@@ -24,12 +24,12 @@ namespace CQELight.EventStore.MongoDb.Common
             if (!string.IsNullOrWhiteSpace(objAsJson))
             {
                 var serialized = objAsJson.FromJson<SerializedObject>();
-                if (serialized != null)
+                if (!string.IsNullOrWhiteSpace(serialized?.Data))
                 {
                     return serialized.Data.FromJson(Type.GetType(serialized.Type));
                 }
             }
-            return null!;
+            return null;
         }
 
         #endregion

@@ -39,8 +39,8 @@ namespace CQELight.DAL
         #region Public methods
 
         public virtual IAsyncEnumerable<T> GetAsync<T>(
-            Expression<Func<T, bool>> filter = null,
-            Expression<Func<T, object>> orderBy = null,
+            Expression<Func<T, bool>>? filter = null,
+            Expression<Func<T, object>>? orderBy = null,
             bool includeDeleted = false) where T : class
             => dataReaderAdapter.GetAsync(filter, orderBy, includeDeleted);
 
@@ -91,10 +91,10 @@ namespace CQELight.DAL
 
         public virtual async Task<int> SaveAsync()
         {
-            await threadSafety.WaitAsync();
+            await threadSafety.WaitAsync().ConfigureAwait(false);
             try
             {
-                await Task.WhenAll(markingTasks);
+                await Task.WhenAll(markingTasks).ConfigureAwait(false);
                 markingTasks.Clear();
                 return await dataWriterAdapter.SaveAsync().ConfigureAwait(false);
             }

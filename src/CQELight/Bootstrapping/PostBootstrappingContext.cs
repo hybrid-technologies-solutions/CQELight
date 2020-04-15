@@ -17,6 +17,7 @@ namespace CQELight.Bootstrapping
         /// Collection of notifications that has been produced by bootstrapping context.
         /// </summary>
         public IEnumerable<BootstrapperNotification> Notifications { get; internal set; }
+            = Enumerable.Empty<BootstrapperNotification>();
 
         /// <summary>
         /// Flag that indicates if an error has been met during bootstrapping.
@@ -26,7 +27,7 @@ namespace CQELight.Bootstrapping
         /// <summary>
         /// IoC resolution scope, if IoC has been configured.
         /// </summary>
-        public IScope Scope { get; internal set; }
+        public IScope? Scope { get; internal set; }
 
         #endregion
 
@@ -34,7 +35,6 @@ namespace CQELight.Bootstrapping
 
         internal PostBootstrappingContext()
         {
-
         }
 
         #endregion

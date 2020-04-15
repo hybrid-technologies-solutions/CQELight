@@ -17,7 +17,7 @@ namespace CQELight.Abstractions.Dispatcher.Interfaces
         /// </summary>
         /// <param name="data">Collection of events with their associated context.</param>
         /// <param name="callerMemberName">Caller name.</param>
-        Task PublishEventsRangeAsync(IEnumerable<(IDomainEvent Event, IEventContext Context)> data, [CallerMemberName] string callerMemberName = "");
+        Task PublishEventsRangeAsync(IEnumerable<(IDomainEvent Event, IEventContext? Context)> data, [CallerMemberName] string callerMemberName = "");
         /// <summary>
         /// Publish a range of events.
         /// </summary>
@@ -30,7 +30,7 @@ namespace CQELight.Abstractions.Dispatcher.Interfaces
         /// <param name="event">Event to dispatch.</param>
         /// <param name="context">Context to associate.</param>
         /// <param name="callerMemberName">Caller name.</param>
-        Task PublishEventAsync(IDomainEvent @event, IEventContext context = null, [CallerMemberName] string callerMemberName = "");
+        Task PublishEventAsync(IDomainEvent @event, IEventContext? context = null, [CallerMemberName] string callerMemberName = "");
         /// <summary>
         /// Dispatch asynchronously a command and its context within every bus that it's configured for.
         /// </summary>
@@ -38,6 +38,6 @@ namespace CQELight.Abstractions.Dispatcher.Interfaces
         /// <param name="context">Context to associate.</param>
         /// <param name="callerMemberName">Calling method.</param>
         /// <returns>Result of command execution.</returns>
-        Task<Result> DispatchCommandAsync(ICommand command, ICommandContext context = null, [CallerMemberName] string callerMemberName = "");
+        Task<Result> DispatchCommandAsync(ICommand command, ICommandContext? context = null, [CallerMemberName] string callerMemberName = "");
     }
 }

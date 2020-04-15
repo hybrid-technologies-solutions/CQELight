@@ -7,7 +7,6 @@ namespace CQELight.Buses
     /// </summary>
     public struct EventLifeTimeConfiguration
     {
-
         #region Properties
 
         /// <summary>

@@ -99,11 +99,11 @@ namespace CQELight.Tools.Extensions
         /// </summary>
         /// <param name="collection">Collection to filter.</param>
         /// <returns>Filtered collection.</returns>
-        public static IEnumerable<T> WhereNotNull<T>(this IEnumerable<T> collection)
+        public static IEnumerable<T>? WhereNotNull<T>(this IEnumerable<T>? collection)
         {
             if (collection != null)
             {
-                return collection.Where(c => !EqualityComparer<T>.Default.Equals(c, default(T)));
+                return collection.Where(c => !EqualityComparer<T>.Default.Equals(c, default));
             }
             return collection;
         }

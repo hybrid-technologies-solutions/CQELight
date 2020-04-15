@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using System;
 using System.IO;
 using System.Text;
+using System.Diagnostics.CodeAnalysis;
 
 namespace CQELight.Tools.Extensions
 {
@@ -12,15 +13,19 @@ namespace CQELight.Tools.Extensions
     public static class StringExtensions
     {
         #region Public static methods
+
         /// <summary>
         /// Deserialize base object from json.
-        /// You need to be sure of type you receive to 
+        /// You need to be sure of type you receive to
         /// unbox it. If you alread have the type, use
         /// another "FromJson" method.
         /// </summary>
         /// <param name="json">Json to deserialize.</param>
         /// <returns>Object instance</returns>
-        public static object FromJson(this string json)
+#if NETSTANDARD2_1
+        [return: MaybeNull]
+#endif
+        public static object? FromJson(this string json)
         {
             if (string.IsNullOrWhiteSpace(json))
             {
@@ -36,11 +41,14 @@ namespace CQELight.Tools.Extensions
         /// <param name="contracts">Collection of contracts to use for deserialization.</param>
         /// <paramtype name="T">Expected object type.</paramtype>
         /// <returns>Object instance</returns>
+#if NETSTANDARD2_1
+        [return: MaybeNull]
+#endif
         public static T FromJson<T>(this string json, params IJsonContractDefinition[] contracts)
         {
             if (string.IsNullOrWhiteSpace(json))
             {
-                return default(T);
+                return default;
             }
 
             var ret = FromJson(json, typeof(T), contracts);
@@ -48,7 +56,7 @@ namespace CQELight.Tools.Extensions
             {
                 return t;
             }
-            return default(T);
+            return default;
         }
 
         /// <summary>
@@ -57,11 +65,14 @@ namespace CQELight.Tools.Extensions
         /// <param name="json">Json to deserialize.</param>
         /// <paramtype name="T">Expected object type.</paramtype>
         /// <returns>Object instance</returns>
+#if NETSTANDARD2_1
+        [return: MaybeNull]
+#endif
         public static T FromJson<T>(this string json)
         {
             if (string.IsNullOrWhiteSpace(json))
             {
-                return default(T);
+                return default;
             }
 
             var ret = FromJson(json, typeof(T));
@@ -69,7 +80,7 @@ namespace CQELight.Tools.Extensions
             {
                 return t;
             }
-            return default(T);
+            return default;
         }
 
         /// <summary>
@@ -79,11 +90,14 @@ namespace CQELight.Tools.Extensions
         /// <param name="settings">Custom json settings</param>
         /// <paramtype name="T">Expected object type.</paramtype>
         /// <returns>Object instance</returns>
+#if NETSTANDARD2_1
+        [return: MaybeNull]
+#endif
         public static T FromJson<T>(this string json, JsonSerializerSettings settings)
         {
             if (string.IsNullOrWhiteSpace(json))
             {
-                return default(T);
+                return default;
             }
 
             var ret = FromJson(json, typeof(T), settings);
@@ -91,7 +105,7 @@ namespace CQELight.Tools.Extensions
             {
                 return t;
             }
-            return default(T);
+            return default;
         }
 
         /// <summary>
@@ -101,7 +115,7 @@ namespace CQELight.Tools.Extensions
         /// <param name="objectType">Type of object to deserialize</param>
         /// <param name="contracts">Collection of contracts to use for deserialization.</param>
         /// <returns>Object instance.</returns>
-        public static object FromJson(this string json, Type objectType, params IJsonContractDefinition[] contracts)
+        public static object? FromJson(this string json, Type objectType, params IJsonContractDefinition[] contracts)
         {
             if (string.IsNullOrWhiteSpace(json))
             {
@@ -120,7 +134,7 @@ namespace CQELight.Tools.Extensions
         /// <param name="json">Json to deserialize.</param>
         /// <param name="objectType">Expected object type.</param>
         /// <returns>Object instance.</returns>
-        public static object FromJson(this string json, Type objectType)
+        public static object? FromJson(this string json, Type objectType)
             => FromJson(json, objectType, settings: null);
 
         /// <summary>
@@ -130,7 +144,7 @@ namespace CQELight.Tools.Extensions
         /// <param name="objectType">Expected object type.</param>
         /// <param name="settings">Custom json settings</param>
         /// <returns>Object instance</returns>
-        public static object FromJson(this string json, Type objectType, JsonSerializerSettings settings)
+        public static object? FromJson(this string json, Type objectType, JsonSerializerSettings? settings)
         {
             if (string.IsNullOrWhiteSpace(json))
             {
@@ -162,7 +176,7 @@ namespace CQELight.Tools.Extensions
             return outBuffer.Length;
         }
 
-        #endregion
+#endregion
 
     }
 }

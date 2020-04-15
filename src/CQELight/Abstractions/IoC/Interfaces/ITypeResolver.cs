@@ -15,14 +15,14 @@ namespace CQELight.Abstractions.IoC.Interfaces
         /// <typeparam name="T">Type of object to retrieve</typeparam>
         /// <param name="parameters">Parameters to help with resolution.</param>
         /// <returns>Founded instances</returns>
-        T Resolve<T>(params IResolverParameter[] parameters) where T : class;
+        T? Resolve<T>(params IResolverParameter[] parameters) where T : class;
         /// <summary>
         /// Retrieve an instance of an object type for IoC container.
         /// </summary>
         /// <param name="type">Type of object to retrieve.</param>
         /// <param name="parameters">Parameters to help with resolution.</param>
         /// <returns>Founded instances</returns>
-        object Resolve(Type type, params IResolverParameter[] parameters);
+        object? Resolve(Type type, params IResolverParameter[] parameters);
         /// <summary>
         /// Retrieve all instances of a specific type from IoC container.
         /// </summary>

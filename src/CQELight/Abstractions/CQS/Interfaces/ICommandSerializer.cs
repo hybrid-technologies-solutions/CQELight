@@ -19,7 +19,7 @@ namespace CQELight.Abstractions.CQS.Interfaces
         /// <param name="data">String data that contains serialized command.</param>
         /// <param name="commandType">Type of the command.</param>
         /// <returns>Instance of command.</returns>
-        ICommand DeserializeCommand(string data, Type commandType);
+        ICommand? DeserializeCommand(string data, Type commandType);
         /// <summary>
         /// Deserialize a command from string.
         /// </summary>

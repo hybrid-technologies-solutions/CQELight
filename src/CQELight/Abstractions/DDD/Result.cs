@@ -8,7 +8,6 @@ namespace CQELight.Abstractions.DDD
     /// </summary>
     public class Result
     {
-
         #region Properties
 
         /// <summary>
@@ -151,5 +150,4 @@ namespace CQELight.Abstractions.DDD
         #endregion
 
     }
-
 }

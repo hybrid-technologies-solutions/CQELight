@@ -17,5 +17,13 @@ namespace CQELight.Dispatcher.Configuration.Internal
 
         #endregion
 
+        #region Ctor
+
+        public EventDispatchConfiguration(Type eventType)
+        {
+            EventType = eventType ?? throw new ArgumentNullException(nameof(eventType));
+        }
+
+        #endregion
     }
 }

@@ -16,6 +16,6 @@ namespace CQELight.Abstractions.Events.Interfaces
         /// <param name="transactionnalEvent">Transactionnal event instance.</param>
         /// <param name="context">Dispatching context.</param>
         /// <returns>Result of corresponding operation.</returns>
-        Task<Result> HandleAsync(T transactionnalEvent, IEventContext context = null);
+        Task<Result> HandleAsync(T transactionnalEvent, IEventContext? context = null);
     }
 }

@@ -17,8 +17,8 @@ namespace CQELight.Dispatcher.Configuration.Commands
         internal IList<Type> _busConfigs;
         internal Type _commandType;
         internal bool _isSecurityCritical;
-        internal Type _serializerType;
-        internal Action<Exception> _errorHandler;
+        internal Type? _serializerType;
+        internal Action<Exception>? _errorHandler;
 
         #endregion
 

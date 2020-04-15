@@ -59,7 +59,7 @@ namespace CQELight.DAL.Common
         /// Get key value.
         /// </summary>
         /// <returns>Value of the key boxed in a object.</returns>
-        public abstract object GetKeyValue();
+        public abstract object? GetKeyValue();
 
         #endregion
 

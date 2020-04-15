@@ -8,6 +8,6 @@
         /// <summary>
         /// Gets the value of the parameter.
         /// </summary>
-        object Value { get; }
+        object? Value { get; }
     }
 }

@@ -11,7 +11,6 @@ namespace CQELight.Buses
     /// </summary>
     public abstract class BaseEventBusConfiguration
     {
-
         #region Members
 
         internal List<Type> _parallelDispatchEventTypes
@@ -22,7 +21,7 @@ namespace CQELight.Buses
         #region Properties
 
         /// <summary>
-        /// Configuration for events lifetimes. 
+        /// Configuration for events lifetimes.
         /// </summary>
         public IEnumerable<EventLifeTimeConfiguration> EventsLifetime { get; }
         /// <summary>

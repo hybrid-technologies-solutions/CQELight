@@ -9,7 +9,6 @@ namespace CQELight.Tools.Serialisation
     /// </summary>
     public class AllFieldSerialisationContract : IJsonContractDefinition
     {
-
         #region IJsonContractDefinition
 
         public void SetDeserialisationPropertyContractDefinition(JsonProperty property, MemberInfo memberInfo)

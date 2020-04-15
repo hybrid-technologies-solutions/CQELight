@@ -13,10 +13,9 @@ namespace CQELight.Extensions
     /// </summary>
     public static class IEventSourcedAggregateExtensions
     {
-
         #region Static members
 
-        private static ConcurrentDictionary<Type, (PropertyInfo PropertyInfos, FieldInfo FieldInfos)> _stateInfosByType
+        private static readonly ConcurrentDictionary<Type, (PropertyInfo PropertyInfos, FieldInfo FieldInfos)> _stateInfosByType
             = new ConcurrentDictionary<Type, (PropertyInfo, FieldInfo)>();
 
         #endregion
@@ -35,21 +34,21 @@ namespace CQELight.Extensions
                 throw new ArgumentNullException(nameof(aggregate));
             }
             var aggregateType = aggregate.GetType();
-            var infos = _stateInfosByType.GetOrAdd(aggregateType, t =>
+            var (PropertyInfos, FieldInfos) = _stateInfosByType.GetOrAdd(aggregateType, _ =>
              {
                  PropertyInfo stateProp = aggregateType.GetAllProperties().FirstOrDefault(p => p.PropertyType.IsSubclassOf(typeof(AggregateState)));
                  FieldInfo stateField = aggregateType.GetAllFields().FirstOrDefault(f => f.FieldType.IsSubclassOf(typeof(AggregateState)));
                  return (stateProp, stateField);
              });
 
-            AggregateState state = null;
-            if (infos.PropertyInfos != null)
+            AggregateState? state = null;
+            if (PropertyInfos != null)
             {
-                state = infos.PropertyInfos.GetValue(aggregate) as AggregateState;
+                state = PropertyInfos.GetValue(aggregate) as AggregateState;
             }
-            else if (infos.FieldInfos != null)
+            else if (FieldInfos != null)
             {
-                state = infos.FieldInfos.GetValue(aggregate) as AggregateState;
+                state = FieldInfos.GetValue(aggregate) as AggregateState;
             }
 
             if (state == null)

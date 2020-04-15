@@ -14,6 +14,6 @@ namespace CQELight.Abstractions.Events.Interfaces
         /// </summary>
         /// <param name="domainEvent">Domain event to handle.</param>
         /// <param name="context">Associated context.</param>
-        Task<Result> HandleAsync(T domainEvent, IEventContext context = null);
+        Task<Result> HandleAsync(T domainEvent, IEventContext? context = null);
     }
 }

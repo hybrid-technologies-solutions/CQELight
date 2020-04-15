@@ -18,6 +18,6 @@ namespace CQELight.Abstractions.IoC.Interfaces
         /// </summary>
         /// <param name="typeRegisterAction">Specific child registration..</param>
         /// <returns>Child scope.</returns>
-        IScope CreateChildScope(Action<ITypeRegister> typeRegisterAction = null);
+        IScope CreateChildScope(Action<ITypeRegister>? typeRegisterAction = null);
     }
 }

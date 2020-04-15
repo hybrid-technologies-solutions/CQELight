@@ -1,6 +1,7 @@
 ﻿using CQELight.Bootstrapping.Notifications;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace CQELight
 {
@@ -10,13 +11,12 @@ namespace CQELight
     /// </summary>
     public class BootstrappingException : Exception
     {
-
         #region Properties
 
         /// <summary>
         /// Collection of notifications.
         /// </summary>
-        public IEnumerable<BootstrapperNotification> Notifications { get; }
+        public IEnumerable<BootstrapperNotification> Notifications { get; } = Enumerable.Empty<BootstrapperNotification>();
 
         #endregion
 
@@ -42,7 +42,7 @@ namespace CQELight
         /// Creates a BootstrappingException with the desired message.
         /// </summary>
         /// <param name="message">Desired message for exception.</param>
-        public BootstrappingException(string message) 
+        public BootstrappingException(string message)
             : base(message)
         {
         }
@@ -53,7 +53,7 @@ namespace CQELight
         /// </summary>
         /// <param name="message">Desired message for the exception.</param>
         /// <param name="innerException">Inner exception to use.</param>
-        public BootstrappingException(string message, Exception innerException) 
+        public BootstrappingException(string message, Exception innerException)
             : base(message, innerException)
         {
         }

@@ -9,7 +9,6 @@ namespace CQELight.IoC
     public class TypeRegistration<T> : TypeRegistration
         where T : class
     {
-
         #region Ctor
 
         /// <summary>

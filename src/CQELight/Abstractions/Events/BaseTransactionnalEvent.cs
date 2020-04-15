@@ -16,7 +16,7 @@ namespace CQELight.Abstractions.Events
         /// <summary>
         /// Ordered collection of events of the transaction.
         /// </summary>
-        public ImmutableQueue<IDomainEvent> Events { get; private set; }
+        public ImmutableQueue<IDomainEvent> Events { get; private set; } = ImmutableQueue<IDomainEvent>.Empty;
 
         #endregion
 
@@ -53,10 +53,9 @@ namespace CQELight.Abstractions.Events
             }
             if (!events.Any() || !events.Skip(1).Any())
             {
-                throw new ArgumentException("BaseTransactionnalEvent.Ctor() : Inconsitant number of events " +
-                   $"(should be greated than 1). Actually : {events.Count()}");
+                throw new ArgumentException("BaseTransactionnalEvent.Ctor() : Inconsitant number of events for a transaction " +
+                   $"(it should be greater than 1). Actually : {events.Count()}");
             }
-            Events = ImmutableQueue<IDomainEvent>.Empty;
             foreach (var item in events)
             {
                 Events = Events.Enqueue(item);

@@ -13,7 +13,7 @@ namespace CQELight.Abstractions.DDD
         /// <summary>
         /// Unique Id of the Entity.
         /// </summary>
-        public T Id { get; protected set; }
+        public T Id { get; protected set; } = default!;
 
         #endregion
 
@@ -39,14 +39,14 @@ namespace CQELight.Abstractions.DDD
         {
             if (!this.SameTypeCheck(obj))
                 return false;
-            return (obj as Entity<T>).Id.Equals(Id);
+            return ((Entity<T>)obj).Id?.Equals(Id) == true;
         }
 
         /// <summary>
         /// Getting hashcode of the object.
         /// </summary>
         /// <returns>Unique hashcode.</returns>
-        public override int GetHashCode() => Id.ToString().GetHashCode();
+        public override int GetHashCode() => Id?.ToString()?.GetHashCode() ?? 0;
 
         /// <summary>
         /// Override of equality operator
@@ -56,10 +56,10 @@ namespace CQELight.Abstractions.DDD
         /// <returns>True if both have same Id, false otherwise.</returns>
         public static bool operator ==(Entity<T> obj1, Entity<T> obj2)
         {
-            if (ReferenceEquals(obj1, null) && ReferenceEquals(obj2, null))
+            if (obj1 is null && obj2 is null)
                 return true;
 
-            if (ReferenceEquals(obj1, null) || ReferenceEquals(obj2, null))
+            if (obj1 is null || obj2 is null)
                 return false;
 
             return obj1.Equals(obj2);

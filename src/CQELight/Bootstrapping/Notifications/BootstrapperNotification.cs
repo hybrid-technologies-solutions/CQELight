@@ -42,7 +42,7 @@ namespace CQELight.Bootstrapping.Notifications
         /// </summary>
         BusServiceMissing,
         /// <summary>
-        /// Some IoC registrations has been made by someone but there's 
+        /// Some IoC registrations has been made by someone but there's
         /// not IoC service to handle them
         /// </summary>
         IoCRegistrationsHasBeenMadeButNoIoCService,
@@ -57,7 +57,6 @@ namespace CQELight.Bootstrapping.Notifications
     /// </summary>
     public class BootstrapperNotification
     {
-
         #region Properties
 
         /// <summary>
@@ -71,11 +70,11 @@ namespace CQELight.Bootstrapping.Notifications
         /// <summary>
         /// Message of the current notification, if any.
         /// </summary>
-        public string Message { get; }
+        public string Message { get; } = "";
         /// <summary>
         /// Type of service that have created this notification.
         /// </summary>
-        public Type BootstrapperServiceType { get; }
+        public Type? BootstrapperServiceType { get; }
 
         #endregion
 
@@ -83,7 +82,6 @@ namespace CQELight.Bootstrapping.Notifications
 
         internal BootstrapperNotification()
         {
-
         }
 
         /// <summary>
@@ -111,7 +109,7 @@ namespace CQELight.Bootstrapping.Notifications
         public BootstrapperNotification(BootstrapperNotificationType type, string message, Type bootstrapperServiceType)
             : this(type, message)
         {
-            BootstrapperServiceType 
+            BootstrapperServiceType
                 = bootstrapperServiceType ?? throw new ArgumentNullException(nameof(bootstrapperServiceType));
         }
 

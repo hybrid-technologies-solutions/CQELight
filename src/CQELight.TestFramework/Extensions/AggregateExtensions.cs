@@ -17,7 +17,7 @@ namespace CQELight.TestFramework.Extensions
         /// <param name="aggregate">Instance of aggregate.</param>
         public static void ClearDomainEvents<T>(this AggregateRoot<T> aggregate)
         {
-            if (aggregate == null)
+            if (aggregate is null)
             {
                 throw new ArgumentNullException(nameof(aggregate));
             }

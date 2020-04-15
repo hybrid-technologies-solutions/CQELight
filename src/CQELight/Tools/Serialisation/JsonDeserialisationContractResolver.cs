@@ -11,17 +11,8 @@ namespace CQELight.Tools.Serialisation
     /// <summary>
     /// Contrat de déserialisation Json.
     /// </summary>
-    public class JsonDeserialisationContractResolver : DefaultContractResolver
+    public class JsonDeserialisationContractResolver : BaseJsonContractResolver
     {
-        #region Static members
-
-        private static readonly List<IJsonContractDefinition> s_IJsonContractDefinitionCache = new List<IJsonContractDefinition>();
-        private static readonly object s_lockObject = new object();
-        static readonly IEnumerable<Type> s_AllContracts = ReflectionTools.GetAllTypes()
-                .Where(m => m.GetInterfaces().Contains(typeof(IJsonContractDefinition)));
-
-        #endregion
-
         #region Static properties
 
         /// <summary>
@@ -36,44 +27,16 @@ namespace CQELight.Tools.Serialisation
 
         #endregion
 
-        #region Static methods
-
-
-        private static IJsonContractDefinition GetOrCreateInstance(Type type)
-        {
-            lock (s_lockObject)
-            {
-                IJsonContractDefinition instance = s_IJsonContractDefinitionCache.Find(m => m.GetType() == type);
-                if (instance == null)
-                {
-                    instance = (IJsonContractDefinition)type.CreateInstance();
-                    s_IJsonContractDefinitionCache.Add(instance);
-                }
-                return instance;
-            }
-        }
-
-        #endregion
-
-        #region Members
-
-        private readonly IEnumerable<IJsonContractDefinition> _contracts;
-
-        #endregion
-
         #region Ctor
 
         public JsonDeserialisationContractResolver(params IJsonContractDefinition[] contracts)
+            : base(contracts)
         {
-            _contracts = contracts;
         }
 
         public JsonDeserialisationContractResolver(bool autoLoadContracts = false)
+            :base(autoLoadContracts)
         {
-            if (autoLoadContracts)
-            {
-                _contracts = s_AllContracts.Select(GetOrCreateInstance);
-            }
         }
 
         #endregion
@@ -95,11 +58,11 @@ namespace CQELight.Tools.Serialisation
         protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
         {
             JsonProperty property = base.CreateProperty(member, memberSerialization);
-            if (_contracts?.Any() == true)
+            if (contracts?.Any() == true)
             {
                 if ((member is PropertyInfo || member is FieldInfo) && !member.DeclaringType.IsInterface)
                 {
-                    foreach (var contract in _contracts.ToList())
+                    foreach (var contract in contracts.ToList())
                     {
                         contract.SetDeserialisationPropertyContractDefinition(property, member);
                     }

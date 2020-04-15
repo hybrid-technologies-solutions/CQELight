@@ -42,7 +42,7 @@ namespace CQELight.DAL.Common
             {
                 return false;
             }
-            return (obj as PersistableEntity).Id.Equals(Id);
+            return ((PersistableEntity)obj).Id.Equals(Id);
         }
 
         /// <summary>Serves as the default hash function.</summary>

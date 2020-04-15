@@ -10,11 +10,10 @@ namespace CQELight
     /// </summary>
     public class BootstrappingContext
     {
-
         #region Members
 
-        private IEnumerable<BootstrapperServiceType> _registeredServices;
-        private IEnumerable<Type> _iocRegisteredTypes;
+        private readonly IEnumerable<BootstrapperServiceType> _registeredServices;
+        private readonly IEnumerable<Type> _iocRegisteredTypes;
 
         #endregion
 
@@ -22,7 +21,7 @@ namespace CQELight
 
         /// <summary>
         /// Flag that indicates if strict mode has been asked to bootstrapper.
-        /// In your extensions, strict mode should be used to check for example 
+        /// In your extensions, strict mode should be used to check for example
         /// that some things haven't been configured uselessly or that best practices are applied by callers.
         /// Generally, strict checks should generates Error notifications.
         /// </summary>
@@ -30,7 +29,7 @@ namespace CQELight
 
         /// <summary>
         /// Flag that indicates if checkOptimal has been asked to bootstrapper.
-        /// In your extensions, checkOptimal mode should be used for example to perform 
+        /// In your extensions, checkOptimal mode should be used for example to perform
         /// some custom checks that ensure that the system will work as optimal as possible.
         /// Generally, checkOptimal checks should generates Warning or Info notifications.
         /// </summary>
@@ -39,7 +38,7 @@ namespace CQELight
         /// <summary>
         /// Associated bootstrapper instance.
         /// </summary>
-        public Bootstrapper Bootstrapper { get; internal set; }
+        public Bootstrapper Bootstrapper { get; }
 
         #endregion
 
@@ -51,12 +50,15 @@ namespace CQELight
         /// <param name="registeredServices">Collection of registered services.</param>
         /// <param name="iocRegisteredTypes">Collection of types that are registered in Bootstrapper IoC registrations
         /// collection</param>
+        /// <param name="bootstrapper">Instance of boostrapper</param>
         internal BootstrappingContext(
             IEnumerable<BootstrapperServiceType> registeredServices,
-            IEnumerable<Type> iocRegisteredTypes)
+            IEnumerable<Type> iocRegisteredTypes,
+            Bootstrapper bootstrapper)
         {
             _registeredServices = registeredServices;
             _iocRegisteredTypes = iocRegisteredTypes;
+            Bootstrapper = bootstrapper;
         }
 
         #endregion

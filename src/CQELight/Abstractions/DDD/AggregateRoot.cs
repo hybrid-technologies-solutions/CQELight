@@ -53,7 +53,7 @@ namespace CQELight.Abstractions.DDD
         /// Publish all domain events holded by the aggregate with a specified dispatcher.
         /// </summary>
         /// <param name="dispatcher">Dispatcher used for publishing.</param>
-        public async Task PublishDomainEventsAsync(IDispatcher dispatcher)
+        public async Task PublishDomainEventsAsync(IDispatcher? dispatcher)
         {
             await _lockSecurity.WaitAsync().ConfigureAwait(false);
             try
@@ -81,7 +81,7 @@ namespace CQELight.Abstractions.DDD
                                 if (evt.AggregateId == null)
                                 {
                                     var aggIdProp = props.FirstOrDefault(p => p.Name == nameof(IDomainEvent.AggregateId));
-                                    aggIdProp?.SetMethod?.Invoke(evt, new object[] { Id });
+                                    aggIdProp?.SetMethod?.Invoke(evt, new object?[] { Id });
                                 }
                                 if (evt.AggregateType == null)
                                 {
@@ -125,7 +125,7 @@ namespace CQELight.Abstractions.DDD
         /// <summary>
         /// Add a domain event to the aggregate events collection.
         /// </summary>
-        /// <param name="newEvent">Event to add.</param>   
+        /// <param name="newEvent">Event to add.</param>
         protected virtual void AddDomainEvent(IDomainEvent newEvent)
         {
             _lockSecurity.Wait();

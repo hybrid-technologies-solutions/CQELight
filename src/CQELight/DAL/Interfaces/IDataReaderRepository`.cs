@@ -13,7 +13,6 @@ namespace CQELight.DAL.Interfaces
     public interface IDataReaderRepository<T>
         where T : IPersistableEntity
     {
-
         /// <summary>
         /// Get asynchronously a bunch of entites from repository, by applying filter, order and some other.
         /// </summary>

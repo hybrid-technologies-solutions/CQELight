@@ -5,9 +5,8 @@
     /// </summary>
     public interface IPersistableEntity
     {
-
         /// <summary>
-        /// Check if key is defined or not. 
+        /// Check if key is defined or not.
         /// Although this can be done by reflection, the choice
         /// to force to implement it is purely for performance.
         /// </summary>
@@ -20,6 +19,6 @@
         /// to force to implement it is purely for performance.
         /// </summary>
         /// <returns>Value of the key boxed in a object.</returns>
-        object GetKeyValue();
+        object? GetKeyValue();
     }
 }

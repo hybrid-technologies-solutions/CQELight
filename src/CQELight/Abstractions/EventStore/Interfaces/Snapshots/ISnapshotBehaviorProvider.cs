@@ -9,12 +9,11 @@ namespace CQELight.Abstractions.EventStore.Interfaces
     {
         /// <summary>
         /// Gets the behavior according of a specific event type.
-        /// Please note that this can be called multiple times from concurrent thread, so 
+        /// Please note that this can be called multiple times from concurrent thread, so
         /// you should pay attention to thread safety in your own implementation.
         /// </summary>
         /// <param name="type">Event type.</param>
         /// <returns>Snapshot behavior.</returns>
-        ISnapshotBehavior GetBehaviorForEventType(Type type);
-
+        ISnapshotBehavior? GetBehaviorForEventType(Type type);
     }
 }

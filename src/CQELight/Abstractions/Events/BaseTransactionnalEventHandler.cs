@@ -44,11 +44,11 @@ namespace CQELight.Abstractions.Events
         /// </summary>
         /// <param name="transactionnalEvent">Transactionnal event instance.</param>
         /// <param name="context">Dispatching context.</param>
-        public async Task<Result> HandleAsync(TEvent transactionnalEvent, IEventContext context = null)
+        public async Task<Result> HandleAsync(TEvent transactionnalEvent, IEventContext? context = null)
         {
             var queue = transactionnalEvent.Events;
             var result = await BeforeTreatEventsAsync().ConfigureAwait(false);
-            IDomainEvent evt = queue.Peek();
+            IDomainEvent? evt = queue.Peek();
             while (evt != null)
             {
                 result = result.Combine(await TreatEventAsync(evt).ConfigureAwait(false));
@@ -62,8 +62,7 @@ namespace CQELight.Abstractions.Events
                     evt = null;
                 }
             }
-            result = result.Combine(await AfterTreatEventsAsync().ConfigureAwait(false));
-            return result;
+            return result.Combine(await AfterTreatEventsAsync().ConfigureAwait(false));
         }
 
         #endregion

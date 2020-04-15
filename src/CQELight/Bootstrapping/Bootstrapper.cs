@@ -59,7 +59,7 @@ namespace CQELight
         /// <summary>
         /// Occurs when bootstrapping is finished.
         /// </summary>
-        public event Action<PostBootstrappingContext> OnPostBootstrapping;
+        public event Action<PostBootstrappingContext>? OnPostBootstrapping;
 
         #endregion
 
@@ -82,7 +82,6 @@ namespace CQELight
         /// something is not good in configuration.
         /// </summary>
         /// <param name="strict">Flag to indicates if bootstrapper should stricly validates its content.</param>
-
         [Obsolete("Use Bootstrapper(BootstrapperOptions) instead. This ctor will be removed in 2.0")]
         public Bootstrapper(bool strict)
             : this()
@@ -96,7 +95,6 @@ namespace CQELight
         /// <param name="strict">Flag to indicates if bootstrapper should stricly validates its content.</param>
         /// <param name="checkOptimal">Flag to indicates if optimal system is currently 'On', which means
         /// that one service of each kind should be provided.</param>
-
         [Obsolete("Use Bootstrapper(BootstrapperOptions) instead. This ctor will be removed in 2.0")]
         public Bootstrapper(bool strict, bool checkOptimal)
             : this(strict)
@@ -112,7 +110,6 @@ namespace CQELight
         /// that one service of each kind should be provided.</param>
         /// <param name="throwExceptionOnErrorNotif">Flag to indicates if any encountered error notif
         /// should throw <see cref="BootstrappingException"/></param>
-
         [Obsolete("Use Bootstrapper(BootstrapperOptions) instead. This ctor will be removed in 2.0")]
         public Bootstrapper(bool strict, bool checkOptimal, bool throwExceptionOnErrorNotif)
             : this(strict, checkOptimal)
@@ -226,7 +223,7 @@ namespace CQELight
         /// <summary>
         /// Setting up system dispatching configuration with the following configuration.
         /// All manually created dispatchers will be created using their own configuration if speciffied,
-        /// or the one specified here. If this method is not called, default configuration will be used for 
+        /// or the one specified here. If this method is not called, default configuration will be used for
         /// all dispatchers.
         /// Configuration passed here will be applied to CoreDispatcher as well.
         /// </summary>
@@ -245,7 +242,7 @@ namespace CQELight
         /// <summary>
         /// Setting up system dispatching configuration with the following configuration.
         /// All manually created dispatchers will be created using their own configuration if speciffied,
-        /// or the one specified here. If this method is not called, default configuration will be used for 
+        /// or the one specified here. If this method is not called, default configuration will be used for
         /// all dispatchers.
         /// Configuration passed here will be applied to CoreDispatcher as well.
         /// There's no need to call "Build" at the end of this method.
@@ -296,7 +293,7 @@ namespace CQELight
         }
 
         /// <summary>
-        /// Add a notification within the bootstrapper that will be 
+        /// Add a notification within the bootstrapper that will be
         /// returned when bootstrapping.
         /// </summary>
         /// <param name="notification">Notification to add.</param>
@@ -358,12 +355,12 @@ namespace CQELight
             }
             var context = new BootstrappingContext(
                         services.Select(s => s.ServiceType).Distinct(),
-                        iocRegistrations.SelectMany(r => r.AbstractionTypes)
+                        iocRegistrations.SelectMany(r => r.AbstractionTypes),
+                        this
                     )
             {
                 CheckOptimal = checkOptimal,
-                Strict = strict,
-                Bootstrapper = this
+                Strict = strict
             };
             foreach (var service in services.OrderByDescending(s => s.ServiceType))
             {
@@ -411,7 +408,6 @@ namespace CQELight
                 notifications.Add(new BootstrapperNotification { Type = BootstrapperNotificationType.Warning, ContentType = BootstapperNotificationContentType.IoCServiceMissing });
             }
         }
-
 
         private void AddToolboxToIoC()
         {

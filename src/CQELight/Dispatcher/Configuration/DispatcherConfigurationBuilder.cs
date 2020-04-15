@@ -27,7 +27,7 @@ namespace CQELight.Dispatcher.Configuration
         private readonly ICollection<SingleCommandTypeConfiguration> _singleCommandConfigs;
         private readonly ICollection<MultipleCommandTypeConfiguration> _multipleCommandConfigs;
 
-        internal IScope _scope;
+        internal IScope? _scope;
 
         #endregion
 
@@ -36,7 +36,7 @@ namespace CQELight.Dispatcher.Configuration
         /// <summary>
         /// Create a new builder for building configuration.
         /// </summary>
-        public DispatcherConfigurationBuilder(IScopeFactory scopeFactory = null)
+        public DispatcherConfigurationBuilder(IScopeFactory? scopeFactory = null)
         {
             _singleEventConfigs = new List<SingleEventTypeConfiguration>();
             _multipleEventConfigs = new List<MultipleEventTypeConfiguration>();
@@ -211,28 +211,27 @@ namespace CQELight.Dispatcher.Configuration
             if (_singleEventConfigs.Count > 0 || _multipleEventConfigs.Count > 0
              || _singleCommandConfigs.Count > 0 || _multipleCommandConfigs.Count > 0)
             {
-                var config = new DispatcherConfiguration(strict);
-                config.EventDispatchersConfiguration =
-                    _singleEventConfigs.Concat(_multipleEventConfigs.SelectMany(m => m._eventTypesConfigs))
-                    .Select(e => new EventDispatchConfiguration
-                    {
-                        EventType = e._eventType,
-                        ErrorHandler = e._errorHandler,
-                        Serializer = e._serializerType != null ? GetSerializer(e._serializerType) : null,
-                        IsSecurityCritical = e._isSecurityCritical,
-                        BusesTypes = e._busConfigs
-                    });
-                config.CommandDispatchersConfiguration =
-                    _singleCommandConfigs.Concat(_multipleCommandConfigs.SelectMany(m => m._commandTypesConfigs))
-                    .Select(e => new CommandDispatchConfiguration
-                    {
-                        CommandType = e._commandType,
-                        ErrorHandler = e._errorHandler,
-                        Serializer = e._serializerType != null ? GetSerializer(e._serializerType) : null,
-                        IsSecurityCritical = e._isSecurityCritical,
-                        BusesTypes = e._busConfigs
-                    });
-                return config;
+                return new DispatcherConfiguration(strict)
+                {
+                    EventDispatchersConfiguration =
+                        _singleEventConfigs.Concat(_multipleEventConfigs.SelectMany(m => m._eventTypesConfigs))
+                        .Select(e => new EventDispatchConfiguration(e._eventType)
+                        {
+                            ErrorHandler = e._errorHandler,
+                            Serializer = e._serializerType != null ? GetSerializer(e._serializerType) : null,
+                            IsSecurityCritical = e._isSecurityCritical,
+                            BusesTypes = e._busConfigs
+                        }),
+                    CommandDispatchersConfiguration =
+                        _singleCommandConfigs.Concat(_multipleCommandConfigs.SelectMany(m => m._commandTypesConfigs))
+                        .Select(e => new CommandDispatchConfiguration(e._commandType)
+                        {
+                            ErrorHandler = e._errorHandler,
+                            Serializer = e._serializerType != null ? GetSerializer(e._serializerType) : null,
+                            IsSecurityCritical = e._isSecurityCritical,
+                            BusesTypes = e._busConfigs
+                        })
+                };
             }
             return DispatcherConfiguration.Default;
         }
@@ -241,7 +240,7 @@ namespace CQELight.Dispatcher.Configuration
 
         #region Private methods
 
-        private IDispatcherSerializer GetSerializer(Type serializerType)
+        private IDispatcherSerializer? GetSerializer(Type serializerType)
             => (_scope?.Resolve(serializerType) ?? serializerType.CreateInstance()) as IDispatcherSerializer;
 
         private bool IsEventTypeAndNotAlreadyDefined(Type eventType)

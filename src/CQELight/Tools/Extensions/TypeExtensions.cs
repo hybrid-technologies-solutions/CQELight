@@ -48,10 +48,9 @@ namespace CQELight.Tools.Extensions
         /// <param name="type">Type of object expected.</param>
         /// <param name="parameters">Parameters that are needed to create an instance.</param>
         /// <returns>Type instance.</returns>
-        public static object CreateInstance(this Type type, params object[] parameters)
+        public static object? CreateInstance(this Type type, params object[] parameters)
         {
-            var ctor = type.GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
-                .FirstOrDefault(m => m.GetParameters().Length == parameters.Length);
+            var ctor = Array.Find(type.GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public), m => m.GetParameters().Length == parameters.Length);
             if (ctor != null)
             {
                 return ctor.Invoke(parameters);
@@ -66,10 +65,9 @@ namespace CQELight.Tools.Extensions
         /// <param name="type">Type of object expected.</param>
         /// <returns>Type instance.</returns>
         /// <typeparam name="T">Type of object you want.</typeparam>
-        public static T CreateInstance<T>(this Type type, params object[] parameters) where T : class
+        public static T? CreateInstance<T>(this Type type, params object[] parameters) where T : class
         {
-            var ctor = typeof(T).GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
-                .FirstOrDefault(m => m.GetParameters().Length == parameters.Length);
+            var ctor = Array.Find(typeof(T).GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public), m => m.GetParameters().Length == parameters.Length);
             if (ctor != null)
             {
                 return (T)ctor.Invoke(parameters);

@@ -19,26 +19,26 @@ namespace CQELight.Tools
         /// <summary>
         /// An instance of the current system dispatcher.
         /// </summary>
-        public IDispatcher Dispatcher { get; }
+        public IDispatcher? Dispatcher { get; }
 
         /// <summary>
         /// Event store client to access event store data.
         /// </summary>
-        public IEventStore EventStore { get; }
+        public IEventStore? EventStore { get; }
 
         /// <summary>
         /// Event store client used to access event store from an aggregate perspective.
         /// </summary>
-        public IAggregateEventStore AggregateEventStore { get; }
+        public IAggregateEventStore? AggregateEventStore { get; }
 
         #endregion
 
         #region Ctor
 
         internal CQELightToolbox(IScopeFactory scopeFactory,
-                               IDispatcher dispatcher = null,
-                               IEventStore eventStore = null,
-                               IAggregateEventStore aggregateEventStore = null)
+                               IDispatcher? dispatcher = null,
+                               IEventStore? eventStore = null,
+                               IAggregateEventStore? aggregateEventStore = null)
         {
             ScopeFactory = scopeFactory;
             Dispatcher = dispatcher;

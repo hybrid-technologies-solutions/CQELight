@@ -15,6 +15,5 @@ namespace CQELight.Abstractions.EventStore.Interfaces
         /// </summary>
         /// <param name="events">Events used to recreate the state.</param>
         void RehydrateState(IEnumerable<IDomainEvent> events);
-
     }
 }

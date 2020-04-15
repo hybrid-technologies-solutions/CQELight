@@ -6,7 +6,6 @@
     /// <typeparam name="T">Parameter type.</typeparam>
     public class TypeResolverParameter<T> : TypeResolverParameter
     {
-
         #region Ctor
 
         /// <summary>

@@ -13,7 +13,7 @@ namespace CQELight.DAL.Attributes
         /// <summary>
         /// Name of the PK column.
         /// </summary>
-        public string KeyName { get; private set; }
+        public string KeyName { get; private set; } = "";
 
         #endregion
 
@@ -24,13 +24,12 @@ namespace CQELight.DAL.Attributes
         /// </summary>
         public PrimaryKeyAttribute()
         {
-
         }
 
         /// <summary>
         /// Create a key attribute and use specific name.
         /// </summary>
-        /// <param name="keyName"></param>
+        /// <param name="keyName">Name to use</param>
         public PrimaryKeyAttribute(string keyName)
         {
             if (string.IsNullOrWhiteSpace(keyName))

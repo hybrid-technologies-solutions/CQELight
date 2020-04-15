@@ -12,7 +12,6 @@ namespace CQELight.Abstractions.DDD
     /// <typeparam name="T">Type of value to retrieve.</typeparam>
     public class Result<T> : Result
     {
-
         #region Properties
 
         /// <summary>
@@ -136,7 +135,7 @@ namespace CQELight.Abstractions.DDD
         {
             if (shouldInvoke)
             {
-                lambda?.Invoke(this.Value);
+                lambda?.Invoke(Value);
             }
             return this;
         }
@@ -145,7 +144,7 @@ namespace CQELight.Abstractions.DDD
         {
             if (shouldInvoke)
             {
-                await lambda?.Invoke(this.Value);
+                await (lambda?.Invoke(Value) ?? Task.CompletedTask);
             }
             return this;
         }

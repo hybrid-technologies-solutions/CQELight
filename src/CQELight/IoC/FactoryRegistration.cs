@@ -14,12 +14,12 @@ namespace CQELight.IoC
         /// <summary>
         /// Factory to resolve object that is registered.
         /// </summary>
-        public Func<object> Factory { get; private set; }
+        public Func<object>? Factory { get; private set; }
 
         /// <summary>
         /// Scoped factory to resolve object.
         /// </summary>
-        public Func<IScope, object> ScopedFactory { get; private set; }
+        public Func<IScope, object>? ScopedFactory { get; private set; }
 
         /// <summary>
         /// Type to register as.

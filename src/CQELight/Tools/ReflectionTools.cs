@@ -62,7 +62,7 @@ namespace CQELight.Tools
             /// </summary>
             /// <param name="assemblyPath">Path to the assembly.</param>
             /// <returns>Assembly loaded.</returns>
-            public Assembly GetAssembly(string assemblyPath)
+            public Assembly? GetAssembly(string assemblyPath)
             {
                 try
                 {
@@ -135,7 +135,7 @@ namespace CQELight.Tools
                         !s_LoadedAssembliesDLL.Any(a => a == file.Name))
                         {
                             s_LoadedAssembliesDLL.Add(file.Name);
-                            AssemblyName assemblyName = null;
+                            AssemblyName? assemblyName = null;
                             try
                             {
                                 assemblyName = AssemblyName.GetAssemblyName(file.FullName);
@@ -200,7 +200,6 @@ namespace CQELight.Tools
                         s_AllTypes = s_AllTypes.Distinct(new TypeEqualityComparer()).ToList();
                     }
                 }
-
             }
             return s_AllTypes;
         }

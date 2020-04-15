@@ -10,6 +10,7 @@ using CQELight.Tools;
 using CQELight.Tools.Extensions;
 using Force.DeepCloner;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Debug;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -32,29 +33,29 @@ namespace CQELight.Dispatcher
         /// <summary>
         /// Custom callback when an event is published.
         /// </summary>
-        public static event Func<IDomainEvent, Task> OnEventDispatched;
+        public static event Func<IDomainEvent, Task>? OnEventDispatched;
         /// <summary>
         /// Custom callback when a range of events are published.
         /// </summary>
-        public static event Func<IEnumerable<IDomainEvent>, Task> OnEventsDispatched;
+        public static event Func<IEnumerable<IDomainEvent>, Task>? OnEventsDispatched;
         /// <summary>
         /// Custom callback when a command is dispatched.
         /// </summary>
-        public static event Func<ICommand, Task<Result>> OnCommandDispatched;
+        public static event Func<ICommand, Task<Result>>? OnCommandDispatched;
         /// <summary>
         /// Custom callback when a message is dispatched.
         /// </summary>
-        public static event Func<IMessage, Task> OnMessageDispatched;
+        public static event Func<IMessage, Task>? OnMessageDispatched;
 #pragma warning restore S3264 
 
         #endregion
 
         #region Static members
 
-        private static IScope s_PrivateScope;
-
-        private static readonly ILogger s_Logger;
+        private static IScope? s_PrivateScope;
         private static IDispatcher s_Instance;
+        private static readonly ILogger s_Logger;
+        private static readonly object s_threadSafety = new object();
         private static readonly SemaphoreSlim s_HandlerManagementLock = new SemaphoreSlim(1);
         private static readonly ConcurrentDictionary<Type, SemaphoreSlim> s_LockData = new ConcurrentDictionary<Type, SemaphoreSlim>();
 
@@ -67,13 +68,19 @@ namespace CQELight.Dispatcher
 
         #region Static properties
 
-        private static IScope s_Scope
+        private static IScope? s_Scope
         {
             get
             {
                 if (s_PrivateScope == null && DIManager.IsInit)
                 {
-                    s_PrivateScope = DIManager.BeginScope();
+                    lock (s_threadSafety)
+                    {
+                        if (s_PrivateScope == null && DIManager.IsInit)
+                        {
+                            s_PrivateScope = DIManager.BeginScope();
+                        }
+                    }
                 }
                 return s_PrivateScope;
             }
@@ -85,15 +92,7 @@ namespace CQELight.Dispatcher
 
         static CoreDispatcher()
         {
-            if (DIManager.IsInit)
-            {
-                s_PrivateScope = DIManager.BeginScope();
-            }
-            s_Logger = s_Scope?.Resolve<ILoggerFactory>()?.CreateLogger("CoreDispatcher");
-            if (s_Logger == null)
-            {
-                s_Logger = new LoggerFactory().CreateLogger("CoreDispatcher");
-            }
+            s_Logger = (s_Scope?.Resolve<ILoggerFactory>() ?? new LoggerFactory(new[] { new DebugLoggerProvider() })).CreateLogger(typeof(CoreDispatcher));
             InitDispatcherInstance();
         }
 
@@ -217,7 +216,7 @@ namespace CQELight.Dispatcher
         /// </summary>
         /// <param name="data">Collection of events with their associated context.</param>
         /// <param name="callerMemberName">Caller name.</param>
-        public static async Task PublishEventsRangeAsync(IEnumerable<(IDomainEvent Event, IEventContext Context)> data, [CallerMemberName] string callerMemberName = "")
+        public static async Task PublishEventsRangeAsync(IEnumerable<(IDomainEvent Event, IEventContext? Context)> data, [CallerMemberName] string callerMemberName = "")
         {
             if (OnEventsDispatched != null)
             {
@@ -235,7 +234,7 @@ namespace CQELight.Dispatcher
         {
             if (OnEventsDispatched != null)
             {
-                await OnEventsDispatched(events);
+                await OnEventsDispatched(events).ConfigureAwait(false);
             }
             await PublishEventsRangeAsync(events.Select(e => (e, null as IEventContext))).ConfigureAwait(false);
         }
@@ -246,7 +245,7 @@ namespace CQELight.Dispatcher
         /// <param name="event">Event to dispatch.</param>
         /// <param name="context">Context to associate.</param>
         /// <param name="callerMemberName">Caller name.</param>
-        public static Task PublishEventAsync(IDomainEvent @event, IEventContext context = null, [CallerMemberName] string callerMemberName = "")
+        public static Task PublishEventAsync(IDomainEvent @event, IEventContext? context = null, [CallerMemberName] string callerMemberName = "")
             => s_Instance.PublishEventAsync(@event, context, callerMemberName);
 
         /// <summary>
@@ -256,7 +255,7 @@ namespace CQELight.Dispatcher
         /// <param name="context">Context to associate.</param>
         /// <param name="callerMemberName">Calling method.</param>
         /// <returns>Awaiter of events.</returns>
-        public static Task<Result> DispatchCommandAsync(ICommand command, ICommandContext context = null, [CallerMemberName] string callerMemberName = "")
+        public static Task<Result> DispatchCommandAsync(ICommand command, ICommandContext? context = null, [CallerMemberName] string callerMemberName = "")
             => s_Instance.DispatchCommandAsync(command, context, callerMemberName);
 
         /// <summary>
@@ -267,7 +266,7 @@ namespace CQELight.Dispatcher
         public static async Task DispatchMessageAsync<T>(T message, bool waitForCompletion = true)
             where T : IMessage
         {
-            var sem = s_LockData.GetOrAdd(typeof(T), type => new SemaphoreSlim(1));
+            var sem = s_LockData.GetOrAdd(typeof(T), _ => new SemaphoreSlim(1));
             await sem.WaitAsync().ConfigureAwait(false); // perform a lock per message type to allow parallel execution of different messages
             s_Logger.LogThreadInfos();
             s_Logger.LogInformation(() => $"Dispatcher : Beginning of dispatch a message of type {typeof(T).FullName}");
@@ -367,7 +366,7 @@ namespace CQELight.Dispatcher
         /// </summary>
         /// <param name="handlerType">Type of handler to try to retrieve.</param>
         /// <returns>Handler instance if found, null otherwise.</returns>
-        public static object TryGetEventHandlerByType(Type handlerType)
+        public static object? TryGetEventHandlerByType(Type handlerType)
         {
             s_HandlerManagementLock.Wait();
             try
@@ -586,9 +585,16 @@ namespace CQELight.Dispatcher
 
         private static void InitDispatcherInstance()
         {
-            if (s_Scope != null)
+            try
             {
-                s_Instance = s_Scope.Resolve<IDispatcher>();
+                if (s_Scope != null)
+                {
+                    s_Instance = s_Scope.Resolve<IDispatcher>();
+                }
+            }
+            catch (Exception e)
+            {
+                s_Logger.LogError(e, "CoreDispatcher.InitDispatcherInstance() : Unable to retrieve dispatcher instance from IoC. Default dispatcher will be used.");
             }
             if (s_Instance == null)
             {

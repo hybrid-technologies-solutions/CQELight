@@ -13,7 +13,7 @@ namespace CQELight.DAL.Common
     {
         #region Private members
 
-        private PropertyInfo _primaryKeyProperty;
+        private PropertyInfo? _primaryKeyProperty;
 
         #endregion
 
@@ -57,7 +57,7 @@ namespace CQELight.DAL.Common
         {
             if (PrimaryKeyProperty != null)
             {
-                object defaultValue = null;
+                object? defaultValue = null;
                 if (PrimaryKeyProperty.PropertyType.IsValueType)
                 {
                     defaultValue = PrimaryKeyProperty.PropertyType.CreateInstance();

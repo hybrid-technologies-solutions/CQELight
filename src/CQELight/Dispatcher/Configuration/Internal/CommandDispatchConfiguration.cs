@@ -17,5 +17,14 @@ namespace CQELight.Dispatcher.Configuration.Internal
 
         #endregion
 
+        #region Ctor
+
+        public CommandDispatchConfiguration(Type commandType)
+        {
+            CommandType = commandType ?? throw new ArgumentNullException(nameof(commandType));
+        }
+
+        #endregion
+
     }
 }

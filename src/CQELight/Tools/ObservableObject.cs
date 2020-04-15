@@ -23,7 +23,6 @@ namespace CQELight.Tools
         /// </summary>
         protected DisposableObject()
         {
-
         }
 
         /// <summary>

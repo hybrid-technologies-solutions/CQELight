@@ -11,16 +11,17 @@
     <Version>1.1.0</Version>
     <Authors>Christophe Mommer</Authors>
     <Company>Hybrid Technologies Solutions</Company>
-    <Description>CQELight is a framework that provides tooling layer for helping developpers to get started with Domain Driven Design, Command Query Responsability Segregation and Event Sourcing.
+    <Description>
+      CQELight is a framework that provides tooling layer for helping developpers to get started with Domain Driven Design, Command Query Responsability Segregation and Event Sourcing.
 
       It provides abstraction upon major concepts and allow you to create your custom implementation with your tools.
-</Description>
+    </Description>
     <Copyright>Christophe Mommer, Hybrid Technologies Solutions</Copyright>
     <PackageLicense>https://github.com/cdie/CQELight/blob/master/LICENCE</PackageLicense>
     <PackageProjectUrl>https://www.hybrid-technologies-solutions.com</PackageProjectUrl>
     <RepositoryUrl>https://github.com/cdie/CQELight</RepositoryUrl>
     <PackageTags>ddd, domain driven design, cqrs, event sourcing</PackageTags>
-    <PackageReleaseNotes>See concerned milestone on GitHub</PackageReleaseNotes>    <PackageReleaseNotes>See concerned milestone on GitHub</PackageReleaseNotes>
+    <PackageReleaseNotes>See concerned milestone on GitHub</PackageReleaseNotes>
     <DocumentationFile>bin\Release\netstandard2.0\CQELight.xml</DocumentationFile>
     <PackageIconUrl>http://cqelight.net/images/cqelight-base.png</PackageIconUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -52,6 +53,7 @@
   <ItemGroup>
     <PackageReference Include="DeepCloner" Version="0.10.2" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="System.Runtime" Version="4.3.1" />
   </ItemGroup>
 
 </Project>

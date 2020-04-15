@@ -10,6 +10,5 @@ namespace CQELight.DAL.Interfaces
     public interface IRelationnalDatabaseRepository<T> : IDatabaseRepository<T>, ISqlRepository
         where T : IPersistableEntity
     {
-
     }
 }

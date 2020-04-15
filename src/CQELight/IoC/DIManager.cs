@@ -13,7 +13,7 @@ namespace CQELight.IoC
         /// <summary>
         /// Type resolver.
         /// </summary>
-        internal static IScopeFactory _scopeFactory;
+        internal static IScopeFactory? _scopeFactory;
 
         #endregion
 
@@ -33,7 +33,13 @@ namespace CQELight.IoC
         /// </summary>
         /// <returns>New instance of scope.</returns>
         public static IScope BeginScope()
-            => _scopeFactory.CreateScope();
+        {
+            if (_scopeFactory == null)
+            {
+                throw new InvalidOperationException("DIManager.BeginScope () : ScopeFactory hasn't been initialized yet. You must call Init() with a ScopeFactory before trying to BeginScope");
+            }
+            return _scopeFactory.CreateScope();
+        }
 
         /// <summary>
         /// Initialize the DIManager with a scope factory.

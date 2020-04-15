@@ -84,7 +84,7 @@ namespace CQELight.TestFramework
                     It.IsAny<string>()))
                     .Callback((IDomainEvent evt, IEventContext _, string __) => events.Add(evt))
                     .Returns(Task.CompletedTask);
-                _dispatcherMock.Setup(m => m.PublishEventsRangeAsync(It.IsAny<IEnumerable<(IDomainEvent, IEventContext)>>(),
+                _dispatcherMock.Setup(m => m.PublishEventsRangeAsync(It.IsAny<IEnumerable<(IDomainEvent, IEventContext?)>>(),
                     It.IsAny<string>()))
                     .Callback((IEnumerable<(IDomainEvent, IEventContext)> data, string _) => events.AddRange(data.Select(e => e.Item1)))
                     .Returns(Task.CompletedTask);
@@ -290,7 +290,7 @@ namespace CQELight.TestFramework
                     It.IsAny<string>()))
                     .Callback((IDomainEvent evt, IEventContext _, string __) => events.Add(evt))
                     .Returns(Task.CompletedTask);
-                _dispatcherMock.Setup(m => m.PublishEventsRangeAsync(It.IsAny<IEnumerable<(IDomainEvent, IEventContext)>>(),
+                _dispatcherMock.Setup(m => m.PublishEventsRangeAsync(It.IsAny<IEnumerable<(IDomainEvent, IEventContext?)>>(),
                     It.IsAny<string>()))
                     .Callback((IEnumerable<(IDomainEvent, IEventContext)> data, string _) => events.AddRange(data.Select(e => e.Item1)))
                     .Returns(Task.CompletedTask);

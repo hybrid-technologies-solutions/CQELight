@@ -3,6 +3,7 @@ using CQELight.Abstractions.Dispatcher;
 using CQELight.Abstractions.Events.Interfaces;
 using CQELight.Abstractions.IoC.Interfaces;
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace CQELight.Events.Serializers
 {
@@ -24,7 +25,7 @@ namespace CQELight.Events.Serializers
         /// <param name="data">Json data.</param>
         /// <param name="commandType">Type of command to deserialize.</param>
         /// <returns>Instance of deserialized command.</returns>
-        public ICommand DeserializeCommand(string data, Type commandType)
+        public ICommand? DeserializeCommand(string data, Type commandType)
         {
             if (string.IsNullOrWhiteSpace(data))
             {
@@ -60,7 +61,7 @@ namespace CQELight.Events.Serializers
         /// <param name="data">Json data.</param>
         /// <param name="eventType">Type of event to deserialize.</param>
         /// <returns>Instance of deserialized event.</returns>
-        public IDomainEvent DeserializeEvent(string data, Type eventType)
+        public IDomainEvent? DeserializeEvent(string data, Type eventType)
         {
             if (string.IsNullOrWhiteSpace(data))
             {
@@ -81,6 +82,9 @@ namespace CQELight.Events.Serializers
         /// <typeparam name="T">Type of event to retrieve.</typeparam>
         /// <param name="data">Json data.</param>
         /// <returns>Instance of deserialized event.</returns>
+#if NETSTANDARD2_1
+        [return: MaybeNull]
+#endif
         public T DeserializeEvent<T>(string data) where T : IDomainEvent
         {
             if (string.IsNullOrWhiteSpace(data))
@@ -118,6 +122,6 @@ namespace CQELight.Events.Serializers
             return Newtonsoft.Json.JsonConvert.SerializeObject(@event);
         }
 
-        #endregion
+#endregion
     }
 }

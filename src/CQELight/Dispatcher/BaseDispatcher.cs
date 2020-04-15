@@ -25,7 +25,7 @@ namespace CQELight.Dispatcher
     {
         #region Static members
 
-        private IScope s_PrivateScope;
+        private IScope? s_PrivateScope;
         private readonly ILogger s_Logger;
         private readonly DispatcherConfiguration s_Config;
 
@@ -33,7 +33,7 @@ namespace CQELight.Dispatcher
 
         #region Static properties
 
-        private IScope s_Scope
+        private IScope? s_Scope
         {
             get
             {
@@ -54,7 +54,7 @@ namespace CQELight.Dispatcher
         /// </summary>
         /// <param name="configuration">Dispatcher configuration.</param>
         /// <param name="scopeFactory">Factory of DI scope.</param>
-        public BaseDispatcher(DispatcherConfiguration configuration, IScopeFactory scopeFactory = null)
+        public BaseDispatcher(DispatcherConfiguration configuration, IScopeFactory? scopeFactory = null)
         {
             s_Config = configuration ?? DispatcherConfiguration.Current;
             if (scopeFactory != null)
@@ -77,7 +77,7 @@ namespace CQELight.Dispatcher
         /// </summary>
         /// <param name="data">Collection of events with their associated context.</param>
         /// <param name="callerMemberName">Caller name.</param>
-        public async Task PublishEventsRangeAsync(IEnumerable<(IDomainEvent Event, IEventContext Context)> data,
+        public async Task PublishEventsRangeAsync(IEnumerable<(IDomainEvent Event, IEventContext? Context)> data,
             [CallerMemberName] string callerMemberName = "")
         {
             var tasks = new List<Task>();
@@ -96,8 +96,7 @@ namespace CQELight.Dispatcher
                 }));
             }
 
-            await Task.WhenAll(tasks);
-
+            await Task.WhenAll(tasks).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -114,11 +113,11 @@ namespace CQELight.Dispatcher
         /// <param name="event">Event to dispatch.</param>
         /// <param name="context">Context to associate.</param>
         /// <param name="callerMemberName">Caller name.</param>
-        public async Task PublishEventAsync(IDomainEvent @event, IEventContext context = null, [CallerMemberName] string callerMemberName = "")
+        public async Task PublishEventAsync(IDomainEvent @event, IEventContext? context = null, [CallerMemberName] string callerMemberName = "")
         {
             var (eventType, eventConfiguration) = LogEventDataAndGetConfig(@event, context, callerMemberName);
             await CoreDispatcher.PublishEventToSubscribers(@event, eventConfiguration?.IsSecurityCritical ?? false).ConfigureAwait(false);
-            await PrivatePublishEventAsync(@event, context, eventType, eventConfiguration);
+            await PrivatePublishEventAsync(@event, context, eventType, eventConfiguration).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -128,7 +127,7 @@ namespace CQELight.Dispatcher
         /// <param name="context">Context to associate.</param>
         /// <param name="callerMemberName">Calling method.</param>
         /// <returns>Awaiter of events.</returns>
-        public async Task<Result> DispatchCommandAsync(ICommand command, ICommandContext context = null, [CallerMemberName] string callerMemberName = "")
+        public async Task<Result> DispatchCommandAsync(ICommand command, ICommandContext? context = null, [CallerMemberName] string callerMemberName = "")
         {
             if (command == null)
             {
@@ -151,7 +150,7 @@ namespace CQELight.Dispatcher
                 {
                     try
                     {
-                        ICommandBus busInstance = null;
+                        ICommandBus? busInstance = null;
                         if (s_Scope != null)
                         {
                             busInstance = s_Scope.Resolve(bus) as ICommandBus;
@@ -195,7 +194,7 @@ namespace CQELight.Dispatcher
         #endregion
 
         #region Private methods
-        private (Type eventType, EventDispatchConfiguration configuration) LogEventDataAndGetConfig(IDomainEvent @event, IEventContext context, string callerMemberName)
+        private (Type eventType, EventDispatchConfiguration configuration) LogEventDataAndGetConfig(IDomainEvent @event, IEventContext? context, string callerMemberName)
         {
             if (@event == null)
             {
@@ -213,16 +212,15 @@ namespace CQELight.Dispatcher
             return (eventType, eventConfiguration);
         }
 
-        private async Task PrivatePublishEventAsync(IDomainEvent @event, IEventContext context, Type eventType, EventDispatchConfiguration eventConfiguration)
+        private async Task PrivatePublishEventAsync(IDomainEvent @event, IEventContext? context, Type eventType, EventDispatchConfiguration? eventConfiguration)
         {
             if (eventConfiguration != null)
             {
-
                 foreach (var bus in eventConfiguration.BusesTypes)
                 {
                     try
                     {
-                        IDomainEventBus busInstance = null;
+                        IDomainEventBus? busInstance = null;
                         if (s_Scope != null)
                         {
                             busInstance = s_Scope.Resolve(bus) as IDomainEventBus;

@@ -29,7 +29,7 @@ namespace CQELight.Buses
         /// <summary>
         /// Custom callback to invoke when retrieving data from queue.
         /// </summary>
-        public Action<object> Callback { get; private set; }
+        public Action<object>? Callback { get; private set; }
         /// <summary>
         /// Flag that indicates if a dead letter queue should be used.
         /// </summary>
@@ -56,7 +56,7 @@ namespace CQELight.Buses
         /// <param name="callback">Callback to invoke when receving data.</param>
         /// <param name="createAndUseDeadLetterQueue">Flag that indicates if create a specific dead letter queue, which means
         /// that all unhandled data are pushed back in.</param>
-        public QueueConfiguration(IDispatcherSerializer serializer, string queueName = "", bool dispatchInMemory = true, Action<object> callback = null,
+        public QueueConfiguration(IDispatcherSerializer serializer, string queueName = "", bool dispatchInMemory = true, Action<object>? callback = null,
             bool createAndUseDeadLetterQueue = false)
         {
             Serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));

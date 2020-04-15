@@ -28,6 +28,5 @@ namespace CQELight.Abstractions.DAL.Interfaces
         /// <param name="physicalDelettion">Flag that indicates if physical deletion should be applied</param>
         Task DeleteAsync<T>(T entity, bool physicalDelettion) where T : class;
 
-
     }
 }

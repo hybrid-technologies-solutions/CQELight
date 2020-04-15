@@ -17,8 +17,8 @@ namespace CQELight.Dispatcher.Configuration
     {
         #region Members
 
-        private static DispatcherConfiguration _default;
-        private static DispatcherConfiguration _current;
+        private static DispatcherConfiguration? _default;
+        private static DispatcherConfiguration? _current;
         private readonly bool _strict;
 
         #endregion

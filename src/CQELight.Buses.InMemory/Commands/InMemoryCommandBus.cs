@@ -5,6 +5,7 @@ using CQELight.Dispatcher;
 using CQELight.Tools;
 using CQELight.Tools.Extensions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Debug;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,20 +23,27 @@ namespace CQELight.Buses.InMemory.Commands
     {
         #region Private members
 
-        private static IEnumerable<Type> _handlers;
+        private static readonly object s_threadSafety = new object();
+        private static IEnumerable<Type>? _handlers;
         private static IEnumerable<Type> Handlers
         {
             get
             {
                 if (_handlers == null)
                 {
-                    InitHandlersCollection();
+                    lock (s_threadSafety)
+                    {
+                        if (_handlers == null)
+                        {
+                            InitHandlersCollection();
+                        }
+                    }
                 }
-                return _handlers;
+                return _handlers!;
             }
         }
         private InMemoryCommandBusConfiguration _config;
-        private readonly IScope _scope;
+        private readonly IScope? _scope;
         private readonly ILogger _logger;
 
         #endregion
@@ -45,10 +53,10 @@ namespace CQELight.Buses.InMemory.Commands
         internal InMemoryCommandBus()
             : this(null, null)
         {
-
         }
-        internal InMemoryCommandBus(InMemoryCommandBusConfiguration configuration = null,
-                                    IScopeFactory scopeFactory = null)
+
+        internal InMemoryCommandBus(InMemoryCommandBusConfiguration? configuration = null,
+                                    IScopeFactory? scopeFactory = null)
         {
             if (scopeFactory != null)
             {
@@ -58,7 +66,7 @@ namespace CQELight.Buses.InMemory.Commands
             _logger =
                 _scope?.Resolve<ILoggerFactory>()?.CreateLogger<InMemoryCommandBus>()
                 ??
-                new LoggerFactory().CreateLogger<InMemoryCommandBus>();
+                new LoggerFactory(new[] { new DebugLoggerProvider() }).CreateLogger<InMemoryCommandBus>();
             _config = configuration ?? InMemoryCommandBusConfiguration.Default;
         }
 
@@ -71,12 +79,12 @@ namespace CQELight.Buses.InMemory.Commands
         /// </summary>
         /// <param name="command">Command to dispatch.</param>
         /// <param name="context">Context associated to command</param>
-        public async Task<Result> DispatchAsync(ICommand command, ICommandContext context = null)
+        public async Task<Result> DispatchAsync(ICommand command, ICommandContext? context = null)
         {
             var commandTypeName = command.GetType().FullName;
             _logger.LogInformation(() => $"InMemoryCommandBus : Beginning of dispatching a command of type {commandTypeName}");
             var commandTasks = new List<Task<Result>>();
-            _config = _config ?? InMemoryCommandBusConfiguration.Default;
+            _config ??= InMemoryCommandBusConfiguration.Default;
             var ifClause = _config.IfClauses.FirstOrDefault(i => i.Key == command.GetType()).Value;
             if (ifClause?.Invoke(command) == false)
             {
@@ -129,12 +137,12 @@ namespace CQELight.Buses.InMemory.Commands
                 {
                     if (manyHandlersAndShouldWait)
                     {
-                        var result = await ((Task<Result>)method.Invoke(handler, new object[] { command, context })).ConfigureAwait(false);
+                        var result = await ((Task<Result>)method.Invoke(handler, new object?[] { command, context })).ConfigureAwait(false);
                         commandTasks.Add(Task.FromResult(result));
                     }
                     else
                     {
-                        var t = (Task<Result>)method.Invoke(handler, new object[] { command, context });
+                        var t = (Task<Result>)method.Invoke(handler, new object?[] { command, context });
                         commandTasks.Add(t);
                     }
                 }

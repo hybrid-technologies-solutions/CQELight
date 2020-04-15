@@ -7,12 +7,11 @@ namespace CQELight.Buses.InMemory.Commands
     /// </summary>
     public class MultipleCommandHandlerConf
     {
-
         #region Properties
         /// <summary>
         /// Concerned type of the command.
         /// </summary>
-        public Type CommandType { get; internal set; }
+        public Type CommandType { get; }
         /// <summary>
         /// Flag that indicates if handler should wait before going to the next one.
         /// </summary>
@@ -22,7 +21,10 @@ namespace CQELight.Buses.InMemory.Commands
 
         #region Ctor
 
-        internal MultipleCommandHandlerConf() { }
+        internal MultipleCommandHandlerConf(Type commandType)
+        {
+            CommandType = commandType ?? throw new ArgumentNullException(nameof(commandType));
+        }
 
         #endregion
 

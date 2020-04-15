@@ -12,11 +12,12 @@
     <PackageProjectUrl>https://www.hybrid-technologies-solutions.com</PackageProjectUrl>
     <RepositoryUrl>https://github.com/cdie/CQELight</RepositoryUrl>
     <PackageTags>bus events commands in-memory</PackageTags>
-    <PackageReleaseNotes>Update to .NET Core 3.1</PackageReleaseNotes>
+    <PackageReleaseNotes>See concerned milestone on GitHub</PackageReleaseNotes>
     <PackageIconUrl>http://cqelight.net/images/cqelight-base.png</PackageIconUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <LangVersion>latest</LangVersion>
+    <Nullable>Enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

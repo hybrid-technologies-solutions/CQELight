@@ -8,7 +8,6 @@ namespace CQELight.Buses.InMemory
     /// </summary>
     [AttributeUsage(AttributeTargets.Class)]
     public class CriticalHandlerAttribute : Attribute
-    { 
-
+    {
     }
 }

@@ -15,17 +15,24 @@ namespace CQELight
 {
     public static class BootstrapperExt
     {
-
         #region Private static members
 
-        private static List<Type> s_AllTypes;
-        private static List<Type> _allTypes
+        private static readonly object s_ThreadSafety = new object();
+
+        private static List<Type>? s_AllTypes;
+        private static List<Type> AllTypes
         {
             get
             {
                 if (s_AllTypes == null)
                 {
-                    s_AllTypes = ReflectionTools.GetAllTypes().ToList();
+                    lock (s_ThreadSafety)
+                    {
+                        if (s_AllTypes == null)
+                        {
+                            s_AllTypes = ReflectionTools.GetAllTypes().ToList();
+                        }
+                    }
                 }
                 return s_AllTypes;
             }
@@ -42,13 +49,10 @@ namespace CQELight
         /// <param name="configuration">Configuration to use for in memory event bus.</param>
         /// <param name="excludedEventsDLLs">DLLs name to exclude from auto-configuration into IoC
         /// (IAutoRegisterType will be ineffective).</param>
-        public static Bootstrapper UseInMemoryEventBus(this Bootstrapper bootstrapper, InMemoryEventBusConfiguration configuration = null, params string[] excludedEventsDLLs)
+        public static Bootstrapper UseInMemoryEventBus(this Bootstrapper bootstrapper, InMemoryEventBusConfiguration? configuration = null, params string[] excludedEventsDLLs)
         {
             var service = InMemoryBusesBootstrappService.Instance;
-            service.BootstrappAction += (ctx) =>
-            {
-                ConfigureInMemoryEventBus(bootstrapper, configuration, excludedEventsDLLs, ctx);
-            };
+            service.BootstrappAction += (ctx) => ConfigureInMemoryEventBus(bootstrapper, configuration, excludedEventsDLLs, ctx);
             if (!bootstrapper.RegisteredServices.Any(s => s == service))
             {
                 bootstrapper.AddService(service);
@@ -83,14 +87,11 @@ namespace CQELight
         /// <param name="configuration">Configuration to use for in memory command bus.</param>
         /// <param name="excludedCommandsDLLs">DLLs name to exclude from auto-configuration into IoC
         /// (IAutoRegisterType will be ineffective).</param>
-        public static Bootstrapper UseInMemoryCommandBus(this Bootstrapper bootstrapper, InMemoryCommandBusConfiguration configuration = null,
+        public static Bootstrapper UseInMemoryCommandBus(this Bootstrapper bootstrapper, InMemoryCommandBusConfiguration? configuration = null,
             params string[] excludedCommandsDLLs)
         {
             var service = InMemoryBusesBootstrappService.Instance;
-            service.BootstrappAction += (ctx) =>
-            {
-                ConfigureInMemoryCommandBus(bootstrapper, configuration, excludedCommandsDLLs, ctx);
-            };
+            service.BootstrappAction += (ctx) => ConfigureInMemoryCommandBus(bootstrapper, configuration, excludedCommandsDLLs, ctx);
             if (!bootstrapper.RegisteredServices.Any(s => s == service))
             {
                 bootstrapper.AddService(service);
@@ -123,7 +124,7 @@ namespace CQELight
 
         #region Internal static methods
 
-        internal static void ConfigureInMemoryCommandBus(Bootstrapper bootstrapper, InMemoryCommandBusConfiguration configuration, string[] excludedCommandsDLLs, BootstrappingContext ctx)
+        internal static void ConfigureInMemoryCommandBus(Bootstrapper bootstrapper, InMemoryCommandBusConfiguration? configuration, string[] excludedCommandsDLLs, BootstrappingContext ctx)
         {
             InMemoryCommandBus.InitHandlersCollection(excludedCommandsDLLs);
             if (ctx.IsServiceRegistered(BootstrapperServiceType.IoC))
@@ -137,7 +138,7 @@ namespace CQELight
             bootstrapper.AddNotifications(PerformCommandChecksAccordingToBootstrapperParameters(ctx, configuration));
         }
 
-        internal static void ConfigureInMemoryEventBus(Bootstrapper bootstrapper, InMemoryEventBusConfiguration configuration, string[] excludedEventsDLLs, BootstrappingContext ctx)
+        internal static void ConfigureInMemoryEventBus(Bootstrapper bootstrapper, InMemoryEventBusConfiguration? configuration, string[] excludedEventsDLLs, BootstrappingContext ctx)
         {
             InMemoryEventBus.InitHandlersCollection(excludedEventsDLLs);
             if (ctx.IsServiceRegistered(BootstrapperServiceType.IoC))
@@ -156,12 +157,12 @@ namespace CQELight
         #region Private static methods
 
         private static IEnumerable<BootstrapperNotification> PerformCommandChecksAccordingToBootstrapperParameters(BootstrappingContext ctx,
-            InMemoryCommandBusConfiguration configuration)
+            InMemoryCommandBusConfiguration? configuration)
         {
             var notifs = new List<BootstrapperNotification>();
-            foreach (var cmdType in _allTypes.Where(t => typeof(ICommand).IsAssignableFrom(t) && t.IsClass && !t.IsAbstract).AsParallel())
+            foreach (var cmdType in AllTypes.Where(t => typeof(ICommand).IsAssignableFrom(t) && t.IsClass && !t.IsAbstract).AsParallel())
             {
-                var handlers = _allTypes.Where(t => typeof(ICommandHandler<>).MakeGenericType(cmdType).IsAssignableFrom(t)).ToList();
+                var handlers = AllTypes.Where(t => typeof(ICommandHandler<>).MakeGenericType(cmdType).IsAssignableFrom(t)).ToList();
                 if (handlers.Count == 0)
                 {
                     if (ctx.CheckOptimal)
@@ -178,7 +179,6 @@ namespace CQELight
                 {
                     if (ctx.Strict)
                     {
-
                         if (ctx.CheckOptimal)
                         {
                             notifs.Add(
@@ -215,12 +215,12 @@ namespace CQELight
         }
 
         private static IEnumerable<BootstrapperNotification> PerformEventChecksAccordingToBootstrapperParameters(BootstrappingContext ctx,
-            InMemoryEventBusConfiguration configuration)
+            InMemoryEventBusConfiguration? configuration)
         {
             var notifs = new List<BootstrapperNotification>();
-            foreach (var evtType in _allTypes.Where(t => typeof(IDomainEvent).IsAssignableFrom(t) && t.IsClass && !t.IsAbstract).AsParallel())
+            foreach (var evtType in AllTypes.Where(t => typeof(IDomainEvent).IsAssignableFrom(t) && t.IsClass && !t.IsAbstract).AsParallel())
             {
-                var handlers = _allTypes.Where(t => typeof(IDomainEventHandler<>).MakeGenericType(evtType).IsAssignableFrom(t)).ToList();
+                var handlers = AllTypes.Where(t => typeof(IDomainEventHandler<>).MakeGenericType(evtType).IsAssignableFrom(t)).ToList();
                 if (handlers.Count == 0)
                 {
                     if (ctx.CheckOptimal)
@@ -242,7 +242,6 @@ namespace CQELight
                                $"There are multiples handlers for event type {evtType.FullName}, and at least one of them is marked as 'critical', meaning next ones shouldn't be called if critical failed. However, your configuration for this specific event type says they're allowed to run in parallel. This configuration *cannot* ensure that critical handlers will block next ones, you should review your configuration (by setting ShouldWait to true) or remove CriticalHandler attribute, which can't be ensured in this case.",
                                typeof(InMemoryEventBus))
                                );
-
                 }
             }
             return notifs.AsEnumerable();

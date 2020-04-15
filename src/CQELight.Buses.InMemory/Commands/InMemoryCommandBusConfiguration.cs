@@ -32,7 +32,7 @@ namespace CQELight.Buses.InMemory.Commands
         /// <summary>
         /// Callback when no handler for a specific command is found in the same process.
         /// </summary>
-        public Action<ICommand, ICommandContext> OnNoHandlerFounds { get; internal set; }
+        public Action<ICommand, ICommandContext?>? OnNoHandlerFounds { get; internal set; }
         /// <summary>
         /// Collection of dispatch clauses.
         /// </summary>
@@ -48,10 +48,9 @@ namespace CQELight.Buses.InMemory.Commands
 
         internal InMemoryCommandBusConfiguration()
         {
-
         }
 
-        private InMemoryCommandBusConfiguration(Action<ICommand, ICommandContext> onNoHandlerFounds)
+        private InMemoryCommandBusConfiguration(Action<ICommand, ICommandContext?>? onNoHandlerFounds)
         {
             OnNoHandlerFounds = onNoHandlerFounds;
         }

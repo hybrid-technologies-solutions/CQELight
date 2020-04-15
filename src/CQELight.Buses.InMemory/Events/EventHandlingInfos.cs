@@ -6,7 +6,6 @@ namespace CQELight.Buses.InMemory.Events
 {
     sealed class EventHandlingInfos
     {
-
         #region Properties
 
 

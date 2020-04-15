@@ -17,15 +17,15 @@ namespace CQELight.Buses.InMemory.Events
 {
     /// <summary>
     /// InMemory stateless bus to dispatch events.
-    /// If program shutdowns unexpectedly, it means all events stored in it are lost and cannot be retrieved. 
+    /// If program shutdowns unexpectedly, it means all events stored in it are lost and cannot be retrieved.
     /// However, this is a very fast bus for dispatch.
     /// </summary>
     public sealed class InMemoryEventBus : IDomainEventBus
     {
         #region Private static members
 
-        private static IEnumerable<Type> s_eventHandlers;
-        private static List<Type> s_ExcludedHandlersTypes = new List<Type>();
+        private static IEnumerable<Type>? s_eventHandlers;
+        private static readonly List<Type> s_ExcludedHandlersTypes = new List<Type>();
 
         #endregion
 
@@ -33,7 +33,7 @@ namespace CQELight.Buses.InMemory.Events
 
         private readonly Dictionary<Type, MethodInfo> _handlers_HandleMethods;
         private readonly InMemoryEventBusConfiguration _config = InMemoryEventBusConfiguration.Default;
-        private readonly IScope _scope;
+        private readonly IScope? _scope;
         private readonly ILogger _logger;
 
         #endregion
@@ -45,7 +45,7 @@ namespace CQELight.Buses.InMemory.Events
         {
         }
 
-        internal InMemoryEventBus(InMemoryEventBusConfiguration configuration = null, IScopeFactory scopeFactory = null)
+        internal InMemoryEventBus(InMemoryEventBusConfiguration? configuration = null, IScopeFactory? scopeFactory = null)
         {
             InitHandlersCollection(new string[0]);
             if (scopeFactory != null)
@@ -66,7 +66,7 @@ namespace CQELight.Buses.InMemory.Events
 
         internal static void InitHandlersCollection(string[] excludedDLLs)
         {
-            s_eventHandlers = ReflectionTools.GetAllTypes(excludedDLLs).Where(IsEventHandler).WhereNotNull().ToList();
+            s_eventHandlers ??= ReflectionTools.GetAllTypes(excludedDLLs).Where(IsEventHandler).WhereNotNull().ToList();
         }
 
         #endregion
@@ -95,9 +95,9 @@ namespace CQELight.Buses.InMemory.Events
                          && (i.GetGenericTypeDefinition() == typeof(IDomainEventHandler<>) || i.GetGenericTypeDefinition() == typeof(ITransactionnalEventHandler<>))
                          && i.GenericTypeArguments[0] == eventType) == true;
 
-        private object GetOrCreateHandler(Type handlerType, IEventContext context)
+        private object? GetOrCreateHandler(Type handlerType, IEventContext? context)
         {
-            object result = null;
+            object? result = null;
             try
             {
                 var handlerFromCoreDispatcher = CoreDispatcher.TryGetEventHandlerByType(handlerType);
@@ -138,7 +138,7 @@ namespace CQELight.Buses.InMemory.Events
                             _logger.LogDebug(() => $"InMemoryEventBus : Getting a handler of type {handlerType.FullName} from the context.");
                             result = scope.Resolve(handlerType);
                         }
-                        else if (context is IScopeHolder scopeHolder && scopeHolder.Scope != null && !scopeHolder.Scope.IsDisposed)
+                        else if (context is IScopeHolder scopeHolder && scopeHolder.Scope?.IsDisposed == false)
                         {
                             _logger.LogDebug(() => $"InMemoryEventBus : Getting a handler of type {handlerType.FullName} from the scope of the context.");
                             result = scopeHolder.Scope.Resolve(handlerType);
@@ -185,20 +185,20 @@ namespace CQELight.Buses.InMemory.Events
                         .Where(t => !dispatcherHandlerTypes.Any(i => new TypeEqualityComparer().Equals(i, t.HandlerType)))
                         .Select(h => (h.HandlerType, h.Priority));
 
-        private IEnumerable<EventHandlingInfos> GetMethods(IDomainEvent @event, IEventContext context)
+        private IEnumerable<EventHandlingInfos> GetMethods(IDomainEvent @event, IEventContext? context)
         {
             var methods = new Queue<EventHandlingInfos>();
             var handlerTypes = new List<Type>();
             var evtType = @event.GetType();
 
             var handlers = GetHandlerForEventType(evtType).ToList();
-            var dispatcherHandlerInstances = CoreDispatcher.TryGetHandlersForEventType(evtType);
+            var dispatcherHandlerInstances = CoreDispatcher.TryGetHandlersForEventType(evtType).ToList();
 
-            bool hasAtLeastOneActiveHandler = handlers.Count > 0 || dispatcherHandlerInstances.Any();
+            bool hasAtLeastOneActiveHandler = handlers.Count > 0 || dispatcherHandlerInstances.Count > 0;
 
             if (hasAtLeastOneActiveHandler)
             {
-                foreach (var (type, priority) in GetOrderedHandlers(handlers, dispatcherHandlerInstances.Select(i => i?.GetType())))
+                foreach (var (type, priority) in GetOrderedHandlers(handlers, dispatcherHandlerInstances.Select(i => i.GetType())))
                 {
                     var handlerInstance = GetOrCreateHandler(type, context);
                     if (handlerInstance != null)
@@ -249,7 +249,7 @@ namespace CQELight.Buses.InMemory.Events
         /// </summary>
         /// <param name="event">Event to register.</param>
         /// <param name="context">Context associated to the event..</param>
-        public async Task<Result> PublishEventAsync(IDomainEvent @event, IEventContext context = null)
+        public async Task<Result> PublishEventAsync(IDomainEvent @event, IEventContext? context = null)
         {
             if (@event != null)
             {
@@ -281,7 +281,6 @@ namespace CQELight.Buses.InMemory.Events
                         .Where(t => !handled.Any(h => h.Equals(t)))
                         .OrderByDescending(m => m.HandlerPriority))
                     {
-
                         async Task<bool> ShouldBreakIfApplyingRetryStrategyAsync()
                         {
                             await Task.Delay((int)_config.WaitingTimeMilliseconds).ConfigureAwait(false);
@@ -302,12 +301,12 @@ namespace CQELight.Buses.InMemory.Events
                         {
                             if (allowParallelHandling)
                             {
-                                tasks.Add((infos, (Task<Result>)infos.HandlerMethod.Invoke(infos.HandlerInstance, new object[] { @event, context })));
+                                tasks.Add((infos, (Task<Result>)infos.HandlerMethod.Invoke(infos.HandlerInstance, new object?[] { @event, context })));
                             }
                             else
                             {
                                 var result =
-                                    await ((Task<Result>)infos.HandlerMethod.Invoke(infos.HandlerInstance, new object[] { @event, context })).ConfigureAwait(false);
+                                    await ((Task<Result>)infos.HandlerMethod.Invoke(infos.HandlerInstance, new object?[] { @event, context })).ConfigureAwait(false);
                                 if (!result.IsSuccess)
                                 {
                                     currentTry++;

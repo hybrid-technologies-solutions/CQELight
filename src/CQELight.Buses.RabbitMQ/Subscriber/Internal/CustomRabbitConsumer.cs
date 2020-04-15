@@ -15,7 +15,7 @@ namespace CQELight.Buses.RabbitMQ.Subscriber.Internal
 
         public CustomRabbitConsumer(
             global::RabbitMQ.Client.IModel model,
-            RabbitQueueDescription queueDescription) 
+            RabbitQueueDescription queueDescription)
             : base(model)
         {
             QueueDescription = queueDescription;

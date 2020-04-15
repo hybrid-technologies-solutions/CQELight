@@ -23,7 +23,7 @@ namespace CQELight.Buses.RabbitMQ.Publisher
     {
         #region Members
 
-        private ILogger<RabbitPublisher> logger;
+        private readonly ILogger<RabbitPublisher> logger;
         private readonly RabbitPublisherConfiguration configuration;
 
         #endregion
@@ -56,7 +56,7 @@ namespace CQELight.Buses.RabbitMQ.Publisher
         /// <param name="command">Command to dispatch.</param>
         /// <param name="context">Context associated to command.</param>
         /// <returns>List of launched tasks from handler.</returns>
-        public Task<Result> DispatchAsync(ICommand command, ICommandContext context = null)
+        public Task<Result> DispatchAsync(ICommand command, ICommandContext? context = null)
         {
             if (command != null)
             {
@@ -94,7 +94,7 @@ namespace CQELight.Buses.RabbitMQ.Publisher
         /// </summary>
         /// <param name="event">Event to register.</param>
         /// <param name="context">Context associated to the event..</param>
-        public async Task<Result> PublishEventAsync(IDomainEvent @event, IEventContext context = null)
+        public async Task<Result> PublishEventAsync(IDomainEvent @event, IEventContext? context = null)
         {
             if (@event != null)
             {
@@ -219,7 +219,7 @@ namespace CQELight.Buses.RabbitMQ.Publisher
             if (evtCfg.LifeTime.TotalMilliseconds > 0)
             {
                 expiration = evtCfg.LifeTime;
-                logger.LogDebug(() => $"RabbitMQClientBus : Defining {evtCfg.LifeTime.ToString()} lifetime for event of type {eventType.FullName}");
+                logger.LogDebug(() => $"RabbitMQClientBus : Defining {evtCfg.LifeTime} lifetime for event of type {eventType.FullName}");
             }
             var serializedEvent = configuration.Serializer.SerializeEvent(@event);
             if (expiration.HasValue)
@@ -227,7 +227,6 @@ namespace CQELight.Buses.RabbitMQ.Publisher
                 return new Enveloppe(serializedEvent, eventType, configuration.ConnectionInfos.ServiceName, true, expiration.Value);
             }
             return new Enveloppe(serializedEvent, eventType, configuration.ConnectionInfos.ServiceName);
-
         }
 
         private Task Publish(Enveloppe env, string routingKey)
@@ -252,7 +251,6 @@ namespace CQELight.Buses.RabbitMQ.Publisher
             }
             return Task.CompletedTask;
         }
-
 
         private IModel GetChannel(IConnection connection) => connection.CreateModel();
 

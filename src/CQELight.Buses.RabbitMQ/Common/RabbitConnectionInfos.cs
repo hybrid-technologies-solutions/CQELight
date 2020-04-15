@@ -1,4 +1,5 @@
 ﻿using RabbitMQ.Client;
+using RabbitMQ.Client.Framing.Impl;
 using System;
 
 namespace CQELight.Buses.RabbitMQ.Common
@@ -42,7 +43,11 @@ namespace CQELight.Buses.RabbitMQ.Common
 
         #region Ctor
 
-        private RabbitConnectionInfos() { }
+        private RabbitConnectionInfos(string serviceName, ConnectionFactory connectionFactory)
+        {
+            ServiceName = serviceName;
+            ConnectionFactory = connectionFactory;
+        }
 
         #endregion
 
@@ -57,16 +62,14 @@ namespace CQELight.Buses.RabbitMQ.Common
             ConnectionFactory connectionFactory, string serviceName)
         {
             if (connectionFactory == null)
+            {
                 throw new ArgumentNullException(nameof(connectionFactory));
+            }
             if (string.IsNullOrWhiteSpace(connectionFactory.HostName))
             {
                 throw new ArgumentException("Provided connectionFactory seems to be not well parameterized (host is missing).");
             }
-            return new RabbitConnectionInfos
-            {
-                ServiceName = serviceName,
-                ConnectionFactory = connectionFactory
-            };
+            return new RabbitConnectionInfos(serviceName, connectionFactory);
         }
 
         #endregion

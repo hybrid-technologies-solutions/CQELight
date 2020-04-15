@@ -24,9 +24,9 @@ namespace CQELight.Buses.RabbitMQ.Server
         private readonly ILogger _logger;
         private readonly RabbitMQServerConfiguration _config;
         private List<EventingBasicConsumer> _consumers = new List<EventingBasicConsumer>();
-        private IConnection _connection;
-        private IModel _channel;
-        private readonly InMemoryEventBus _inMemoryEventBus;
+        private IConnection? _connection;
+        private IModel? _channel;
+        private readonly InMemoryEventBus? _inMemoryEventBus;
 
         #endregion
 
@@ -34,8 +34,8 @@ namespace CQELight.Buses.RabbitMQ.Server
 
         internal RabbitMQServer(
             ILoggerFactory loggerFactory,
-            RabbitMQServerConfiguration config = null,
-            InMemoryEventBus inMemoryEventBus = null)
+            RabbitMQServerConfiguration? config = null,
+            InMemoryEventBus? inMemoryEventBus = null)
         {
             if (loggerFactory == null)
             {
@@ -169,8 +169,8 @@ namespace CQELight.Buses.RabbitMQ.Server
         {
             try
             {
-                _channel.Dispose();
-                _channel.Dispose();
+                _channel?.Dispose();
+                _connection?.Dispose();
                 _consumers.DoForEach(c => c.Received -= OnEventReceived);
                 _consumers.Clear();
             }

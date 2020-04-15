@@ -6,7 +6,8 @@ namespace CQELight.Buses.RabbitMQ.Server
     /// <summary>
     /// Configuration class to setup RabbitMQ server behavior.
     /// </summary>
-    [Obsolete("Use ")]
+    // TODO remove in v2.
+    [Obsolete("Use RabbitConnectionInfos & RabbitNeworkInfos instead. Will be removed in v2")]
     public class RabbitMQServerConfiguration : AbstractBaseConfiguration
     {
         #region Static members

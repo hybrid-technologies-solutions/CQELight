@@ -14,6 +14,6 @@ namespace CQELight.Abstractions.CQS.Interfaces
         /// <param name="command">Command to dispatch.</param>
         /// <param name="context">Context associated to command.</param>
         /// <returns>List of launched tasks from handler.</returns>
-        Task<Result> DispatchAsync(ICommand command, ICommandContext context = null);
+        Task<Result> DispatchAsync(ICommand command, ICommandContext? context = null);
     }
 }

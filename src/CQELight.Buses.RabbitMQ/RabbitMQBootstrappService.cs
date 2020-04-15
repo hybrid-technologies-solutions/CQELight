@@ -5,33 +5,19 @@ namespace CQELight.Buses.RabbitMQ
 {
     internal class RabbitMQBootstrappService : IBootstrapperService
     {
-        #region Static members
-
-        private static RabbitMQBootstrappService _instance;
-
-        internal static RabbitMQBootstrappService Instance
-        {
-            get
-            {
-                if (_instance == null)
-                {
-                    _instance = new RabbitMQBootstrappService();
-                }
-                return _instance;
-            }
-        }
-
-        internal static RabbitSubscriber RabbitSubscriber { get; set; }
-
-        #endregion
-
         #region IBoostrapperService
 
         public BootstrapperServiceType ServiceType => BootstrapperServiceType.Bus;
 
-        public Action<BootstrappingContext> BootstrappAction
+        public Action<BootstrappingContext> BootstrappAction { get; }
+
+        #endregion
+
+        #region Ctor
+
+        public RabbitMQBootstrappService(Action<BootstrappingContext> bootstrappAction)
         {
-            get; internal set;
+            BootstrappAction = bootstrappAction ?? throw new ArgumentNullException(nameof(bootstrappAction));
         }
 
         #endregion

@@ -42,7 +42,7 @@ namespace CQELight.Buses
         /// is applied, which means that every event type has a lifetime of 1 day.</param>
         /// <param name="parallelDispatchEventTypes">Collection of type of events
         /// that allows parallelDispatch.</param>
-        public BaseEventBusConfiguration(IEnumerable<EventLifeTimeConfiguration> eventsLifetime, IEnumerable<Type> parallelDispatchEventTypes)
+        public BaseEventBusConfiguration(IEnumerable<EventLifeTimeConfiguration>? eventsLifetime, IEnumerable<Type>? parallelDispatchEventTypes)
         {
             if (eventsLifetime != null)
             {

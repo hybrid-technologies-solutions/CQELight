@@ -30,6 +30,16 @@ namespace CQELight.Buses.RabbitMQ.Network
     /// </summary>
     public class RabbitNetworkInfos
     {
+        #region Public static member
+
+        /// <summary>
+        /// Empty network configuration.
+        /// </summary>
+        public static RabbitNetworkInfos Empty
+            => new RabbitNetworkInfos();
+
+        #endregion
+
         #region Properties
 
         /// <summary>
@@ -62,7 +72,7 @@ namespace CQELight.Buses.RabbitMQ.Network
         /// </summary>
         /// <param name="serviceName">Service name.</param>
         /// <param name="strategy">Strategy to apply.</param>
-        /// <returns>Preconfigure network infos. 
+        /// <returns>Preconfigure network infos.
         /// Custom will return an empty one.
         /// SingleExchange will return one distant exchange and one queue with one binding, to configure for routing keys.
         /// ExchangePerService will return one local exchange and one queue with no binding, to configure with other system exchanges.</returns>

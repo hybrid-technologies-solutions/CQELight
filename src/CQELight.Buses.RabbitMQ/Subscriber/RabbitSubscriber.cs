@@ -32,11 +32,9 @@ namespace CQELight.Buses.RabbitMQ.Subscriber
         private readonly ILogger _logger;
         private readonly RabbitSubscriberConfiguration _config;
         private List<EventingBasicConsumer> _consumers = new List<EventingBasicConsumer>();
-        private IConnection _connection;
-        private IModel _channel;
-        private readonly Func<InMemoryEventBus> _inMemoryEventBusFactory;
-        private readonly Func<InMemoryCommandBus> _inMemoryCommandBusFactory;
-        private readonly IScopeFactory scopeFactory;
+        private IConnection? _connection;
+        private IModel? _channel;
+        private readonly IScopeFactory? scopeFactory;
 
         #endregion
 
@@ -45,7 +43,7 @@ namespace CQELight.Buses.RabbitMQ.Subscriber
         public RabbitSubscriber(
             ILoggerFactory loggerFactory,
             RabbitSubscriberConfiguration config,
-            IScopeFactory scopeFactory = null)
+            IScopeFactory? scopeFactory = null)
         {
             if (loggerFactory == null)
             {
@@ -126,7 +124,7 @@ namespace CQELight.Buses.RabbitMQ.Subscriber
                                     {
                                         _config.EventCustomCallback?.Invoke(evt);
                                     }
-                                    catch(Exception e)
+                                    catch (Exception e)
                                     {
                                         _logger.LogError(
                                             $"Error when executing custom callback for event {objType.AssemblyQualifiedName}. {e}");
@@ -157,12 +155,15 @@ namespace CQELight.Buses.RabbitMQ.Subscriber
                                             $"Error when executing custom callback for command {objType.AssemblyQualifiedName}. {e}");
                                         result = Result.Fail();
                                     }
-                                    using (var scope = scopeFactory.CreateScope())
+                                    if (scopeFactory != null)
                                     {
-                                        var bus = scope.Resolve<InMemoryCommandBus>();
-                                        if (_config.DispatchInMemory && bus != null)
+                                        using (var scope = scopeFactory.CreateScope())
                                         {
-                                            result = await bus.DispatchAsync(cmd).ConfigureAwait(false);
+                                            var bus = scope.Resolve<InMemoryCommandBus>();
+                                            if (_config.DispatchInMemory && bus != null)
+                                            {
+                                                result = await bus.DispatchAsync(cmd).ConfigureAwait(false);
+                                            }
                                         }
                                     }
                                 }
@@ -198,8 +199,8 @@ namespace CQELight.Buses.RabbitMQ.Subscriber
         {
             try
             {
-                _channel.Dispose();
-                _channel.Dispose();
+                _channel?.Dispose();
+                _connection?.Dispose();
                 _consumers.DoForEach(c => c.Received -= OnEventReceived);
                 _consumers.Clear();
             }
@@ -213,15 +214,11 @@ namespace CQELight.Buses.RabbitMQ.Subscriber
 
         #region Private methods
 
-        private IDispatcherSerializer GetSerializerByContentType(string contentType)
-        {
-            switch(contentType)
+        private IDispatcherSerializer GetSerializerByContentType(string? contentType)
+            => contentType switch
             {
-                case "text/json":
-                default:
-                    return new JsonDispatcherSerializer();
-            }
-        }
+                _ => new JsonDispatcherSerializer(),
+            };
 
         #endregion
 

@@ -2,7 +2,6 @@
 {
     internal static class Consts
     {
-
         #region Consts
 
         internal static readonly string CONST_CQE_EXCHANGE_NAME = "cqelight_global_exchange";

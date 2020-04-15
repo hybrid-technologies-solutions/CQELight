@@ -29,43 +29,35 @@ namespace CQELight
             this Bootstrapper bootstrapper,
             RabbitConnectionInfos connectionInfos,
             RabbitNetworkInfos networkInfos,
-            Action<RabbitSubscriberConfiguration> subscriberConfiguration = null,
-            Action<RabbitPublisherConfiguration> publisherConfiguration = null)
+            Action<RabbitSubscriberConfiguration>? subscriberConfiguration = null,
+            Action<RabbitPublisherConfiguration>? publisherConfiguration = null)
         {
-            var service = RabbitMQBootstrappService.Instance;
-
-            var subscriberConf = new RabbitSubscriberConfiguration
-            {
-                ConnectionInfos = connectionInfos,
-                NetworkInfos = networkInfos
-            };
+            var subscriberConf = new RabbitSubscriberConfiguration(connectionInfos, networkInfos);
             subscriberConfiguration?.Invoke(subscriberConf);
 
-            service.BootstrappAction += (ctx) =>
+            var publisherConf = new RabbitPublisherConfiguration(connectionInfos, networkInfos);
+            publisherConfiguration?.Invoke(publisherConf);
+
+            var service = new RabbitMQBootstrappService(ctx =>
             {
-
-                var publisherConf = new RabbitPublisherConfiguration()
+                if (ctx.IsServiceRegistered(BootstrapperServiceType.IoC))
                 {
-                    ConnectionInfos = connectionInfos,
-                    NetworkInfos = networkInfos
-                };
-                publisherConfiguration?.Invoke(publisherConf);
+                    bootstrapper.AddIoCRegistration(new InstanceTypeRegistration(subscriberConf, typeof(RabbitSubscriberConfiguration)));
+                    bootstrapper.AddIoCRegistration(new InstanceTypeRegistration(publisherConf, typeof(RabbitPublisherConfiguration)));
 
-                bootstrapper.AddIoCRegistration(new InstanceTypeRegistration(subscriberConf, typeof(RabbitSubscriberConfiguration)));
-                bootstrapper.AddIoCRegistration(new InstanceTypeRegistration(publisherConf, typeof(RabbitPublisherConfiguration)));
-
-                bootstrapper.AddIoCRegistration(new TypeRegistration(typeof(RabbitPublisher), true));
-                bootstrapper.AddIoCRegistration(new TypeRegistration(typeof(RabbitSubscriber), true));
-                if (publisherConf.RoutingKeyFactory != null)
-                {
-                    bootstrapper.AddIoCRegistration(new InstanceTypeRegistration(publisherConf.RoutingKeyFactory, typeof(IRoutingKeyFactory)));
+                    bootstrapper.AddIoCRegistration(new TypeRegistration(typeof(RabbitPublisher), true));
+                    bootstrapper.AddIoCRegistration(new TypeRegistration(typeof(RabbitSubscriber), true));
+                    if (publisherConf.RoutingKeyFactory != null)
+                    {
+                        bootstrapper.AddIoCRegistration(new InstanceTypeRegistration(publisherConf.RoutingKeyFactory, typeof(IRoutingKeyFactory)));
+                    }
                 }
-            };
+            });
             bootstrapper.AddService(service);
             bootstrapper.OnPostBootstrapping += (c) =>
             {
-                ILoggerFactory loggerFactory = null;
-                IScopeFactory scopeFactory = null;
+                ILoggerFactory? loggerFactory = null;
+                IScopeFactory? scopeFactory = null;
                 if (c.Scope != null)
                 {
                     loggerFactory = c.Scope.Resolve<ILoggerFactory>();
@@ -76,12 +68,12 @@ namespace CQELight
                     loggerFactory = new LoggerFactory();
                     loggerFactory.AddProvider(new DebugLoggerProvider());
                 }
-                RabbitMQBootstrappService.RabbitSubscriber =
+                RabbitMQContext.RabbitSubscriber =
                     new RabbitSubscriber(
                         loggerFactory,
                         subscriberConf,
                         scopeFactory);
-                RabbitMQBootstrappService.RabbitSubscriber.Start();
+                RabbitMQContext.RabbitSubscriber.Start();
             };
             return bootstrapper;
         }
@@ -92,15 +84,14 @@ namespace CQELight
         /// <param name="bootstrapper">Bootstrapper instance.</param>
         /// <param name="configuration">Configuration to use RabbitMQ.</param>
         /// <returns>Bootstrapper instance.</returns>
+        // TODO v2 remove
         [Obsolete("Use UseRabbitMQ instead")]
         public static Bootstrapper UseRabbitMQClientBus(this Bootstrapper bootstrapper,
-                                                        RabbitPublisherBusConfiguration configuration = null)
+                                                        RabbitPublisherBusConfiguration? configuration = null)
         {
-            var service = RabbitMQBootstrappService.Instance;
-
-            service.BootstrappAction += (ctx) =>
+            var service = new RabbitMQBootstrappService(ctx =>
             {
-                RabbitMQClient.s_configuration = configuration ?? RabbitPublisherBusConfiguration.Default;
+                RabbitMQContext.Configuration = configuration ?? RabbitPublisherBusConfiguration.Default;
                 if (ctx.IsServiceRegistered(BootstrapperServiceType.IoC))
                 {
                     bootstrapper.AddIoCRegistrations(
@@ -109,7 +100,7 @@ namespace CQELight
                             typeof(RabbitPublisherBusConfiguration), typeof(AbstractBaseConfiguration)));
                     RegisterRabbitClientWithinContainer(bootstrapper);
                 }
-            };
+            });
 
             if (!bootstrapper.RegisteredServices.Any(s => s == service))
             {
@@ -118,22 +109,20 @@ namespace CQELight
             return bootstrapper;
         }
 
-
         /// <summary>
         /// Use RabbitMQ Server to listen from events on a specific rabbitMQ instance.
         /// </summary>
         /// <param name="bootstrapper">Bootstrapper instance.</param>
         /// <param name="configuration">Configuration to use RabbitMQ</param>
         /// <returns>Bootstrapper instance</returns>
+        // TODO v2 remove
         [Obsolete("Use UseRabbitMQ instead")]
         public static Bootstrapper UseRabbitMQServer(this Bootstrapper bootstrapper,
-                                                     RabbitMQServerConfiguration configuration = null)
+                                                     RabbitMQServerConfiguration? configuration = null)
         {
-            var service = RabbitMQBootstrappService.Instance;
-
-            service.BootstrappAction += (ctx) =>
+            var service = new RabbitMQBootstrappService(ctx =>
             {
-                RabbitMQClient.s_configuration = configuration ?? RabbitMQServerConfiguration.Default;
+                RabbitMQContext.Configuration = configuration ?? RabbitMQServerConfiguration.Default;
                 if (ctx.IsServiceRegistered(BootstrapperServiceType.IoC))
                 {
                     bootstrapper.AddIoCRegistrations(
@@ -142,7 +131,7 @@ namespace CQELight
                               typeof(RabbitMQServerConfiguration), typeof(AbstractBaseConfiguration)));
                     RegisterRabbitClientWithinContainer(bootstrapper);
                 }
-            };
+            });
 
             if (!bootstrapper.RegisteredServices.Any(s => s == service))
             {

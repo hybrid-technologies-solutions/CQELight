@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace CQELight.Buses.RabbitMQ.Common
 {
@@ -12,12 +13,12 @@ namespace CQELight.Buses.RabbitMQ.Common
         /// <summary>
         /// Name of the exchange.
         /// </summary>
-        public string ExchangeName { get; set; }
+        public string ExchangeName { get; set; } = "";
 
         /// <summary>
         /// Type of the exchange.
         /// </summary>
-        public string ExchangeType { get; set; }
+        public string ExchangeType { get; set; } = "";
 
         /// <summary>
         /// If an exchange is set to durable, every message published on it will be kept after
@@ -33,7 +34,43 @@ namespace CQELight.Buses.RabbitMQ.Common
         /// <summary>
         /// Custom additionnal properties.
         /// </summary>
-        public Dictionary<string, object> AdditionnalProperties { get; set; }
+        public Dictionary<string, object>? AdditionnalProperties { get; set; }
+
+        #endregion
+
+        #region Ctor
+
+        /// <summary>
+        /// Creates a new instance of <see cref="RabbitExchangeDetails"/>.
+        /// </summary>
+        [Obsolete("Use fully qualified constructor instead. Will be remove in v2")]
+        public RabbitExchangeDetails()
+        {
+        }
+
+        /// <summary>
+        /// Creates a new instance of <see cref="RabbitExchangeDetails"/>
+        /// with specified exchange informations.
+        /// </summary>
+        /// <param name="exchangeName">Name of the exchange</param>
+        /// <param name="exchangeType">Type of the exchange</param>
+        public RabbitExchangeDetails(
+            string exchangeName,
+            string exchangeType)
+        {
+            if (string.IsNullOrWhiteSpace(exchangeName))
+            {
+                throw new ArgumentException("RabbitExchangeDetails.ctor() : Exchange name must be provided", nameof(exchangeName));
+            }
+
+            if (string.IsNullOrWhiteSpace(exchangeType))
+            {
+                throw new ArgumentException("RabbitExchangeDetails.ctor() : Exchange type must be provided", nameof(exchangeType));
+            }
+
+            ExchangeName = exchangeName;
+            ExchangeType = exchangeType;
+        }
 
         #endregion
     }

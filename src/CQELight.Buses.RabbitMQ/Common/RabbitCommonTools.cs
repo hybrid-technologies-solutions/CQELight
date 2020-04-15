@@ -22,7 +22,7 @@ namespace CQELight.Buses.RabbitMQ.Common
             }
 
             DeclareExchanges(channel, config.NetworkInfos.ServiceExchangeDescriptions.Concat(config.NetworkInfos.DistantExchangeDescriptions));
-            
+
             foreach (var queueDescription in config.NetworkInfos.ServiceQueueDescriptions)
             {
                 if (config.UseDeadLetterQueue && !queueDescription.AdditionnalProperties.ContainsKey(Consts.CONST_DEAD_LETTER_EXCHANGE_RABBIT_KEY))
@@ -74,7 +74,6 @@ namespace CQELight.Buses.RabbitMQ.Common
             {
                 channel.ExchangeDeclare(exchangeDescription);
             }
-
         }
     }
 }

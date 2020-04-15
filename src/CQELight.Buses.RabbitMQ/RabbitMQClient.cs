@@ -14,9 +14,7 @@ namespace CQELight.Buses.RabbitMQ
 
         private readonly AbstractBaseConfiguration _configuration;
         private static readonly object s_threadSafety = new object();
-        private static RabbitMQClient s_instance;
-
-        internal static AbstractBaseConfiguration s_configuration;
+        private static RabbitMQClient? s_instance;
 
         #endregion
 
@@ -31,13 +29,17 @@ namespace CQELight.Buses.RabbitMQ
         {
             get
             {
-                if(s_instance == null)
+                if (RabbitMQContext.Configuration == null)
                 {
-                    lock(s_threadSafety)
+                    throw new InvalidOperationException("RabbitMQClient.Instance : Configuration hasn't been set before trying to access to RabbitClient");
+                }
+                if (s_instance == null)
+                {
+                    lock (s_threadSafety)
                     {
-                        if(s_instance == null)
+                        if (s_instance == null)
                         {
-                            s_instance = new RabbitMQClient(s_configuration);
+                            s_instance = new RabbitMQClient(RabbitMQContext.Configuration);
                         }
                     }
                 }
@@ -63,7 +65,7 @@ namespace CQELight.Buses.RabbitMQ
         /// </summary>
         /// <returns>RabbitMQ connection</returns>
         public IConnection GetConnection() => _configuration.ConnectionFactory.CreateConnection();
-        
+
         #endregion
     }
 }

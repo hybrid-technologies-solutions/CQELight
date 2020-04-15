@@ -10,6 +10,7 @@ using System.ComponentModel;
 using CM = System.ComponentModel.DataAnnotations;
 using System.Reflection;
 using System.Linq;
+using Microsoft.Extensions.Logging.Debug;
 
 namespace CQELight.DAL.EFCore
 {
@@ -19,24 +20,24 @@ namespace CQELight.DAL.EFCore
     internal static class EFCoreAutoMapper
     {
         #region Members
-        
-        private static ILogger _logger;
+
+        private static ILogger? _logger;
 
         #endregion
 
         #region Public static methods
 
         /// <summary>
-        /// Basic method that transform all attributes and 
+        /// Basic method that transform all attributes and
         /// </summary>
         /// <param name="modelBuilder">Builder of EF Core model.</param>
         /// <param name="typeToMap">Type to treat.</param>
         /// <param name="useSchemas">Flag that indicates if current provider can handle schemas.</param>
         /// <param name="loggerFactory">Logger factory</param>
-        public static void AutoMap(this ModelBuilder modelBuilder, Type typeToMap, bool useSchemas = true, ILoggerFactory loggerFactory = null)
+        public static void AutoMap(this ModelBuilder modelBuilder, Type typeToMap, bool useSchemas = true, ILoggerFactory? loggerFactory = null)
         {
-            _logger = _logger ?? loggerFactory?.CreateLogger("EFCoreAutoMapper");
-            
+            _logger ??= (loggerFactory ?? new LoggerFactory(new[] { new DebugLoggerProvider() })).CreateLogger("EFCoreAutoMapper");
+
             Log($"Beginning treating mapping for type {typeToMap}", true);
 
             var entityBuilder = modelBuilder.Entity(typeToMap);
@@ -86,12 +87,12 @@ namespace CQELight.DAL.EFCore
         private static void AutoMapInternal(EntityTypeBuilder builder, Type entityType, bool useSQLServer = true)
         {
             var tableAttr = entityType.GetCustomAttribute<TableAttribute>();
-            var tableName = !string.IsNullOrWhiteSpace(tableAttr?.TableName) ? tableAttr.TableName : entityType.Name;
+            var tableName = !string.IsNullOrWhiteSpace(tableAttr?.TableName) ? tableAttr!.TableName : entityType.Name;
             Log($"Beginning of treatment for type '{tableName}'");
 
             if (useSQLServer && !string.IsNullOrWhiteSpace(tableAttr?.SchemaName))
             {
-                builder.ToTable(tableName, tableAttr.SchemaName);
+                builder.ToTable(tableName, tableAttr!.SchemaName);
             }
             else
             {
@@ -135,7 +136,7 @@ namespace CQELight.DAL.EFCore
 
                 var distantProperties = entityProperty.PropertyType.GetAllProperties();
                 var distantTableAttr = entityProperty.PropertyType.GetCustomAttribute<TableAttribute>();
-                var distantTableName = !string.IsNullOrWhiteSpace(distantTableAttr?.TableName) ? distantTableAttr.TableName : entityProperty.PropertyType.Name;
+                var distantTableName = !string.IsNullOrWhiteSpace(distantTableAttr?.TableName) ? distantTableAttr!.TableName : entityProperty.PropertyType.Name;
 
                 var propBuilder = builder.Property(fkColumn.PropertyType, fkColumn.Name);
                 string columnName = string.Empty;
@@ -226,7 +227,7 @@ namespace CQELight.DAL.EFCore
             }
             var properties = entityType.GetAllProperties();
             var tableAttr = entityType.GetCustomAttribute<TableAttribute>();
-            var tableName = !string.IsNullOrWhiteSpace(tableAttr?.TableName) ? tableAttr.TableName : entityType.Name;
+            var tableName = !string.IsNullOrWhiteSpace(tableAttr?.TableName) ? tableAttr!.TableName : entityType.Name;
             foreach (var idx in complexIndexAttrs)
             {
                 Log($"Creation of a complex index on table '{tableName}' on properties '{string.Join(",", idx.PropertyNames)}'");
@@ -337,14 +338,14 @@ namespace CQELight.DAL.EFCore
         {
             var properties = entityType.GetAllProperties();
             var tableAttr = entityType.GetCustomAttribute<TableAttribute>();
-            var tableName = !string.IsNullOrWhiteSpace(tableAttr?.TableName) ? tableAttr.TableName : entityType.Name;
+            var tableName = !string.IsNullOrWhiteSpace(tableAttr?.TableName) ? tableAttr!.TableName : entityType.Name;
             foreach (var simpleEntityLink in properties.Where(IsForeignEntity))
             {
                 var foreignKeyProps = new List<string>();
 
                 var distantProperties = simpleEntityLink.PropertyType.GetAllProperties();
                 var distantTableAttr = simpleEntityLink.PropertyType.GetCustomAttribute<TableAttribute>();
-                var distantTableName = !string.IsNullOrWhiteSpace(distantTableAttr?.TableName) ? distantTableAttr.TableName : simpleEntityLink.PropertyType.Name;
+                var distantTableName = !string.IsNullOrWhiteSpace(distantTableAttr?.TableName) ? distantTableAttr!.TableName : simpleEntityLink.PropertyType.Name;
                 var currentFkAttr = simpleEntityLink.GetCustomAttribute<ForeignKeyAttribute>();
 
                 bool required = simpleEntityLink.IsDefined(typeof(CM.RequiredAttribute));
@@ -438,7 +439,7 @@ namespace CQELight.DAL.EFCore
 
                 var distantProperties = collectionEntityType.GetAllProperties();
                 var distantTableAttr = collectionEntityType.GetCustomAttribute<TableAttribute>();
-                var distantTableName = !string.IsNullOrWhiteSpace(distantTableAttr?.TableName) ? distantTableAttr.TableName : collectionEntityType.Name;
+                var distantTableName = !string.IsNullOrWhiteSpace(distantTableAttr?.TableName) ? distantTableAttr!.TableName : collectionEntityType.Name;
 
                 var distantCollectionProperty = distantProperties.FirstOrDefault(
                    p =>
@@ -455,7 +456,7 @@ namespace CQELight.DAL.EFCore
                 {
                     return !p.IsDefined(typeof(ForeignKeyAttribute))
                         || (p.IsDefined(typeof(ForeignKeyAttribute)) &&
-                                (p.GetCustomAttribute<ForeignKeyAttribute>().InversePropertyName == item.Name
+                                (p.GetCustomAttribute<ForeignKeyAttribute>().InversePropertyName == item!.Name
                                 || string.IsNullOrWhiteSpace(p.GetCustomAttribute<ForeignKeyAttribute>().InversePropertyName)));
                 };
 

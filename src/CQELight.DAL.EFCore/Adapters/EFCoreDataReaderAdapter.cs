@@ -18,7 +18,7 @@ namespace CQELight.DAL.EFCore.Adapters
         #region Members
 
         private readonly BaseDbContext dbContext;
-        private readonly EFCoreOptions options;
+        private readonly EFCoreOptions? options;
 
         #endregion
 
@@ -31,7 +31,7 @@ namespace CQELight.DAL.EFCore.Adapters
         /// <param name="options">Custom working options.</param>
         public EFCoreDataReaderAdapter(
             BaseDbContext dbContext,
-            EFCoreOptions options = null)
+            EFCoreOptions? options = null)
         {
             this.dbContext = dbContext;
             this.options = options;
@@ -50,8 +50,8 @@ namespace CQELight.DAL.EFCore.Adapters
         /// <typeparam name="T">Type of entity to look for</typeparam>
         /// <returns>Bunch of entites that respects defined parameters.</returns>
         public IAsyncEnumerable<T> GetAsync<T>(
-            Expression<Func<T, bool>> filter = null,
-            Expression<Func<T, object>> orderBy = null,
+            Expression<Func<T, bool>>? filter = null,
+            Expression<Func<T, object>>? orderBy = null,
             bool includeDeleted = false) where T : class
             => GetCore(filter, orderBy, includeDeleted)
 #if NETSTANDARD2_0
@@ -74,8 +74,8 @@ namespace CQELight.DAL.EFCore.Adapters
         #region Protected methods
 
         protected virtual IQueryable<T> GetCore<T>(
-            Expression<Func<T, bool>> filter = null,
-            Expression<Func<T, object>> orderBy = null,
+            Expression<Func<T, bool>>? filter = null,
+            Expression<Func<T, object>>? orderBy = null,
             bool includeDeleted = false)
             where T : class
         {

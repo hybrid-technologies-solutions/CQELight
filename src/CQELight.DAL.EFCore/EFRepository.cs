@@ -21,7 +21,7 @@ namespace CQELight.DAL.EFCore
     /// Entity Framework Core Repository implementation.
     /// </summary>
     /// <typeparam name="T">Type of entity to manage.</typeparam>
-    [Obsolete("This implementation of EF Repository is no longer maintained. Use DataRepository with EFDataReaderAdapter & EFDataWriterAdapter.")]
+    [Obsolete("This implementation of EF Repository is no longer maintained. Migrate to BaseRepository with EFDataReaderAdapter & EFDataWriterAdapter.")]
     public class EFRepository<T> : DisposableObject, IDatabaseRepository<T>
         where T : class, IPersistableEntity
     {
@@ -29,6 +29,9 @@ namespace CQELight.DAL.EFCore
 
         private bool _createMode;
         private readonly SemaphoreSlim _lock;
+        protected ICollection<IPersistableEntity> _added;
+        protected ICollection<IPersistableEntity> _modified;
+        protected ICollection<IPersistableEntity> _deleted;
 
         #endregion
 
@@ -37,11 +40,7 @@ namespace CQELight.DAL.EFCore
         protected DbSet<T> DataSet => Context.Set<T>();
         protected BaseDbContext Context { get; }
         protected bool Disposed { get; set; }
-        protected ICollection<IPersistableEntity> _added { get; set; }
-        protected ICollection<IPersistableEntity> _modified { get; set; }
-        protected ICollection<IPersistableEntity> _deleted { get; set; }
         protected List<string> _deleteSqlQueries = new List<string>();
-        private IStateManager StateManager => Context.GetService<IStateManager>();
 
         #endregion
 
@@ -61,15 +60,15 @@ namespace CQELight.DAL.EFCore
         #region IDataReaderRepository methods
 
         public IEnumerable<T> Get(
-            Expression<Func<T, bool>> filter = null,
-            Expression<Func<T, object>> orderBy = null,
+            Expression<Func<T, bool>>? filter = null,
+            Expression<Func<T, object>>? orderBy = null,
             bool includeDeleted = false,
             params Expression<Func<T, object>>[] includes)
             => GetCore(filter, orderBy, includeDeleted, includes).AsEnumerable();
 
         public IAsyncEnumerable<T> GetAsync(
-            Expression<Func<T, bool>> filter = null,
-            Expression<Func<T, object>> orderBy = null,
+            Expression<Func<T, bool>>? filter = null,
+            Expression<Func<T, object>>? orderBy = null,
             bool includeDeleted = false,
             params Expression<Func<T, object>>[] includes)
             => GetCore(filter, orderBy, includeDeleted, includes)
@@ -80,6 +79,7 @@ namespace CQELight.DAL.EFCore
 #endif
 
         public async Task<T> GetByIdAsync<TId>(TId value)
+            where TId : notnull
             => await DataSet.FindAsync(value).ConfigureAwait(false);
 
         #endregion
@@ -118,7 +118,7 @@ namespace CQELight.DAL.EFCore
         {
             if (physicalDeletion || EFCoreInternalExecutionContext.DisableLogicalDeletion)
             {
-                StateManager.GetOrCreateEntry(entityToDelete).SetEntityState(EntityState.Deleted, true);
+                Context.Entry(entityToDelete).State = EntityState.Deleted;
             }
             else
             {
@@ -137,6 +137,7 @@ namespace CQELight.DAL.EFCore
             => entitiesToDelete.DoForEach(e => MarkForDelete(e, physicalDeletion));
 
         public void MarkIdForDelete<TId>(TId id, bool physicalDeletion = false)
+            where TId : notnull
         {
             if (id?.Equals(default(TId)) == true)
             {
@@ -213,13 +214,12 @@ namespace CQELight.DAL.EFCore
                 basePersistableEntity.Deleted = true;
                 basePersistableEntity.DeletionDate = DateTime.Now;
             }
-
-            StateManager.GetOrCreateEntry(entityToDelete).SetEntityState(EntityState.Modified, true);
+            Context.Entry(entityToDelete).State = EntityState.Modified;
         }
 
         protected virtual IQueryable<T> GetCore(
-            Expression<Func<T, bool>> filter = null,
-            Expression<Func<T, object>> orderBy = null,
+            Expression<Func<T, bool>>? filter = null,
+            Expression<Func<T, object>>? orderBy = null,
             bool includeDeleted = false,
             params Expression<Func<T, object>>[] includes)
         {
@@ -283,10 +283,15 @@ namespace CQELight.DAL.EFCore
 
         #region Private methods
 
-        private bool CannotNaviguate(NotNaviguableAttribute navAttr)
+        private bool CannotNaviguate(NotNaviguableAttribute? navAttr)
         {
+            bool ContainsFlag(NavigationMode flag)
+                => (navAttr.Mode & flag) != 0;
             return navAttr != null &&
-                            ((_createMode && navAttr.Mode.HasFlag(NavigationMode.Create)) || (!_createMode && navAttr.Mode.HasFlag(NavigationMode.Update)));
+                (
+                   (_createMode && ContainsFlag(NavigationMode.Create))
+                || (!_createMode && ContainsFlag(NavigationMode.Update))
+                );
         }
 
         #endregion

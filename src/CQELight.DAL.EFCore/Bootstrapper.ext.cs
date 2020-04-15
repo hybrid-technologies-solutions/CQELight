@@ -24,7 +24,7 @@ namespace CQELight
         #region Public static methods
 
         /// <summary>
-        /// Configure EF Core as repository implementation. 
+        /// Configure EF Core as repository implementation.
         /// This methods uses a single DbContext for all repositories
         /// </summary>
         /// <param name="bootstrapper">Bootstrapper instance</param>
@@ -32,7 +32,7 @@ namespace CQELight
         /// <param name="options">Custom options to use of using EF.</param>
         [Obsolete("Using a single DbContext for all adapters is not recommended. This method shouldn't be used anymore.")]
         public static Bootstrapper UseEFCoreAsMainRepository(this Bootstrapper bootstrapper, BaseDbContext dbContext,
-            EFCoreOptions options = null)
+            EFCoreOptions? options = null)
         {
             if (dbContext == null)
             {
@@ -68,7 +68,7 @@ namespace CQELight
         }
 
         /// <summary>
-        /// Configure EF Core as repository implementation. 
+        /// Configure EF Core as repository implementation.
         /// This methods uses a single database configuration and create dynamically all context
         /// from every concerned assembly.
         /// </summary>
@@ -76,7 +76,7 @@ namespace CQELight
         /// <param name="optionsBuilderCfg">Options builder configuration lambda.</param>
         /// <param name="options">Custom options to use of using EF.</param>
         public static Bootstrapper UseEFCoreAsMainRepository(this Bootstrapper bootstrapper, Action<DbContextOptionsBuilder> optionsBuilderCfg,
-            EFCoreOptions options = null)
+            EFCoreOptions? options = null)
         {
             if (optionsBuilderCfg == null)
             {
@@ -103,13 +103,13 @@ namespace CQELight
                             bootstrapper.AddIoCRegistration(new InstanceTypeRegistration(dbContextOptionsBuilder.Options, typeof(DbContextOptions), customDbContextOptionsType));
                             bootstrapper.AddIoCRegistration(new FactoryRegistration((scope) =>
                                 {
-                                    return new EFCoreDataReaderAdapter(scope.Resolve(customDbContextType) as BaseDbContext, options);
+                                    return new EFCoreDataReaderAdapter((BaseDbContext)scope.Resolve(customDbContextType), options);
                                 },
                                 typeof(EFCoreDataReaderAdapter),
                                 typeof(IDataReaderAdapter)));
                             bootstrapper.AddIoCRegistration(new FactoryRegistration((scope) =>
                             {
-                                return new EFCoreDataWriterAdapter(scope.Resolve(customDbContextType) as BaseDbContext, options);
+                                return new EFCoreDataWriterAdapter((BaseDbContext)scope.Resolve(customDbContextType), options);
                             },
                                 typeof(EFCoreDataWriterAdapter),
                                 typeof(IDataWriterAdapter)));
@@ -136,7 +136,7 @@ namespace CQELight
                         var databaseRepoType = typeof(IDatabaseRepository<>).MakeGenericType(item);
                         var dataUpdateRepoType = typeof(IDataUpdateRepository<>).MakeGenericType(item);
 
-                        Type ctxType = null;
+                        Type? ctxType = null;
 
                         if (s_ContextTypesPerAssembly.ContainsKey(item.Assembly.FullName))
                         {
@@ -185,12 +185,9 @@ namespace CQELight
 
         #region Private methods
 
-        private static void InitializeBootstrapperService(Bootstrapper bootstrapper, Action<BootstrappingContext> action, EFCoreOptions options = null)
+        private static void InitializeBootstrapperService(Bootstrapper bootstrapper, Action<BootstrappingContext> action, EFCoreOptions? options = null)
         {
-            var service = new DALEFCoreBootstrappService
-            {
-                BootstrappAction = action
-            };
+            var service = new DALEFCoreBootstrappService(action);
             bootstrapper.AddService(service);
             if (options != null)
             {

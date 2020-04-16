@@ -17,7 +17,7 @@ namespace CQELight.Abstractions.Saga
     {
         #region Members
 
-        private readonly IDispatcher _dispatcher;
+        private readonly IDispatcher? _dispatcher;
 
         #endregion
 
@@ -31,7 +31,7 @@ namespace CQELight.Abstractions.Saga
         /// <summary>
         /// Saga's data.
         /// </summary>
-        public TData Data { get; protected set; }
+        public TData? Data { get; protected set; }
 
         /// <summary>
         /// Completion indicator.

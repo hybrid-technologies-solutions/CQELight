@@ -18,7 +18,7 @@ namespace CQELight.EventStore.MongoDb.Common
         public override void Serialize(BsonSerializationContext context, BsonSerializationArgs args, object value)
             => context.Writer.WriteString(new SerializedObject { Data = value.ToJson(), Type = value.GetType().AssemblyQualifiedName }.ToJson());
 
-        public override object Deserialize(BsonDeserializationContext context, BsonDeserializationArgs args)
+        public override object? Deserialize(BsonDeserializationContext context, BsonDeserializationArgs args)
         {
             var objAsJson = context.Reader.ReadString();
             if (!string.IsNullOrWhiteSpace(objAsJson))

@@ -16,7 +16,6 @@
     <PackageReleaseNotes>See concerned milestone on GitHub</PackageReleaseNotes>    
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <LangVersion>latest</LangVersion>
-    <Nullable>Enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

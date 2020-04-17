@@ -3,7 +3,7 @@ using CQELight.EventStore.EFCore.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 
-namespace Geneao
+namespace Geneao_3_1
 {
     public class EventStoreDbContextCreator : IDesignTimeDbContextFactory<EventStoreDbContext>
     {

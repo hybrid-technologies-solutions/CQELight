@@ -14,13 +14,14 @@ namespace CQELight_Prerelease_CI
             {
                 Environment.Exit(-1);
             }
-            var csprojPath = Path.Combine(args[0], "Geneao.csproj");
+            var geneao2_1Path = Path.Combine(args[0], "Geneao");
+            var csprojPath = Path.Combine(geneao2_1Path, "Geneao.csproj");
             if (!File.Exists(csprojPath))
             {
                 Environment.Exit(-1);
             }
-            var famillesJson = Path.Combine(args[0], "familles.json");
-            var eventsDb = Path.Combine(args[0], "events.db");
+            var famillesJson = Path.Combine(geneao2_1Path, "familles.json");
+            var eventsDb = Path.Combine(geneao2_1Path, "events.db");
             if (File.Exists(famillesJson))
             {
                 File.Delete(famillesJson);
@@ -29,9 +30,31 @@ namespace CQELight_Prerelease_CI
             {
                 File.Delete(eventsDb);
             }
+            await TestGeneao(geneao2_1Path, csprojPath, false);
 
+            var geneao3_1Path = Path.Combine(args[0], "Geneao_3_1");
+            var csprojPath3_1 = Path.Combine(geneao3_1Path, "Geneao_3_1.csproj");
+            if (!File.Exists(csprojPath))
+            {
+                Environment.Exit(-1);
+            }
+            famillesJson = Path.Combine(geneao3_1Path, "familles.json");
+            eventsDb = Path.Combine(geneao3_1Path, "events.db");
+            if (File.Exists(famillesJson))
+            {
+                File.Delete(famillesJson);
+            }
+            if (File.Exists(eventsDb))
+            {
+                File.Delete(eventsDb);
+            }
+            await TestGeneao(geneao3_1Path, csprojPath3_1, true);
+        }
+
+        private static async Task TestGeneao(string workingpath, string csprojPath, bool exitOnSuccess)
+        {
             var processInfos = new ProcessStartInfo("dotnet", $"run {csprojPath}");
-            processInfos.WorkingDirectory = args[0];
+            processInfos.WorkingDirectory = workingpath;
             processInfos.RedirectStandardOutput = true;
             processInfos.RedirectStandardInput = true;
             processInfos.RedirectStandardError = true;
@@ -115,12 +138,15 @@ namespace CQELight_Prerelease_CI
                         listed = true;
                         process.Kill();
                         Console.WriteLine("Everything went fine");
-                        Environment.Exit(0);
+                        if (exitOnSuccess)
+                        {
+                            Environment.Exit(0);
+                        }
                     }
                 }
             };
             int awaitedTime = 0;
-            while(awaitedTime < 180000)
+            while (awaitedTime < 180000)
             {
                 if (created && listed && personCreated) break;
                 await Task.Delay(200);
@@ -136,6 +162,10 @@ namespace CQELight_Prerelease_CI
             else
             {
                 Console.WriteLine("Everything went fine");
+            }
+            if (!exitOnSuccess && exitCode == 0)
+            {
+                return;
             }
             Environment.Exit(exitCode);
         }

@@ -2,7 +2,7 @@
   "profiles": {
     "CQELight_Prerelease_CI": {
       "commandName": "Project",
-      "commandLineArgs": "C:\\sources\\CQELight\\samples\\documentation\\2.Geneao\\Geneao"
+      "commandLineArgs": "D:\\repos\\CQELight\\samples\\documentation\\2.Geneao"
     }
   }
 }

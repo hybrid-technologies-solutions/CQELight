@@ -331,7 +331,7 @@ namespace CQELight.EventStore.EFCore
 #if NETSTANDARD2_0
             events = await
                  GetAllEventsByAggregateId(aggregateType, aggregateUniqueId)
-                .ToListAsync().ConfigureAwait(false);
+                .ToList().ConfigureAwait(false);
 #elif NETSTANDARD2_1
             await foreach(var @event in GetAllEventsByAggregateId(aggregateType, aggregateUniqueId))
             {
@@ -499,7 +499,7 @@ namespace CQELight.EventStore.EFCore
 #if NETSTANDARD2_0
             events = await
                  GetAllEventsByAggregateId(aggregateType, aggregateId)
-                .ToListAsync().ConfigureAwait(false);
+                .ToList().ConfigureAwait(false);
 #elif NETSTANDARD2_1
             await foreach (var @event in GetAllEventsByAggregateId(aggregateType, aggregateId))
             {

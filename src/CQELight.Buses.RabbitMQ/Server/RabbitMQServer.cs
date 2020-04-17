@@ -118,11 +118,11 @@ namespace CQELight.Buses.RabbitMQ.Server
 
         private async void OnEventReceived(object model, BasicDeliverEventArgs args)
         {
-            if (args.Body?.Any() == true && model is EventingBasicConsumer consumer)
+            if (!args.Body.IsEmpty && model is EventingBasicConsumer consumer)
             {
                 try
                 {
-                    var dataAsStr = Encoding.UTF8.GetString(args.Body);
+                    var dataAsStr = Encoding.UTF8.GetString(args.Body.ToArray());
                     var enveloppe = dataAsStr.FromJson<Enveloppe>();
                     if (enveloppe != null)
                     {

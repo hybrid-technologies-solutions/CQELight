@@ -250,7 +250,7 @@ namespace CQELight.EventStore.MongoDb
             }
             List<IDomainEvent> events = new List<IDomainEvent>();
 #if NETSTANDARD2_0
-            events = await GetAllEventsByAggregateId(aggregateType, aggregateUniqueId).ToListAsync().ConfigureAwait(false);
+            events = await GetAllEventsByAggregateId(aggregateType, aggregateUniqueId).ToList().ConfigureAwait(false);
 #elif NETSTANDARD2_1
             await foreach(var @event in GetAllEventsByAggregateId(aggregateType, aggregateUniqueId))
             {

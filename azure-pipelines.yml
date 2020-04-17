@@ -44,7 +44,7 @@ steps:
   displayName: 'CI tests' 
   inputs:
     command: 'run'
-    arguments: '$(Build.SourcesDirectory)/samples/documentation/2.Geneao/Geneao'
+    arguments: '$(Build.SourcesDirectory)/samples/documentation/2.Geneao/'
     workingDirectory: '$(Build.SourcesDirectory)/ci/CQELight_Prerelease_CI'
   continueOnError: false
 

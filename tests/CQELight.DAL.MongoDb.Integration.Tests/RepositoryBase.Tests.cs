@@ -78,5 +78,43 @@ namespace CQELight.DAL.MongoDb.Integration.Tests
         }
 
         #endregion
+
+        #region MaxParallel
+
+        [Fact]
+        public async Task RepositoryBase_Must_Handle_MaxParallel_Calls()
+        {
+            try
+            {
+                var repo = new RepositoryBase(new MongoDataReaderAdapter(), new MongoDataWriterAdapter());
+
+                var tasks = new List<Task>();
+
+                for (int i = 0; i < 1000; i++)
+                {
+                    tasks.Add(Task.Run(() =>
+                    {
+                        repo.MarkForInsert(new AzureLocation
+                        {
+                            Country = "country" + Guid.NewGuid(),
+                            DataCenter = "center" + Guid.NewGuid()
+                        });
+                    }));
+                }
+
+                await Task.WhenAll(tasks);
+
+                await repo.SaveAsync(); // Throws MongoWaitQueueFullException if code doesn't handle the case
+
+                (await repo.GetAsync<AzureLocation>().CountAsync()).Should().Be(1000);
+            }
+            finally
+            {
+                DeleteAll();
+            }
+
+        }
+
+        #endregion
     }
 }

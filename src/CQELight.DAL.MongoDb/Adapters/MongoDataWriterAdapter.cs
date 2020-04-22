@@ -22,6 +22,7 @@ namespace CQELight.DAL.MongoDb.Adapters
         private IClientSessionHandle? session;
         private int actions = 0;
         private readonly SemaphoreSlim sessionLock = new SemaphoreSlim(1);
+        private readonly SemaphoreSlim parallelSafety;
 
         #endregion
 
@@ -32,10 +33,11 @@ namespace CQELight.DAL.MongoDb.Adapters
         /// </summary>
         public MongoDataWriterAdapter()
         {
-            if(MongoDbContext.MongoClient == null)
+            if (MongoDbContext.MongoClient == null)
             {
                 throw new InvalidOperationException("MongoDbClient hasn't been initialized yet. Please, ensure that you've bootstrapped extension before attempting creating a new instance of MongoDataWriterAdapter");
             }
+            parallelSafety = new SemaphoreSlim(MongoDbContext.MongoClient.Settings.MaxConnectionPoolSize / 2);
         }
 
         #endregion
@@ -141,8 +143,16 @@ namespace CQELight.DAL.MongoDb.Adapters
                 await CheckIfSessionIsStartedAsync().ConfigureAwait(false);
                 var entityType = entity.GetType();
                 var deletionFilter = ExtractIdValue(entity).GetIdFilterFromIdValue<T>(entityType);
-                await GetCollection<T>(entityType).DeleteOneAsync(deletionFilter).ConfigureAwait(false);
-                actions++;
+                try
+                {
+                    await parallelSafety.WaitAsync();
+                    await GetCollection<T>(entityType).DeleteOneAsync(deletionFilter).ConfigureAwait(false);
+                    actions++;
+                }
+                finally
+                {
+                    parallelSafety.Release();
+                }
             }
             else
             {
@@ -164,8 +174,16 @@ namespace CQELight.DAL.MongoDb.Adapters
         public async Task InsertAsync<T>(T entity) where T : class
         {
             await CheckIfSessionIsStartedAsync().ConfigureAwait(false);
-            await GetCollection<T>(entity.GetType()).InsertOneAsync(entity).ConfigureAwait(false);
-            actions++;
+            try
+            {
+                await parallelSafety.WaitAsync();
+                await GetCollection<T>(entity.GetType()).InsertOneAsync(entity).ConfigureAwait(false);
+                actions++;
+            }
+            finally
+            {
+                parallelSafety.Release();
+            }
         }
         public async Task UpdateAsync<T>(T entity) where T : class
         {
@@ -174,12 +192,20 @@ namespace CQELight.DAL.MongoDb.Adapters
             var idValue = ExtractIdValue(entity);
             var idFilter = idValue.GetIdFilterFromIdValue<T>(entityType);
 
-            var result = await GetCollection<T>(entityType).ReplaceOneAsync(idFilter, entity).ConfigureAwait(false);
-            if (result.ModifiedCount == 0)
+            try
             {
-                throw new InvalidOperationException($"Entity of type {typeof(T).FullName} with id value {idValue} cannot be updated as it doesn't currently exists within database. Insert it instead of update it.");
+                await parallelSafety.WaitAsync();
+                var result = await GetCollection<T>(entityType).ReplaceOneAsync(idFilter, entity).ConfigureAwait(false);
+                if (result.ModifiedCount == 0)
+                {
+                    throw new InvalidOperationException($"Entity of type {typeof(T).FullName} with id value {idValue} cannot be updated as it doesn't currently exists within database. Insert it instead of update it.");
+                }
+                actions += Convert.ToInt32(result.ModifiedCount);
             }
-            actions += Convert.ToInt32(result.ModifiedCount);
+            finally
+            {
+                parallelSafety.Release();
+            }
         }
 
         public async Task<int> SaveAsync()

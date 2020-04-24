@@ -1,5 +1,6 @@
 ﻿using CQELight.Abstractions.IoC.Interfaces;
 using CQELight.AspCore.Internal;
+using CQELight.Tools.Extensions;
 #if NETSTANDARD2_1
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -8,6 +9,7 @@ using System.IO;
 using Microsoft.Extensions.DependencyInjection;
 #endif
 using System;
+using System.Linq;
 
 namespace CQELight
 {
@@ -61,6 +63,7 @@ namespace CQELight
                 .Build();
             var bootstrapper = bootstrapperOptions != null ? new Bootstrapper(bootstrapperOptions) : new Bootstrapper();
             bootstrapperConf.Invoke(bootstrapper, config);
+            
             return hostBuilder.UseServiceProviderFactory(new CQELightServiceProviderFactory(bootstrapper));
         }
 #elif NETSTANDARD2_0
@@ -83,10 +86,10 @@ namespace CQELight
 
             var bootstrapper = bootstrapperOptions != null ? new Bootstrapper(bootstrapperOptions) : new Bootstrapper();
             bootstrapperConf.Invoke(bootstrapper);
-            services.AddSingleton<IServiceProviderFactory<IScopeFactory>>(new CQELightServiceProviderFactory(bootstrapper));
-            var tempFactory = services.BuildServiceProvider().GetService<IServiceProviderFactory<IScopeFactory>>();
-            var scopeFactory = tempFactory.CreateBuilder(services);
-            return tempFactory.CreateServiceProvider(scopeFactory);
+            var serviceProviderFactory = new CQELightServiceProviderFactory(bootstrapper);
+            services.AddSingleton<IServiceProviderFactory<IScopeFactory>>(serviceProviderFactory);
+            var scopeFactory = serviceProviderFactory.CreateBuilder(services);
+            return serviceProviderFactory.CreateServiceProvider(scopeFactory);
         }
 #endif
     }

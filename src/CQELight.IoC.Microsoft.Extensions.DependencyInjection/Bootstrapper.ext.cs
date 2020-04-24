@@ -27,6 +27,7 @@ namespace CQELight
                 {
                     AddComponentRegistrationToContainer(services, bootstrapper.IoCRegistrations.ToList());
                     AddAutoRegisteredTypes(bootstrapper, services, excludedDllsForAutoRegistration);
+                    services.AddScoped<IScopeFactory>(s => new MicrosoftScopeFactory(s));
                     DIManager.Init(new MicrosoftScopeFactory(services));
                 }
             );
@@ -88,38 +89,42 @@ namespace CQELight
             {
                 return;
             }
+            var alreadyExistingServices = new HashSet<Type>(services.Select(s => s.ServiceType));
             foreach (var item in customRegistration)
             {
                 if (item.GetType().IsGenericType && item.GetType().GetGenericTypeDefinition() == typeof(TypeRegistration<>))
                 {
                     var instanceTypeValue = item.GetType().GetProperty("InstanceType").GetValue(item) as Type;
-                    var abstractionTypes = (item.GetType().GetProperty("AbstractionTypes").GetValue(item) as IEnumerable<Type>).ToArray();
-                    var lifeTime = (RegistrationLifetime)item.GetType().GetProperty("Lifetime").GetValue(item);
-                    switch (lifeTime)
+                    if (instanceTypeValue != null && !alreadyExistingServices.Contains(instanceTypeValue))
                     {
-                        case RegistrationLifetime.Scoped:
-                            services.AddScoped(instanceTypeValue, instanceTypeValue);
-                            break;
-                        case RegistrationLifetime.Singleton:
-                            services.AddSingleton(instanceTypeValue, instanceTypeValue);
-                            break;
-                        case RegistrationLifetime.Transient:
-                            services.AddTransient(instanceTypeValue, instanceTypeValue);
-                            break;
-                    }
-                    foreach (var abstractionType in abstractionTypes.Where(t => t != instanceTypeValue))
-                    {
+                        var abstractionTypes = (item.GetType().GetProperty("AbstractionTypes").GetValue(item) as IEnumerable<Type>).ToArray();
+                        var lifeTime = (RegistrationLifetime)item.GetType().GetProperty("Lifetime").GetValue(item);
                         switch (lifeTime)
                         {
                             case RegistrationLifetime.Scoped:
-                                services.AddScoped(abstractionType, instanceTypeValue);
+                                services.AddScoped(instanceTypeValue, instanceTypeValue);
                                 break;
                             case RegistrationLifetime.Singleton:
-                                services.AddSingleton(abstractionType, instanceTypeValue);
+                                services.AddSingleton(instanceTypeValue, instanceTypeValue);
                                 break;
                             case RegistrationLifetime.Transient:
-                                services.AddTransient(abstractionType, instanceTypeValue);
+                                services.AddTransient(instanceTypeValue, instanceTypeValue);
                                 break;
+                        }
+                        foreach (var abstractionType in abstractionTypes.Where(t => t != instanceTypeValue))
+                        {
+                            switch (lifeTime)
+                            {
+                                case RegistrationLifetime.Scoped:
+                                    services.AddScoped(abstractionType, instanceTypeValue);
+                                    break;
+                                case RegistrationLifetime.Singleton:
+                                    services.AddSingleton(abstractionType, instanceTypeValue);
+                                    break;
+                                case RegistrationLifetime.Transient:
+                                    services.AddTransient(abstractionType, instanceTypeValue);
+                                    break;
+                            }
                         }
                     }
                 }
@@ -131,17 +136,20 @@ namespace CQELight
                             {
                                 foreach (var type in item.AbstractionTypes)
                                 {
-                                    switch (instanceTypeRegistration.Lifetime)
+                                    if (!alreadyExistingServices.Contains(type))
                                     {
-                                        case RegistrationLifetime.Scoped:
-                                            services.AddScoped(type, _ => instanceTypeRegistration.Value);
-                                            break;
-                                        case RegistrationLifetime.Singleton:
-                                            services.AddSingleton(type, _ => instanceTypeRegistration.Value);
-                                            break;
-                                        case RegistrationLifetime.Transient:
-                                            services.AddTransient(type, _ => instanceTypeRegistration.Value);
-                                            break;
+                                        switch (instanceTypeRegistration.Lifetime)
+                                        {
+                                            case RegistrationLifetime.Scoped:
+                                                services.AddScoped(type, _ => instanceTypeRegistration.Value);
+                                                break;
+                                            case RegistrationLifetime.Singleton:
+                                                services.AddSingleton(type, _ => instanceTypeRegistration.Value);
+                                                break;
+                                            case RegistrationLifetime.Transient:
+                                                services.AddTransient(type, _ => instanceTypeRegistration.Value);
+                                                break;
+                                        }
                                     }
                                 }
 
@@ -152,17 +160,20 @@ namespace CQELight
                             {
                                 foreach (var type in item.AbstractionTypes)
                                 {
-                                    switch (typeRegistration.Lifetime)
+                                    if (!alreadyExistingServices.Contains(type))
                                     {
-                                        case RegistrationLifetime.Scoped:
-                                            services.AddScoped(type, typeRegistration.InstanceType);
-                                            break;
-                                        case RegistrationLifetime.Singleton:
-                                            services.AddSingleton(type, typeRegistration.InstanceType);
-                                            break;
-                                        case RegistrationLifetime.Transient:
-                                            services.AddTransient(type, typeRegistration.InstanceType);
-                                            break;
+                                        switch (typeRegistration.Lifetime)
+                                        {
+                                            case RegistrationLifetime.Scoped:
+                                                services.AddScoped(type, typeRegistration.InstanceType);
+                                                break;
+                                            case RegistrationLifetime.Singleton:
+                                                services.AddSingleton(type, typeRegistration.InstanceType);
+                                                break;
+                                            case RegistrationLifetime.Transient:
+                                                services.AddTransient(type, typeRegistration.InstanceType);
+                                                break;
+                                        }
                                     }
                                 }
 
@@ -185,17 +196,20 @@ namespace CQELight
                                 }
                                 foreach (var type in item.AbstractionTypes)
                                 {
-                                    switch (factoryRegistration.Lifetime)
+                                    if (!alreadyExistingServices.Contains(type))
                                     {
-                                        case RegistrationLifetime.Scoped:
-                                            services.AddScoped(type, AddFactoryRegistration);
-                                            break;
-                                        case RegistrationLifetime.Singleton:
-                                            services.AddSingleton(type, AddFactoryRegistration);
-                                            break;
-                                        case RegistrationLifetime.Transient:
-                                            services.AddTransient(type, AddFactoryRegistration);
-                                            break;
+                                        switch (factoryRegistration.Lifetime)
+                                        {
+                                            case RegistrationLifetime.Scoped:
+                                                services.AddScoped(type, AddFactoryRegistration);
+                                                break;
+                                            case RegistrationLifetime.Singleton:
+                                                services.AddSingleton(type, AddFactoryRegistration);
+                                                break;
+                                            case RegistrationLifetime.Transient:
+                                                services.AddTransient(type, AddFactoryRegistration);
+                                                break;
+                                        }
                                     }
                                 }
 

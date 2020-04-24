@@ -409,5 +409,42 @@ namespace CQELight.IoC.Microsoft.Extensions.DependencyInjection.Tests
         }
 
         #endregion
+
+        #region IScopeFactory
+
+        [Fact]
+        public void ScopeFactory_Should_Be_Resolvable()
+        {
+            Bootstrapp(new ServiceCollection());
+
+            using (var s = DIManager.BeginScope())
+            {
+                var scopeFactory = s.Resolve<IScopeFactory>();
+                scopeFactory.Should().NotBeNull();
+                scopeFactory.Should().BeOfType<MicrosoftScopeFactory>();
+            }
+        }
+
+        #endregion
+
+        #region Bootstrapper
+
+        [Fact]
+        public void Bootstrapper_Should_Not_Register_AlreadyExistingServices()
+        {
+            var services = new ServiceCollection();
+            services.AddScoped<IScopeTest, ScopeTest>();
+            var b = new Bootstrapper();
+            b.AddIoCRegistration(new TypeRegistration(typeof(ScopeTest), true));
+            b.UseMicrosoftDependencyInjection(services).Bootstrapp();
+
+            using(var scope = DIManager.BeginScope())
+            {
+                var s = scope.Resolve<IScopeTest>(); // will throw exception if registered twice
+                s.Should().NotBeNull();
+            }
+        }
+
+        #endregion
     }
 }

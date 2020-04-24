@@ -2,6 +2,7 @@
 using CQELight.IoC;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.Linq;
 
 namespace CQELight.AspCore.Internal
 {
@@ -41,8 +42,8 @@ namespace CQELight.AspCore.Internal
                     }
                     else if (item.ImplementationFactory != null)
                     {
-                        bootstrapper.AddIoCRegistration(new FactoryRegistration(() => item.ImplementationFactory(
-                            new CQELightServiceProvider(DIManager.BeginScope().Resolve<IScopeFactory>())), item.ServiceType));
+                        bootstrapper.AddIoCRegistration(new FactoryRegistration(s => item.ImplementationFactory(
+                            new CQELightServiceProvider(s.ResolveRequired<IScopeFactory>())), item.ServiceType));
                     }
                     else if (item.ImplementationInstance != null)
                     {

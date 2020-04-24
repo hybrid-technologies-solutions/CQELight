@@ -21,14 +21,14 @@ namespace CQELight.AspCore.Internal
         }
         public CQELightServiceProvider(IScopeFactory scopeFactory)
         {
-            this.scope = scopeFactory.CreateScope();
+            scope = scopeFactory.CreateScope();
         }
 
         #endregion
 
         #region IServiceProvider methods
 
-        public object GetService(Type serviceType)
+        public object? GetService(Type serviceType)
             => scope.Resolve(serviceType);
 
         #endregion
@@ -36,7 +36,17 @@ namespace CQELight.AspCore.Internal
         #region ISupportRequiredService methods
 
         public object GetRequiredService(Type serviceType)
-            => scope.Resolve(serviceType);
+            => scope.ResolveRequired(serviceType);
+
+        #endregion
+
+        #region Overriden methods
+
+        protected override void Dispose(bool disposing)
+        {
+            scope?.Dispose();
+            base.Dispose(disposing);
+        }
 
         #endregion
     }

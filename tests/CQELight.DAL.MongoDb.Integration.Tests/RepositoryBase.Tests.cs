@@ -35,6 +35,8 @@ namespace CQELight.DAL.MongoDb.Integration.Tests
         private void DeleteAll()
         {
             GetCollection<AzureLocation>().DeleteMany(FilterDefinition<AzureLocation>.Empty);
+            GetCollection<Tag>().DeleteMany(FilterDefinition<Tag>.Empty);
+            GetCollection<SpecificMongoObject>().DeleteMany(FilterDefinition<SpecificMongoObject>.Empty);
         }
 
         #endregion
@@ -46,6 +48,7 @@ namespace CQELight.DAL.MongoDb.Integration.Tests
         {
             try
             {
+                DeleteAll();
                 var repo = new RepositoryBase(new MongoDataReaderAdapter(), new MongoDataWriterAdapter());
 
                 var tasks = new List<Task>();
@@ -113,6 +116,60 @@ namespace CQELight.DAL.MongoDb.Integration.Tests
                 DeleteAll();
             }
 
+        }
+
+        #endregion
+
+        #region Mongo Transactions
+
+        [Fact]
+        public async Task Records_Should_Be_Inserted_After_SaveAsync()
+        {
+            try
+            {
+                DeleteAll();
+                var repo = new RepositoryBase(new MongoDataReaderAdapter(), new MongoDataWriterAdapter());
+
+                var tasks = new List<Task>();
+
+                for (int i = 0; i < 10; i++)
+                {
+                    repo.MarkForInsert(new SpecificMongoObject
+                    {
+                        IntValue = i,
+                        Value = "val" + i
+                    });
+                    repo.MarkForInsert(new AzureLocation
+                    {
+                        Country = "country" + Guid.NewGuid(),
+                        DataCenter = "center" + Guid.NewGuid()
+                    });
+                    repo.MarkForInsert(new Tag
+                    {
+                        Value = "Tag " + i.ToString()
+                    });
+                }
+
+                (await repo.GetAsync<AzureLocation>().CountAsync()).Should().Be(0);
+                (await repo.GetAsync<Tag>().CountAsync()).Should().Be(0);
+                (await repo.GetAsync<SpecificMongoObject>().CountAsync()).Should().Be(0);
+
+                await repo.SaveAsync();
+
+                (await repo.GetAsync<SpecificMongoObject>().CountAsync()).Should().Be(10);
+                (await repo.GetAsync<AzureLocation>().CountAsync()).Should().Be(10);
+                (await repo.GetAsync<Tag>().CountAsync()).Should().Be(10);
+            }
+            finally
+            {
+                DeleteAll();
+            }
+        }
+
+        [Fact]
+        public async Task Recors_Should_Be_Updated_After_SaveAsync()
+        {
+            throw new NotImplementedException();
         }
 
         #endregion

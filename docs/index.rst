@@ -59,6 +59,7 @@ N'hésitez pas à parcourir la documentation ! En cas de manque, oubli ou erreur
    extensions/bus-rabbitmq
    extensions/event-efcore
    extensions/asp-core
+   extensions/ico-ms-di
 
 .. toctree::
    :maxdepth: 3

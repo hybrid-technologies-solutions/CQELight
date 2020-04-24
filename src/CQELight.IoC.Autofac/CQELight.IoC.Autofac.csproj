@@ -21,7 +21,7 @@ It also gives some ease to helps you register types in the container, via the IA
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Autofac" Version="5.1.2" />
+    <PackageReference Include="Autofac" Version="5.1.3" />
   </ItemGroup>
 
   <ItemGroup>

@@ -107,6 +107,7 @@ namespace CQELight.EventStore.EFCore.Integration.Tests
             public SampleEvent(Guid aggId, Guid evtId, DateTime date)
             {
                 AggregateId = aggId;
+                AggregateType = typeof(AggA);
                 Id = evtId;
                 EventTime = date;
             }
@@ -943,6 +944,55 @@ namespace CQELight.EventStore.EFCore.Integration.Tests
                     var agg = await new EFEventStore(GetOptions()).GetRehydratedAggregateAsync<BusinessAggregate>(aggId);
                     agg.Should().NotBeNull();
                     agg.CurrentState.Should().Be(3);
+                }
+            }
+            finally
+            {
+                DeleteAll();
+            }
+        }
+
+        #endregion
+
+        #region ComputeSequence
+
+        [Fact]
+        public async Task Sequence_Should_Consider_AggregateId_And_AggregateType()
+        {
+            try
+            {
+                DeleteAll();
+                var eventStore = new EFEventStore(GetOptions());
+                Guid aggId = Guid.NewGuid();
+                var evt1Id = Guid.NewGuid();
+                var evt2Id = Guid.NewGuid();
+                await eventStore.StoreDomainEventAsync(new SampleEvent(aggId, evt1Id, DateTime.Today)
+                {
+                    Data = "testData"
+                });
+                await eventStore.StoreDomainEventAsync(new SampleAggEvent(aggId, evt2Id, DateTime.Today)
+                {
+                    Data = "testData"
+                });
+
+                using (var ctx = GetContext())
+                {
+                    ctx.Set<Event>().Count(e => e.HashedAggregateId == aggId.ToJson().GetHashCode()).Should().Be(2);
+                    var evt = ctx.Set<Event>().First(e => e.AggregateType == typeof(AggA).AssemblyQualifiedName);
+                    evt.Should().NotBeNull();
+                    evt.HashedAggregateId.Should().Be(aggId.ToJson(true).GetHashCode());
+                    evt.Id.Should().Be(evt1Id);
+                    evt.EventTime.Should().BeSameDateAs(DateTime.Today);
+                    evt.Sequence.Should().Be(1);
+                    evt.EventData.Should().NotBeNullOrWhiteSpace();
+
+                    evt = ctx.Set<Event>().First(e => e.AggregateType == typeof(SampleAgg).AssemblyQualifiedName);
+                    evt.Should().NotBeNull();
+                    evt.HashedAggregateId.Should().Be(aggId.ToJson(true).GetHashCode());
+                    evt.Id.Should().Be(evt2Id);
+                    evt.EventTime.Should().BeSameDateAs(DateTime.Today);
+                    evt.Sequence.Should().Be(1);
+                    evt.EventData.Should().NotBeNullOrWhiteSpace();
                 }
             }
             finally

@@ -358,7 +358,7 @@ namespace CQELight.EventStore.EFCore
                 var hashedAggregateId = @event.AggregateId.ToJson(true).GetHashCode();
                 if (sequence == 0)
                 {
-                    sequence = await ComputeEventSequence(ctx, useBuffer, hashedAggregateId).ConfigureAwait(false);
+                    sequence = await ComputeEventSequence(ctx, useBuffer, hashedAggregateId, @event.AggregateType).ConfigureAwait(false);
                     if (@event is BaseDomainEvent baseDomainEvent)
                     {
                         baseDomainEvent.Sequence = Convert.ToUInt64(sequence);
@@ -410,7 +410,7 @@ namespace CQELight.EventStore.EFCore
             }
         }
 
-        private async Task<long> ComputeEventSequence(EventStoreDbContext ctx, bool useBuffer, int hashedAggregateId)
+        private async Task<long> ComputeEventSequence(EventStoreDbContext ctx, bool useBuffer, int hashedAggregateId, Type aggregateType)
         {
             long currentSequence = 0;
             if (_bufferInfo?.UseBuffer == true && useBuffer)
@@ -429,7 +429,7 @@ namespace CQELight.EventStore.EFCore
                     currentSequence = await ctx
                         .Set<Event>()
                         .AsNoTracking()
-                        .Where(t => t.HashedAggregateId == hashedAggregateId)
+                        .Where(t => t.HashedAggregateId == hashedAggregateId && t.AggregateType == aggregateType.AssemblyQualifiedName)
                         .MaxAsync(e => (long?)e.Sequence)
                         .ConfigureAwait(false) ?? 0;
                 }

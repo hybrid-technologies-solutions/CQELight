@@ -434,11 +434,12 @@ namespace CQELight.IoC.Microsoft.Extensions.DependencyInjection.Tests
         {
             var services = new ServiceCollection();
             services.AddScoped<IScopeTest, ScopeTest>();
+            services.AddScoped<ScopeTest>();
             var b = new Bootstrapper();
             b.AddIoCRegistration(new TypeRegistration(typeof(ScopeTest), true));
             b.UseMicrosoftDependencyInjection(services).Bootstrapp();
 
-            using(var scope = DIManager.BeginScope())
+            using (var scope = DIManager.BeginScope())
             {
                 var s = scope.Resolve<IScopeTest>(); // will throw exception if registered twice
                 s.Should().NotBeNull();

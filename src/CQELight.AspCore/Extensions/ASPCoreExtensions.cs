@@ -63,7 +63,6 @@ namespace CQELight
                 .Build();
             var bootstrapper = bootstrapperOptions != null ? new Bootstrapper(bootstrapperOptions) : new Bootstrapper();
             bootstrapperConf.Invoke(bootstrapper, config);
-            
             return hostBuilder.UseServiceProviderFactory(new CQELightServiceProviderFactory(bootstrapper));
         }
 #elif NETSTANDARD2_0

@@ -51,6 +51,10 @@ namespace CQELight.AspCore.Internal
                     }
                 }
             }
+            if (!bootstrapper.RegisteredServices.Any(s => s.ServiceType == BootstrapperServiceType.IoC))
+            {
+                bootstrapper.UseMicrosoftDependencyInjection(services);
+            }
             bootstrapper.Bootstrapp();
             return DIManager._scopeFactory;
         }

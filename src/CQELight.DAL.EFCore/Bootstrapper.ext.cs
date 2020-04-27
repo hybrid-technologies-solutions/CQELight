@@ -98,7 +98,7 @@ namespace CQELight
                     {
                         foreach (var customDbContextType in customDbContexts)
                         {
-                            bootstrapper.AddIoCRegistration(new TypeRegistration(customDbContextType, true));
+                            bootstrapper.AddIoCRegistration(new TypeRegistration(customDbContextType, customDbContextType, typeof(BaseDbContext), typeof(DbContext)));
                             var customDbContextOptionsType = typeof(DbContextOptions<>).MakeGenericType(customDbContextType);
                             bootstrapper.AddIoCRegistration(new InstanceTypeRegistration(dbContextOptionsBuilder.Options, typeof(DbContextOptions), customDbContextOptionsType));
                             bootstrapper.AddIoCRegistration(new FactoryRegistration((scope) =>
@@ -117,7 +117,7 @@ namespace CQELight
                     }
                     else
                     {
-                        bootstrapper.AddIoCRegistration(new TypeRegistration(typeof(BaseDbContext), typeof(BaseDbContext)));
+                        bootstrapper.AddIoCRegistration(new TypeRegistration(typeof(BaseDbContext), typeof(BaseDbContext), typeof(DbContext)));
                         bootstrapper.AddIoCRegistration(new TypeRegistration<EFCoreDataReaderAdapter>(true));
                         bootstrapper.AddIoCRegistration(new TypeRegistration<EFCoreDataWriterAdapter>(true));
                         bootstrapper.AddIoCRegistration(new InstanceTypeRegistration(dbContextOptionsBuilder.Options, typeof(DbContextOptions), typeof(DbContextOptions<BaseDbContext>)));
@@ -153,7 +153,7 @@ namespace CQELight
                             bootstrapper
                                 .AddIoCRegistration(new FactoryRegistration(() => ctxType.CreateInstance(dbContextOptionsBuilder.Options), ctxType));
                         }
-
+                        ctxType ??= typeof(BaseDbContext);
                         if (ctxType == null)
                         {
                             throw new InvalidOperationException("Bootstrapper.UseEFCoreAsMainRepository() : " +

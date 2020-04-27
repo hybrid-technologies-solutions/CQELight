@@ -5,6 +5,7 @@ using CQELight.IoC;
 using CQELight.TestFramework;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -190,6 +191,21 @@ namespace CQELight.DAL.EFCore.Integration.Tests
 
             notifs.Should().HaveCount(1);
             notifs.First().Type.Should().Be(BootstrapperNotificationType.Warning);
+        }
+
+        #endregion
+
+        #region DbContext
+
+        [Fact]
+        public void When_Bootstrapping_DbContext_Should_Be_Resolvable()
+        {
+            new Bootstrapper().UseEFCoreAsMainRepository(c => c.UseSqlite($"Filename={DbName}")).UseAutofacAsIoC().Bootstrapp();
+
+            using(var scope = DIManager.BeginScope())
+            {
+                scope.Resolve<DbContext>().Should().NotBeNull();
+            }
         }
 
         #endregion

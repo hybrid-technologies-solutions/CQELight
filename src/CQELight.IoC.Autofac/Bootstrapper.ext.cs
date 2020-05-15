@@ -192,25 +192,41 @@ namespace CQELight
                             break;
                         }
                     case FactoryRegistration factoryRegistration:
-                        AddLifetime(
-                            containerBuilder
-                                .Register(c =>
-                                {
-                                    if (factoryRegistration.Factory != null)
-                                    {
-                                        return factoryRegistration.Factory.Invoke();
-                                    }
-                                    else if (factoryRegistration.ScopedFactory != null)
-                                    {
-                                        return factoryRegistration.ScopedFactory.Invoke(new AutofacScope(c));
-                                    }
-                                    throw new InvalidOperationException("FactoryRegistration has not been correctly configured (both Factory and ScopedFactory are null).");
-                                })
-                                .As(factoryRegistration.AbstractionTypes.ToArray()),
-                            factoryRegistration.Lifetime);
+                        foreach (var serviceType in factoryRegistration.AbstractionTypes)
+                        {
+                            containerBuilder.RegisterComponent(
+                                RegistrationBuilder.ForDelegate(serviceType
+                               , (context, _) =>
+                               {
+                                   if (factoryRegistration.Factory != null)
+                                   {
+                                       return factoryRegistration.Factory.Invoke();
+                                   }
+                                   else if (factoryRegistration.ScopedFactory != null)
+                                   {
+                                       return factoryRegistration.ScopedFactory.Invoke(new AutofacScope(context));
+                                   }
+                                   throw new InvalidOperationException("FactoryRegistration has not been correctly configured (both Factory and ScopedFactory are null).");
+                               })
+                                .AddLifetime(factoryRegistration.Lifetime)
+                               .CreateRegistration());
+                        }
                         break;
                 }
             }
+        }
+
+        private static IRegistrationBuilder<object, TActivatorData, TRegistrationStyle> AddLifetime<TActivatorData, TRegistrationStyle>(
+            this IRegistrationBuilder<object, TActivatorData, TRegistrationStyle> registration,
+           RegistrationLifetime lifetime)
+        {
+            return lifetime switch
+            {
+                RegistrationLifetime.Scoped => registration.InstancePerLifetimeScope(),
+                RegistrationLifetime.Singleton => registration.SingleInstance(),
+                RegistrationLifetime.Transient => registration.InstancePerDependency(),
+                _ => throw new ArgumentOutOfRangeException(nameof(lifetime), lifetime, $"Specified lifetime {lifetime} is unknown"),
+            };
         }
 
         private static void AddLifetime<TLimit, TActivatorData, TRegistrationStyle>(
@@ -226,6 +242,7 @@ namespace CQELight
                     registration.SingleInstance();
                     break;
                 case RegistrationLifetime.Transient:
+                    registration.InstancePerDependency();
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(lifetime), lifetime, $"Specified lifetime {lifetime} is unknown");

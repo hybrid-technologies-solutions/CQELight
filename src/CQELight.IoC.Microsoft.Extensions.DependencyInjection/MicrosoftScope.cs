@@ -59,6 +59,7 @@ namespace CQELight.IoC.Microsoft.Extensions.DependencyInjection
             {
                 throw new NotSupportedException("Microsoft.Extensions.DependencyInjection doesn't officially supports parameters injection during runtime. You should register parameters retrieving via a factory or change to another IoC container provider that supports parameters injection at runtime.");
             }
+            var serviceType = typeof(T).ToString();
             return scope.ServiceProvider.GetService<T>();
         }
 
@@ -68,6 +69,7 @@ namespace CQELight.IoC.Microsoft.Extensions.DependencyInjection
             {
                 throw new NotSupportedException("Microsoft.Extensions.DependencyInjection doesn't officially supports parameters injection during runtime. You should register parameters retrieving via a factory or change to another IoC container provider that supports parameters injection at runtime.");
             }
+            var serviceType = type.ToString();
             return scope.ServiceProvider.GetService(type);
         }
 
@@ -82,6 +84,7 @@ namespace CQELight.IoC.Microsoft.Extensions.DependencyInjection
         {
             try
             {
+                string serviceType = type.ToString();
                 return scope.ServiceProvider.GetRequiredService(type);
             }
             catch (InvalidOperationException e)

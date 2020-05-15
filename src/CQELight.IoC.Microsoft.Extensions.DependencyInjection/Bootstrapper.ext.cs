@@ -98,7 +98,8 @@ namespace CQELight
                     var instanceTypeValue = item.GetType().GetProperty("InstanceType").GetValue(item) as Type;
                     var lifeTime = (RegistrationLifetime)item.GetType().GetProperty("Lifetime").GetValue(item);
                     var abstractionTypes = (item.GetType().GetProperty("AbstractionTypes").GetValue(item) as IEnumerable<Type>).ToArray();
-                    if (instanceTypeValue != null && !alreadyExistingServices.Contains(instanceTypeValue))
+                    var exists = alreadyExistingServices.Contains(instanceTypeValue);
+                    if (instanceTypeValue != null && !exists)
                     {
                         switch (lifeTime)
                         {

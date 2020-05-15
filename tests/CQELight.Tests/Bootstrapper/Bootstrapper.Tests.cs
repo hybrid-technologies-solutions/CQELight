@@ -300,8 +300,10 @@ namespace CQELight.Tests
         [Fact]
         public void PostBootstrapp_Action_Should_Be_Give_Scope_If_IoC_Configured()
         {
-            bool scopeIsNull = false;
-            void lambda(PostBootstrappingContext c) => scopeIsNull = c.Scope == null;
+            bool? scopeIsNullb1 = null;
+            bool? scopeIsNullb2 = null;
+            void lambda1(PostBootstrappingContext c) => scopeIsNullb1 = c.Scope == null;
+            void lambda2(PostBootstrappingContext c) => scopeIsNullb2 = c.Scope == null;
             var b = new Bootstrapper();
             var b2 = new Bootstrapper();
             try
@@ -310,11 +312,12 @@ namespace CQELight.Tests
                 s.Setup(m => m.BootstrappAction).Returns(_ => { });
                 s.SetupGet(m => m.ServiceType).Returns(BootstrapperServiceType.Other);
                 b.AddService(s.Object);
-                b.OnPostBootstrapping += lambda;
+                b.OnPostBootstrapping += lambda1;
 
                 b.Bootstrapp();
 
-                scopeIsNull.Should().BeTrue();
+                scopeIsNullb1.Should().HaveValue();
+                scopeIsNullb1.Value.Should().BeTrue();
 
                 var s2 = new Mock<IBootstrapperService>();
                 s2.Setup(m => m.BootstrappAction).Returns(_ =>
@@ -322,16 +325,17 @@ namespace CQELight.Tests
                     DIManager.Init(new TestScopeFactory());
                 });
                 b2.AddService(s2.Object);
-                b2.OnPostBootstrapping += lambda;
+                b2.OnPostBootstrapping += lambda2;
 
                 b2.Bootstrapp();
 
-                scopeIsNull.Should().BeFalse();
+                scopeIsNullb2.Should().HaveValue();
+                scopeIsNullb2.Value.Should().BeFalse();
             }
             finally
             {
-                b.OnPostBootstrapping -= lambda;
-                b2.OnPostBootstrapping -= lambda;
+                b.OnPostBootstrapping -= lambda1;
+                b2.OnPostBootstrapping -= lambda2;
             }            
         }
 

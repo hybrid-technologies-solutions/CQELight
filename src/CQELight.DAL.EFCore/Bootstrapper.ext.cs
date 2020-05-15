@@ -104,13 +104,13 @@ namespace CQELight
                             bootstrapper.AddIoCRegistration(new FactoryRegistration((scope) =>
                                 {
                                     return new EFCoreDataReaderAdapter((BaseDbContext)scope.Resolve(customDbContextType), options);
-                                },
+                                }, RegistrationLifetime.Scoped,
                                 typeof(EFCoreDataReaderAdapter),
                                 typeof(IDataReaderAdapter)));
                             bootstrapper.AddIoCRegistration(new FactoryRegistration((scope) =>
-                            {
-                                return new EFCoreDataWriterAdapter((BaseDbContext)scope.Resolve(customDbContextType), options);
-                            },
+                                {
+                                    return new EFCoreDataWriterAdapter((BaseDbContext)scope.Resolve(customDbContextType), options);
+                                }, RegistrationLifetime.Scoped,
                                 typeof(EFCoreDataWriterAdapter),
                                 typeof(IDataWriterAdapter)));
                         }

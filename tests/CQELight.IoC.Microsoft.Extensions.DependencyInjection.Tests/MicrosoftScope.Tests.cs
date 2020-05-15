@@ -8,6 +8,7 @@ using System.Linq;
 using CQELight.Abstractions.IoC.Interfaces;
 using CQELight.Bootstrapping.Notifications;
 using CQELight.IoC.Exceptions;
+using CQELight.Tools;
 
 namespace CQELight.IoC.Microsoft.Extensions.DependencyInjection.Tests
 {
@@ -444,6 +445,47 @@ namespace CQELight.IoC.Microsoft.Extensions.DependencyInjection.Tests
                 var s = scope.Resolve<IScopeTest>(); // will throw exception if registered twice
                 s.Should().NotBeNull();
             }
+        }
+
+        #endregion
+
+        #region Factory Registration & Disposable
+
+        public class FactoryDisposable : DisposableObject
+        {
+            public bool IsDisposed { get; set; }
+
+            protected override void Dispose(bool disposing)
+            {
+                IsDisposed = true;
+                base.Dispose(disposing);
+            }
+        }
+
+        public interface IFactoryObject { FactoryDisposable Obj { get; } }
+        public class FactoryObject : IFactoryObject
+        {
+            public FactoryObject(FactoryDisposable obj)
+            {
+                Obj = obj;
+            }
+
+            public FactoryDisposable Obj { get; }
+        }
+
+        [Fact]
+        public void Factory_Registration_With_Scope_Should_Not_Disposed()
+        {
+            var b = new Bootstrapper();
+            b.AddIoCRegistration(new TypeRegistration(typeof(FactoryDisposable), true));
+            b.AddIoCRegistration(new FactoryRegistration(s => new FactoryObject(s.Resolve<FactoryDisposable>()), typeof(IFactoryObject)));
+            b.UseMicrosoftDependencyInjection(new ServiceCollection());
+            b.Bootstrapp();
+
+            var scope = DIManager.BeginScope();
+            var obj = scope.Resolve<IFactoryObject>();
+            obj.Obj.Should().NotBeNull();
+            obj.Obj.IsDisposed.Should().BeFalse();
         }
 
         #endregion

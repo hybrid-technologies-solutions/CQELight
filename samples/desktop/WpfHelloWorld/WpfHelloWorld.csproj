@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>netcoreapp5.0</TargetFramework>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\src\CQELight.Buses.InMemory\CQELight.Buses.InMemory.csproj" />
+    <ProjectReference Include="..\..\..\src\CQELight.IoC.Autofac\CQELight.IoC.Autofac.csproj" />
+    <ProjectReference Include="..\..\..\src\CQELight.MVVM.MahApps\CQELight.MVVM.MahApps.csproj" />
+    <ProjectReference Include="..\..\..\src\CQELight.MVVM\CQELight.MVVM.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -25,16 +25,15 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(targetframework)'=='net461'">
-    <PackageReference Include="MahApps.Metro" Version="1.6.5" />
     <PackageReference Include="WindowsBase">
       <Version>4.6.1055</Version>
     </PackageReference>
   </ItemGroup>
 
-  <ItemGroup Condition="'$(targetframework)'=='netcoreapp3.0'">
-    <PackageReference Include="MahApps.Metro" Version="2.0.0-alpha0531" />
+  <ItemGroup>
+    <PackageReference Include="MahApps.Metro" Version="2.0.1" />
   </ItemGroup>
-
+  
   <ItemGroup Condition="'$(targetframework)'=='net461'">
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework">

@@ -447,5 +447,22 @@ namespace CQELight.IoC.Microsoft.Extensions.DependencyInjection.Tests
         }
 
         #endregion
+
+        #region IScope Resolvable
+
+        [Fact]
+        public void IScope_Should_Be_Resolvable()
+        {
+            Bootstrapp(new ServiceCollection());
+
+            using (var scope = DIManager.BeginScope())
+            {
+                var innerScope = scope.Resolve<IScope>();
+                innerScope.Should().NotBeNull();
+                innerScope.Should().BeOfType<MicrosoftScope>();
+            }
+        }
+
+        #endregion
     }
 }

@@ -550,5 +550,22 @@ namespace CQELight.IoC.Autofac.Integration.Tests
 
         #endregion
 
+        #region IScope Resolvable
+
+        [Fact]
+        public void IScope_Should_Be_Resolvable()
+        {
+            new Bootstrapper().UseAutofacAsIoC().Bootstrapp();
+
+            using (var scope = DIManager.BeginScope())
+            {
+                var innerScope = scope.Resolve<IScope>();
+                innerScope.Should().NotBeNull();
+                innerScope.Should().BeOfType<AutofacScope>();
+            }
+        }
+
+        #endregion
+
     }
 }

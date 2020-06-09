@@ -140,6 +140,9 @@ namespace CQELight
                 })
                 .AsSelf()
                 .AsImplementedInterfaces();
+            containerBuilder
+                .Register(_ => new AutofacScope(AutofacScopeFactory.AutofacContainer!))
+                .As<IScope>();
         }
 
         private static void AddComponentRegistrationToContainer(ContainerBuilder containerBuilder, List<ITypeRegistration> customRegistration)

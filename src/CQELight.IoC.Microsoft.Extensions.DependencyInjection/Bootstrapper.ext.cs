@@ -28,6 +28,7 @@ namespace CQELight
                     AddComponentRegistrationToContainer(services, bootstrapper.IoCRegistrations.ToList());
                     AddAutoRegisteredTypes(bootstrapper, services, excludedDllsForAutoRegistration);
                     services.AddScoped<IScopeFactory>(s => new MicrosoftScopeFactory(s));
+                    services.AddScoped<IScope>(s => s.GetRequiredService<IScopeFactory>().CreateScope());
                     DIManager.Init(new MicrosoftScopeFactory(services));
                 }
             );

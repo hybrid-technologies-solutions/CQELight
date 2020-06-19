@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             x:Class="CQELight.MVVM.XamarinForms.ContentPageCQELight">
+    <ContentPage.ControlTemplate>
+        <ControlTemplate>
+            <Grid >
+                <ContentPresenter 
+                    HorizontalOptions="FillAndExpand"
+                    VerticalOptions="FillAndExpand"
+                    x:Name="pnl_main"/>
+                <StackLayout x:Name="pnl_waiting"
+                             IsVisible="false"
+                             HorizontalOptions="Center"
+                             VerticalOptions="Center"
+                             Orientation="Vertical">
+                    <Label FontSize="24"
+                           x:Name="lbl_waiting"/>
+                    <ActivityIndicator IsRunning="True"/>
+                </StackLayout>
+            </Grid>
+        </ControlTemplate>
+    </ContentPage.ControlTemplate>
+</ContentPage>

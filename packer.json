@@ -16,6 +16,7 @@
 		"src/CQELight.Buses.RabbitMQ/CQELight.Buses.RabbitMQ.csproj",
 		"src/CQELight.Buses.AzureServiceBus/CQELight.Buses.AzureServiceBus.csproj",
 		"src/CQELight.AspCore/CQELight.AspCore.csproj",
-		"src/CQELight.EventStore.EFCore/CQELight.EventStore.EFCore.csproj"
+		"src/CQELight.EventStore.EFCore/CQELight.EventStore.EFCore.csproj",		
+		"src/CQELight.MVVM.XamarinForms/CQELight.MVVM.XamarinForms.csproj"
 	]
 }

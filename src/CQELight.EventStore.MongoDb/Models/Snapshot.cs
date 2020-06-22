@@ -21,7 +21,7 @@ namespace CQELight.EventStore.MongoDb.Models
         #region Ctor
 
         [Obsolete("Used for deserialization only")]
-        internal Snapshot() { }
+        public Snapshot() { }
 
         public Snapshot(object aggregateId, Type aggregateType, AggregateState aggregateState, Type snapshotBehaviorType, DateTime snapshotTime)
             : this(Guid.NewGuid(), aggregateId, aggregateType, aggregateState, snapshotBehaviorType, snapshotTime)

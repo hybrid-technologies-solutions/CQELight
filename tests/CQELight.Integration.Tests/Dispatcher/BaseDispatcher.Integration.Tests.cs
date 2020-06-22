@@ -171,7 +171,7 @@ namespace CQELight.Integration.Tests.Dispatcher
             events.Enqueue(new EventOne(data, aggId) { Sequence = 1 });
             events.Enqueue(new EventOne(data, aggId2) { Sequence = 1 });
             events.Enqueue(new EventTwo(data, aggId) { Sequence = 2 });
-            events.Enqueue(new EventTwo(data, aggId2) { Sequence = 1 });
+            events.Enqueue(new EventTwo(data, aggId2) { Sequence = 2 });
             events.Enqueue(new EventThree(data, aggId) { Sequence = 3 });
 
             var builder = new DispatcherConfigurationBuilder();

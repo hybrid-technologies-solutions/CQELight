@@ -30,6 +30,11 @@ steps:
     action: 'Run a Docker Compose command'
     dockerComposeCommand: 'up -d'
 
+- task: CmdLine@2
+  inputs:
+    script: 'dotnet run --urls=http://localhost:9999/ &'
+    workingDirectory: '/samples/web/CQELight_ASPNETCore2_1/'
+
 - script: dotnet build -c $(buildConfiguration) CQELight_CI.sln
   displayName: 'dotnet build $(buildConfiguration)'
 

@@ -1,6 +1,3 @@
-pool:
-  vmImage: 'windows-latest'
-
 variables:
   buildConfiguration: 'Release'
 
@@ -9,65 +6,90 @@ trigger:
 - feature/*
 - release/*
 
-steps:
-- task : DotNetCoreInstaller@1
-  inputs: 
-   packageType: 'sdk'
-   version: 3.1.x
+stages:
+  - stage: ASPTests
+    pool:
+      vmImage: 'windows-latest'
+    jobs:
+      - job:
+        steps:
+          - task : DotNetCoreInstaller@1
+            inputs: 
+              packageType: 'sdk'
+              version: 3.1.x          
+          - task: CmdLine@2
+            inputs:
+              script: 'dotnet run --urls=http://localhost:9999/ &'
+              workingDirectory: '$(Build.SourcesDirectory)/samples/web/CQELight_ASPNETCore2_1'
+          - task: DotNetCoreCLI@2
+            displayName: 'dotnet test'
+            inputs:
+              command: 'test'
+              projects: $(Build.SourcesDirectory)/tests/CQELight.ASPCore.Tests/CQELight.ASPCore.Tests.csproj
+            continueOnError: false
+  - stage: common
+    pool:
+      vmImage: 'ubuntu-latest'
+    jobs:
+      - job:
+        steps:
+        - task : DotNetCoreInstaller@1
+          inputs: 
+            packageType: 'sdk'
+            version: 3.1.x
 
-- task : DotNetCoreInstaller@1
-  inputs: 
-   packageType: 'sdk'
-   version: 2.1.x
+        - task : DotNetCoreInstaller@1
+          inputs: 
+            packageType: 'sdk'
+            version: 2.1.x
 
-- script: dotnet tool install --global --add-source https://registry.hybrid-technologies-solutions.com/repository/cqelight-prev/ --version 1.0.0-pre20191015162004 HTS_Packer
-  displayName: 'dotnet install HTS_Packer tool'
+        - script: dotnet tool install --global --add-source https://registry.hybrid-technologies-solutions.com/repository/cqelight-prev/ --version 1.0.0-pre20191015162004 HTS_Packer
+          displayName: 'dotnet install HTS_Packer tool'
 
-- task: DockerCompose@0
-  inputs:
-    containerregistrytype: 'Azure Container Registry'
-    dockerComposeFile: 'docker-compose.yml'
-    action: 'Run a Docker Compose command'
-    dockerComposeCommand: 'up -d'
+        - task: DockerCompose@0
+          inputs:
+            containerregistrytype: 'Azure Container Registry'
+            dockerComposeFile: 'docker-compose.yml'
+            action: 'Run a Docker Compose command'
+            dockerComposeCommand: 'up -d'
 
-- task: CmdLine@2
-  inputs:
-    script: 'dotnet run --urls=http://localhost:9999/ &'
-    workingDirectory: '$(Build.SourcesDirectory)/samples/web/CQELight_ASPNETCore2_1'
+        - script: dotnet build -c $(buildConfiguration) CQELight_CI.sln
+          displayName: 'dotnet build $(buildConfiguration)'
 
-- script: dotnet build -c $(buildConfiguration) CQELight_CI.sln
-  displayName: 'dotnet build $(buildConfiguration)'
+        - task: DotNetCoreCLI@2
+          displayName: 'dotnet test'
+          inputs:
+            command: 'test'
+            projects: |
+              $(Build.SourcesDirectory)/tests/**/*.csproj
+              !$(Build.SourcesDirectory)/tests/CQELight.ASPCore.Tests/CQELight.ASPCore.Tests.csproj
+          continueOnError: true
 
-- task: DotNetCoreCLI@2
-  displayName: 'dotnet test'
-  inputs:
-    command: 'test'
-    projects: '$(Build.SourcesDirectory)/tests/**/*.csproj'
-  continueOnError: true
+        - task: DotNetCoreCLI@2
+          displayName: 'CI tests' 
+          inputs:
+            command: 'run'
+            arguments: '$(Build.SourcesDirectory)/samples/documentation/2.Geneao/'
+            workingDirectory: '$(Build.SourcesDirectory)/ci/CQELight_Prerelease_CI'
+          continueOnError: false
 
-- task: DotNetCoreCLI@2
-  displayName: 'CI tests' 
-  inputs:
-    command: 'run'
-    arguments: '$(Build.SourcesDirectory)/samples/documentation/2.Geneao/'
-    workingDirectory: '$(Build.SourcesDirectory)/ci/CQELight_Prerelease_CI'
-  continueOnError: false
+        - task: DeleteFiles@1
+          inputs:
+            SourceFolder: $(Build.ArtifactStagingDirectory)
+            Contents: '*.nupkg'
 
-- task: DeleteFiles@1
-  inputs:
-    SourceFolder: $(Build.ArtifactStagingDirectory)
-    Contents: '*.nupkg'
+        - script: htspack -o $(Build.ArtifactStagingDirectory)
+          displayName: 'Launch HTS Pack tool'
+          condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'))
 
-- script: htspack -o $(Build.ArtifactStagingDirectory)
-  displayName: 'Launch HTS Pack tool'
-  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'))
+        - script: htspack -o $(Build.ArtifactStagingDirectory) -prev
+          displayName: 'Launch HTS Pack tool'
+          condition: and(succeeded(), not(startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')))
 
-- script: htspack -o $(Build.ArtifactStagingDirectory) -prev
-  displayName: 'Launch HTS Pack tool'
-  condition: and(succeeded(), not(startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')))
+        - task: PublishBuildArtifacts@1
+          inputs:
+            PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+            ArtifactName: 'drop'
+            publishLocation: 'Container'
 
-- task: PublishBuildArtifacts@1
-  inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-    ArtifactName: 'drop'
-    publishLocation: 'Container'
+

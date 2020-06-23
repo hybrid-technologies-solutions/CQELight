@@ -20,7 +20,7 @@ stages:
           - task: PowerShell@2
             inputs:
               targetType: 'inline'
-              script: 'dotnet run --urls=http://localhost:9999/ &'
+              script: 'Start-Process dotnet run --urls=http://localhost:9999/ &'
               workingDirectory: '$(Build.SourcesDirectory)/samples/web/CQELight_ASPNETCore2_1'
           - task: DotNetCoreCLI@2
             displayName: 'dotnet test'

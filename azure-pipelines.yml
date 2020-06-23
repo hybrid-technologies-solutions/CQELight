@@ -17,8 +17,9 @@ stages:
             inputs: 
               packageType: 'sdk'
               version: 3.1.x          
-          - task: CmdLine@2
+          - task: PowerShell@2
             inputs:
+              targetType: 'inline'
               script: 'dotnet run --urls=http://localhost:9999/ &'
               workingDirectory: '$(Build.SourcesDirectory)/samples/web/CQELight_ASPNETCore2_1'
           - task: DotNetCoreCLI@2

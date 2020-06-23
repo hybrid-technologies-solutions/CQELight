@@ -4,6 +4,7 @@ using OpenQA.Selenium.Chrome;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Reflection;
 using Xunit;
 
 namespace CQELight.ASPCore.Tests
@@ -15,7 +16,7 @@ namespace CQELight.ASPCore.Tests
 
         public CQELightASPNetCore2_1Tests()
         {
-            _driver = new ChromeDriver(".");
+            _driver = new ChromeDriver(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
         }
 
         public void Dispose()

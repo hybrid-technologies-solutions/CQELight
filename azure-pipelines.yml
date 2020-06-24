@@ -20,8 +20,16 @@ stages:
           - task: DotNetCoreCLI@2
             displayName: 'dotnet build'
             inputs:
+              command: 'restore'
+              projects: '$(Build.SourcesDirectory)/samples/web/CQELight_ASPNETCore2_1/CQELight_ASPNETCore2_1.csproj'
+              feedsToUse: 'select'
+            continueOnError: false
+          - task: DotNetCoreCLI@2
+            displayName: 'dotnet build'
+            inputs:
               command: 'build'
-              projects: $(Build.SourcesDirectory)/samples/web/CQELight_ASPNETCore2_1/CQELight_ASPNETCore2_1.csproj
+              projects: '$(Build.SourcesDirectory)/samples/web/CQELight_ASPNETCore2_1/CQELight_ASPNETCore2_1.csproj'
+              arguments: '--no-restore'
             continueOnError: false
           - task: PowerShell@2
             inputs:

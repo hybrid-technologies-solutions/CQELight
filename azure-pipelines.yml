@@ -61,14 +61,23 @@ steps:
   displayName: 'Launch HTS Pack tool'
   condition: and(succeeded(), not(startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')))
 
-- script: dotnet publish $(Build.SourcesDirectory)/samples/web/CQELight_ASPNETCore2_1/CQELight_ASPNETCore2_1.csproj -o $(Build.ArtifactStagingDirectory)/samples/asp2_1
-  displayName: 'dotnet publish ASP2_1'
+- task: CopyFiles@2
+  inputs:
+    SourceFolder: '$(Build.SourcesDirectory)/samples/web/CQELight_ASPNETCore2_1'
+    Contents: '**'
+    TargetFolder: '(Build.ArtifactStagingDirectory)/samples/asp2_1'
 
-- script: dotnet publish $(Build.SourcesDirectory)/samples/web/CQELight_ASPNETCore3/CQELight_ASPNETCore3.csproj -o $(Build.ArtifactStagingDirectory)/samples/asp3_1
-  displayName: 'dotnet publish ASP3_1'
+- task: CopyFiles@2
+  inputs:
+    SourceFolder: '$(Build.SourcesDirectory)/samples/web/CQELight_ASPNETCore3'
+    Contents: '**'
+    TargetFolder: '(Build.ArtifactStagingDirectory)/samples/asp3_1'
 
-- script: dotnet publish $(Build.SourcesDirectory)/samples/web/CQELight_BlazorServer/CQELight_BlazorServer.csproj -o $(Build.ArtifactStagingDirectory)/samples/blazor_srv
-  displayName: 'dotnet publish BlazorServer'
+- task: CopyFiles@2
+  inputs:
+    SourceFolder: '$(Build.SourcesDirectory)/samples/web/CQELight_BlazorServer'
+    Contents: '**'
+    TargetFolder: '(Build.ArtifactStagingDirectory)/samples/blazor_srv'
 
 - task: PublishBuildArtifacts@1
   inputs:

@@ -26,7 +26,7 @@ namespace CQELight.AspCore.Internal
         #region IServiceScope methods
 
         public IServiceProvider ServiceProvider 
-            => new CQELightServiceProvider(scopeFactory);
+            => new CQELightServiceProvider(scopeFactory.CreateScope());
 
 
         #endregion

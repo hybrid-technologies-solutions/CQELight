@@ -19,10 +19,6 @@ namespace CQELight.AspCore.Internal
         {
             this.scope = scope;
         }
-        public CQELightServiceProvider(IScopeFactory scopeFactory)
-        {
-            scope = scopeFactory.CreateScope();
-        }
 
         #endregion
 

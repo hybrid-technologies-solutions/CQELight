@@ -16,11 +16,17 @@ stages:
           - task : DotNetCoreInstaller@1
             inputs: 
               packageType: 'sdk'
-              version: 3.1.x          
+              version: 3.1.x
+          - task: DotNetCoreCLI@2
+            displayName: 'dotnet build'
+            inputs:
+              command: 'build'
+              projects: $(Build.SourcesDirectory)/samples/web/CQELight_ASPNETCore2_1/CQELight_ASPNETCore2_1.csproj
+            continueOnError: false
           - task: PowerShell@2
             inputs:
               targetType: 'inline'
-              script: 'Start-Process dotnet -ArgumentList "run --urls=http://localhost:9999/"'
+              script: 'Start-Process dotnet -ArgumentList "run --urls=http://localhost:9999/ --no-build"'
               workingDirectory: '$(Build.SourcesDirectory)/samples/web/CQELight_ASPNETCore2_1'
           - task: DotNetCoreCLI@2
             displayName: 'dotnet test'

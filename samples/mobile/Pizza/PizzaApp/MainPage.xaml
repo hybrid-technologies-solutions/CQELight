@@ -1,0 +1,84 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<cqe:ContentPageCQELight xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:d="http://xamarin.com/schemas/2014/forms/design"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:cqe="clr-namespace:CQELight.MVVM.XamarinForms;assembly=CQELight.MVVM.XamarinForms"
+             mc:Ignorable="d"
+             x:Class="PizzaApp.MainPage">
+    <NavigationPage.TitleView>
+        <Grid ColumnDefinitions="40, *, 40">
+            <Image Source="logo_128.png"/>
+            <StackLayout HorizontalOptions="Center" 
+                     Grid.Column="1"
+                     Orientation="Horizontal">
+                <Image Source="pizza_logo.png" HeightRequest="40" />
+                <Label Text="Pizzas" 
+			FontAttributes="Bold"
+			TextColor="White" VerticalOptions="Center" />
+            </StackLayout>
+
+            <ImageButton Command="{Binding ChangeSortCommand}"
+                         Grid.Column="2"
+                         BackgroundColor="Transparent"
+                         Source="{Binding SortType, Converter={StaticResource SortTypeToImageSourceConverter}}"/>
+        </Grid>
+    </NavigationPage.TitleView>
+    <Grid>
+        <ListView IsPullToRefreshEnabled="True"
+                  RowHeight="100"
+                  ItemsSource="{Binding Pizzas}"
+                  IsRefreshing="{Binding ListRefreshing}"
+                  IsVisible="{Binding ListVisible}"
+                  RefreshCommand="{Binding RefreshPizzasCommand}">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <ViewCell>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="90"/>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="50"/>
+                            </Grid.ColumnDefinitions>
+                            <Image BackgroundColor="#F0F0F0"
+                               Margin="10,15,5,15"
+                               Aspect="AspectFill"
+                               Source="{Binding ImageUrl}"/>
+                            <StackLayout Grid.Column="1"
+                                     Orientation="Vertical">
+                                <Label Text="{Binding Name, Converter={StaticResource ProperCaseConverter}}"
+                                   FontSize="24"/>
+                                <Label FontSize="16"
+                                   MaxLines="2"
+                                   LineBreakMode="TailTruncation">
+                                    <Label.Text>
+                                        <Binding Path="Ingredients" Converter="{StaticResource ListToStringConverter}">
+                                            <Binding.ConverterParameter>
+                                                <x:String>,</x:String>
+                                            </Binding.ConverterParameter>
+                                        </Binding>
+                                    </Label.Text>
+                                </Label>
+                            </StackLayout>
+                            <StackLayout Grid.Column="2"
+                                         VerticalOptions="Center"
+                                         Margin="0,0,10,0">
+                                <Label Text="{Binding Price, StringFormat=\{0:g\}€}"
+                                       FontSize="18"
+                                       VerticalTextAlignment="Center"
+                                       HorizontalOptions="End"
+                                       HorizontalTextAlignment="End"/>
+                                <ImageButton Source="{Binding IsFavorite, Converter={StaticResource BooleanToStarConverter}}"
+                                             Command="{Binding MarkAsFavoriteCommand}"
+                                             CommandParameter="{Binding Id}"
+                                             HorizontalOptions="End"
+                                             BackgroundColor="Transparent"
+                                             WidthRequest="30"/>
+                            </StackLayout>
+                        </Grid>
+                    </ViewCell>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+    </Grid>
+</cqe:ContentPageCQELight>

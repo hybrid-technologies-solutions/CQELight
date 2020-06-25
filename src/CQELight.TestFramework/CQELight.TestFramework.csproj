@@ -13,11 +13,12 @@
     <RepositoryUrl>https://github.com/cdie/CQELight</RepositoryUrl>
     <PackageTags>unit-test test</PackageTags>
     <PackageReleaseNotes>See concerned milestone on GitHub for informations</PackageReleaseNotes>
-    <PackageIconUrl>http://cqelight.net/images/cqelight-base.png</PackageIconUrl>
+    <PackageIconUrl></PackageIconUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <LangVersion>latest</LangVersion>
     <Nullable>Enable</Nullable>
+    <PackageIcon>CQELight.png</PackageIcon>
   </PropertyGroup>
   
   <ItemGroup Condition="'$(targetframework)'=='netstandard2.0'">
@@ -36,6 +37,13 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CQELight\CQELight.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\CQELight.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>

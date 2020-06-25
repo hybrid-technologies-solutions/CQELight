@@ -10,12 +10,13 @@
     <Copyright>Christophe Mommer, Hybrid Technologies Solutions</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://www.hybrid-technologies-solutions.com</PackageProjectUrl>
-    <PackageIconUrl>http://cqelight.net/images/cqelight-base.png</PackageIconUrl>
+    <PackageIconUrl></PackageIconUrl>
     <RepositoryUrl>https://github.com/cdie/CQELight</RepositoryUrl>
     <PackageTags>dal, mongodb, repository</PackageTags>
     <PackageReleaseNotes>See concerned milestone on GitHub</PackageReleaseNotes>    
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <LangVersion>latest</LangVersion>
+    <PackageIcon>CQELight.png</PackageIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -24,6 +25,13 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CQELight\CQELight.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\CQELight.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>

@@ -11,12 +11,13 @@
     <PackageProjectUrl>https://www.hybrid-technologies-solutions.com</PackageProjectUrl>
     <PackageTags>rabbitmq, rabbit-mq, messaging, cqelight, event</PackageTags>
     <PackageReleaseNotes>See concerned milestone on GitHub</PackageReleaseNotes>
-    <PackageIconUrl>http://cqelight.net/images/cqelight-base.png</PackageIconUrl>
+    <PackageIconUrl></PackageIconUrl>
     <RepositoryUrl>https://github.com/cdie/CQELight</RepositoryUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <LangVersion>latest</LangVersion>
     <Nullable>Enable</Nullable>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <PackageIcon>CQELight.png</PackageIcon>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(targetframework)'=='netstandard2.0'">
@@ -34,6 +35,13 @@
   <ItemGroup>
     <ProjectReference Include="..\CQELight.Buses.InMemory\CQELight.Buses.InMemory.csproj" />
     <ProjectReference Include="..\CQELight\CQELight.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\CQELight.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>

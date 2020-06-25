@@ -12,7 +12,12 @@
     <PackageProjectUrl>https://www.hybrid-technologies-solutions.com</PackageProjectUrl>
     <RepositoryUrl>https://github.com/cdie/CQELight</RepositoryUrl>
     <PackageTags>xamarin, xamarin forms, mvvm</PackageTags>
-    <PackageIconUrl>https://www.hybrid-technologies-solutions.com/images/CQELight_logo_only.png</PackageIconUrl>
+    <PackageIconUrl></PackageIconUrl>
+    <AssemblyVersion>1.2.0.1</AssemblyVersion>
+    <FileVersion>1.2.0.0</FileVersion>
+    <Version>1.2.0.1</Version>
+    <PackageIcon>CQELight.png</PackageIcon>
+    <PackageReleaseNotes>See concerned milestone on GitHub for informations</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
@@ -27,6 +32,13 @@
     <EmbeddedResource Update="ContentPageCQELight.xaml">
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\CQELight.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>

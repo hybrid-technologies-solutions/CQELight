@@ -8,7 +8,7 @@
     <Description>ASP Core extensions for using CQELight with ease.</Description>
     <Copyright>Christophe Mommer, Hybrid Technologies Solutions</Copyright>
     <PackageProjectUrl>https://www.hybrid-technologies-solutions.com</PackageProjectUrl>
-    <PackageIconUrl>http://cqelight.net/images/cqelight-base.png</PackageIconUrl>
+    <PackageIconUrl></PackageIconUrl>
     <RepositoryUrl>https://github.com/cdie/CQELight</RepositoryUrl>
     <PackageTags>asp core, asp mvc</PackageTags>    
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -16,6 +16,7 @@
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <LangVersion>latest</LangVersion>
     <Nullable>Enable</Nullable>
+    <PackageIcon>CQELight.png</PackageIcon>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(targetframework)'=='netstandard2.0'">
@@ -32,6 +33,13 @@
   <ItemGroup>
     <ProjectReference Include="..\CQELight.IoC.Microsoft.Extensions.DependencyInjection\CQELight.IoC.Microsoft.Extensions.DependencyInjection.csproj" />
     <ProjectReference Include="..\CQELight\CQELight.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\..\CQELight.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>

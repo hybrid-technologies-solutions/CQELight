@@ -14,9 +14,10 @@
     <PackageTags>mahapps, mvvm</PackageTags>
     <LangVersion>latest</LangVersion>
     <PackageReleaseNotes></PackageReleaseNotes>
-    <PackageIconUrl>https://www.hybrid-technologies-solutions.com/images/CQELight_logo_only.png</PackageIconUrl>
+    <PackageIconUrl></PackageIconUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Nullable>Enable</Nullable>
+    <PackageIcon>CQELight.png</PackageIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -39,6 +40,13 @@
     <Reference Include="PresentationFramework">
       <HintPath>C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\PresentationFramework.dll</HintPath>
     </Reference>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <None Include="..\..\CQELight.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>

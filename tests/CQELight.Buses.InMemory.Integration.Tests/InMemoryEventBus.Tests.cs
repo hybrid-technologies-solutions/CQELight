@@ -737,6 +737,7 @@ namespace CQELight.Buses.InMemory.Integration.Tests
             using(var scope = DIManager.BeginScope())
             {
                 var bus = scope.Resolve<InMemoryCommandBus>();
+                bus.Should().NotBeNull();
             }
         }
 

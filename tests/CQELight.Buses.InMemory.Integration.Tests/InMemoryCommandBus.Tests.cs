@@ -440,6 +440,7 @@ namespace CQELight.Buses.InMemory.Integration.Tests
             using (var scope = DIManager.BeginScope())
             {
                 var bus = scope.Resolve<InMemoryEventBus>();
+                bus.Should().NotBeNull();
             }
         }
 

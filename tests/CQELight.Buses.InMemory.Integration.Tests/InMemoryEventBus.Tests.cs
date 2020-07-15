@@ -2,14 +2,17 @@
 using CQELight.Abstractions.Events;
 using CQELight.Abstractions.Events.Interfaces;
 using CQELight.Abstractions.IoC.Interfaces;
+using CQELight.Buses.InMemory.Commands;
 using CQELight.Buses.InMemory.Events;
 using CQELight.Dispatcher;
+using CQELight.IoC;
 using CQELight.IoC.Exceptions;
 using CQELight.MVVM;
 using CQELight.TestFramework;
 using CQELight.TestFramework.IoC;
 using CQELight.TestFramework.Logging;
 using FluentAssertions;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System;
@@ -717,6 +720,23 @@ namespace CQELight.Buses.InMemory.Integration.Tests
             finally
             {
                 AutoLoadDomainEventHandler.Called = false;
+            }
+        }
+
+        #endregion
+
+        #region IoC
+
+        [Fact]
+        public void InMemoryEventBus_Should_Be_Resolvable_By_MicrosoftIoC()
+        {
+            new Bootstrapper()
+                .UseInMemoryCommandBus()
+                .UseMicrosoftDependencyInjection(new ServiceCollection())
+                .Bootstrapp();
+            using(var scope = DIManager.BeginScope())
+            {
+                var bus = scope.Resolve<InMemoryCommandBus>();
             }
         }
 

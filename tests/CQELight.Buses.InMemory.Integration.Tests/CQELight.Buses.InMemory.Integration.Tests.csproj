@@ -21,6 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\CQELight.Buses.InMemory\CQELight.Buses.InMemory.csproj" />
+    <ProjectReference Include="..\..\src\CQELight.IoC.Microsoft.Extensions.DependencyInjection\CQELight.IoC.Microsoft.Extensions.DependencyInjection.csproj" />
     <ProjectReference Include="..\..\src\CQELight.MVVM\CQELight.MVVM.csproj" />
     <ProjectReference Include="..\..\src\CQELight.TestFramework\CQELight.TestFramework.csproj" />
   </ItemGroup>

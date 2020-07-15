@@ -50,12 +50,12 @@ namespace CQELight.Buses.InMemory.Commands
 
         #region Ctor
 
-        internal InMemoryCommandBus()
+        public InMemoryCommandBus()
             : this(null, null)
         {
         }
 
-        internal InMemoryCommandBus(InMemoryCommandBusConfiguration? configuration = null,
+        public InMemoryCommandBus(InMemoryCommandBusConfiguration? configuration = null,
                                     IScopeFactory? scopeFactory = null)
         {
             if (scopeFactory != null)

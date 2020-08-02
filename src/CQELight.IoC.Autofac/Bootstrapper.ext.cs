@@ -117,27 +117,15 @@ namespace CQELight
             InitDIManagerAndCreateScopeFactory(container);
         }
 
-        private static void InitDIManagerAndCreateScopeFactory(ILifetimeScope scope)
-        {
-            var loggerFactory = scope.ResolveOptional<ILoggerFactory>();
-            var factory = loggerFactory != null ? new AutofacScopeFactory(scope, loggerFactory) : new AutofacScopeFactory(scope);
-            DIManager.Init(factory);
-        }
+        private static void InitDIManagerAndCreateScopeFactory(ILifetimeScope scope) 
+            => DIManager.Init(new AutofacScopeFactory(scope));
 
         private static void AddRegistrationsToContainerBuilder(Bootstrapper bootstrapper, ContainerBuilder containerBuilder, string[] excludedAutoRegisterTypeDLLs)
         {
             containerBuilder.RegisterModule(new AutoRegisterModule(excludedAutoRegisterTypeDLLs));
             AddComponentRegistrationToContainer(containerBuilder, bootstrapper.IoCRegistrations.ToList());
             containerBuilder
-                .Register(c =>
-                {
-                    var loggerFactory = c.ResolveOptional<ILoggerFactory>();
-                    if (loggerFactory != null)
-                    {
-                        return new AutofacScopeFactory(AutofacScopeFactory.AutofacContainer!, loggerFactory);
-                    }
-                    return new AutofacScopeFactory(AutofacScopeFactory.AutofacContainer!);
-                })
+                .Register(c => new AutofacScopeFactory(AutofacScopeFactory.AutofacContainer!))
                 .AsSelf()
                 .AsImplementedInterfaces();
             containerBuilder

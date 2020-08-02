@@ -19,7 +19,6 @@ namespace CQELight.IoC.Autofac
 
         private static MethodInfo? s_GetAllInstancesMethod;
         private readonly IComponentContext componentContext;
-        private readonly ILogger<AutofacScope>? logger;
 
         #endregion
 
@@ -54,18 +53,6 @@ namespace CQELight.IoC.Autofac
             Id = Guid.NewGuid();
         }
 
-        internal AutofacScope(ILifetimeScope scope, ILogger<AutofacScope> logger)
-            : this(scope)
-        {
-            this.logger = logger;
-        }
-
-        internal AutofacScope(IComponentContext context, ILogger<AutofacScope> logger)
-            : this(context)
-        {
-            this.logger = logger;
-        }
-
         ~AutofacScope()
         {
             Dispose(false);
@@ -87,7 +74,6 @@ namespace CQELight.IoC.Autofac
                 Action<ContainerBuilder>? act = null;
                 if (typeRegisterAction != null)
                 {
-                    logger?.LogDebug("Adding some custom registration in child scope");
                     var typeRegister = new TypeRegister();
                     typeRegisterAction.Invoke(typeRegister);
                     act += b => AutofacTools.RegisterContextTypes(b, typeRegister);
@@ -98,7 +84,6 @@ namespace CQELight.IoC.Autofac
                 }
                 return new AutofacScope(scope.BeginLifetimeScope());
             }
-            logger?.LogError("Autofac cannot create a child scope from IComponentContext. Parent scope should be created with the ctor that takes an ILifeTimeScope parameter");
             throw new InvalidOperationException("Autofac cannot create a child scope from IComponentContext. Parent scope should be created with the ctor that takes an ILifeTimeScope parameter");
         }
 
@@ -153,7 +138,6 @@ namespace CQELight.IoC.Autofac
             }
             catch (DependencyResolutionException dpExc)
             {
-                logger?.LogError(dpExc, $"Unable to resolve {type.AssemblyQualifiedName}");
                 throw new IoCResolutionException($"Unable to resolve {type.AssemblyQualifiedName}", dpExc);
             }
         }
@@ -176,8 +160,7 @@ namespace CQELight.IoC.Autofac
                         @params.Add(new TypedParameter(typePar.Type, typePar.Value));
                         break;
                     default:
-                        logger?.LogWarning($"Unable to find parameter type for resolution for instance {par.GetType().FullName}");
-                        break;
+                        throw new InvalidOperationException($"Unable to find parameter type for resolution for instance {par.GetType().FullName}");
                 }
             }
             return @params;

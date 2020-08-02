@@ -184,24 +184,6 @@ namespace CQELight.IoC.Autofac.Integration.Tests
             }
         }
 
-        [Fact]
-        public void SomeTypes_Should_Alwasy_Be_Resolvable_When_Using_Bootstrapper_WithLoggerFactory()
-        {
-            var lg = new LoggerFactory();
-            new Bootstrapper().UseAutofacAsIoC(c => c.RegisterInstance(lg).AsSelf().AsImplementedInterfaces()).Bootstrapp();
-            DIManager.IsInit.Should().BeTrue();
-
-            using (var scope = DIManager.BeginScope())
-            {
-                var scopeFactory = scope.Resolve<IScopeFactory>();
-                scopeFactory.Should().NotBeNull();
-                scopeFactory.Should().BeOfType<AutofacScopeFactory>();
-
-                ((FieldInfo)typeof(AutofacScope).GetTypeInfo().DeclaredMembers.First(m => m.Name == "logger")).GetValue(scope).Should().NotBeNull();
-
-                AutofacScopeFactory.AutofacContainer.Should().NotBeNull();
-            }
-        }
         #endregion
 
     }

@@ -14,7 +14,7 @@ namespace CQELight.DAL.MongoDb
         /// Only configured after Bootstrapper.Boostrapp is called.
         /// </summary>
         public static MongoClient MongoClient { get; internal set; } = default!;
-        internal static IMongoDatabase Database => MongoClient.GetDatabase(DatabaseName ?? "DefaultDatabase");
+        public static IMongoDatabase Database => MongoClient.GetDatabase(DatabaseName ?? "DefaultDatabase");
         internal static string? DatabaseName { get; set; } = null;
 
         #endregion

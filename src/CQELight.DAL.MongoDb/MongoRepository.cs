@@ -207,8 +207,10 @@ namespace CQELight.DAL.MongoDb
             {
                 var actions = _toInsert.Count + _physicalToDelete.Count + _toUpdate.Count;
                 var collection = GetCollection();
-
-                session.StartTransaction();
+                if (session.Client.Cluster.Description.Type != MongoDB.Driver.Core.Clusters.ClusterType.Standalone)
+                {
+                    session.StartTransaction();
+                }
                 try
                 {
                     if (_toInsert.Count > 0)
@@ -237,14 +239,20 @@ namespace CQELight.DAL.MongoDb
                         }
                         await collection.DeleteManyAsync(deletionFilter).ConfigureAwait(false);
                     }
-                    await session.CommitTransactionAsync().ConfigureAwait(false);
+                    if (session.Client.Cluster.Description.Type != MongoDB.Driver.Core.Clusters.ClusterType.Standalone)
+                    {
+                        await session.CommitTransactionAsync().ConfigureAwait(false);
+                    }
                     _toInsert = new ConcurrentBag<T>();
                     _physicalToDelete = new ConcurrentBag<T>();
                     _toUpdate = new ConcurrentBag<T>();
                 }
                 catch
                 {
-                    await session.AbortTransactionAsync().ConfigureAwait(false);
+                    if (session.Client.Cluster.Description.Type != MongoDB.Driver.Core.Clusters.ClusterType.Standalone)
+                    {
+                        await session.AbortTransactionAsync().ConfigureAwait(false);
+                    }
                 }
 
                 return actions;

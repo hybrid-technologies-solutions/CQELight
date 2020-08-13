@@ -32,8 +32,10 @@ namespace CQELight.DAL.MongoDb.Integration.Tests.Adapters
         }
 
         private IMongoCollection<T> GetCollection<T>()
-            => MongoDbContext.Database
-                    .GetCollection<T>(MongoDbMapper.GetMapping<T>().CollectionName);
+        {
+            return MongoDbContext.Database
+                               .GetCollection<T>(MongoDbMapper.GetMapping<T>().CollectionName);
+        }
 
         private void DeleteAll()
         {
@@ -183,7 +185,11 @@ namespace CQELight.DAL.MongoDb.Integration.Tests.Adapters
                     };
                     b.FakePersistenceId(Guid.NewGuid());
                     repo.MarkForUpdate(b);
-                    await Assert.ThrowsAsync<InvalidOperationException>(repo.SaveAsync);
+                }
+                using (var repo = new RepositoryBase(new MongoDataReaderAdapter(), new MongoDataWriterAdapter()))
+                {
+                    var testB = await repo.GetAsync<WebSite>().ToListAsync().ConfigureAwait(false);
+                    testB.Should().HaveCount(0);
                 }
             }
             finally

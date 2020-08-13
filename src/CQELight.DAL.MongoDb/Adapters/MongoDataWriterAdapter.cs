@@ -4,7 +4,9 @@ using CQELight.DAL.MongoDb.Extensions;
 using CQELight.DAL.MongoDb.Mapping;
 using CQELight.Tools;
 using CQELight.Tools.Extensions;
+using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
+using MongoDB.Driver.Core.Clusters;
 using System;
 using System.Linq;
 using System.Threading;
@@ -23,6 +25,7 @@ namespace CQELight.DAL.MongoDb.Adapters
         private int actions = 0;
         private readonly SemaphoreSlim sessionLock = new SemaphoreSlim(1);
         private readonly SemaphoreSlim parallelSafety;
+        private readonly ILogger<MongoDataWriterAdapter>? logger;
 
         #endregion
 
@@ -31,13 +34,15 @@ namespace CQELight.DAL.MongoDb.Adapters
         /// <summary>
         /// Creates a new instance of <see cref="MongoDataWriterAdapter"/>.
         /// </summary>
-        public MongoDataWriterAdapter()
+        public MongoDataWriterAdapter(
+            ILogger<MongoDataWriterAdapter>? logger = null)
         {
             if (MongoDbContext.MongoClient == null)
             {
                 throw new InvalidOperationException("MongoDbClient hasn't been initialized yet. Please, ensure that you've bootstrapped extension before attempting creating a new instance of MongoDataWriterAdapter");
             }
             parallelSafety = new SemaphoreSlim(MongoDbContext.MongoClient.Settings.MaxConnectionPoolSize / 2);
+            this.logger = logger;
         }
 
         #endregion
@@ -53,8 +58,11 @@ namespace CQELight.DAL.MongoDb.Adapters
                 {
                     if (session == null)
                     {
-                        session = await MongoDbContext.MongoClient.StartSessionAsync().ConfigureAwait(false);
-                        session.StartTransaction();
+                        session = await MongoDbContext.MongoClient.StartSessionAsync();
+                        if (MongoDbContext.MongoClient.Cluster.Description.Type != ClusterType.Standalone)
+                        {
+                            session.StartTransaction();
+                        }
                     }
                 }
                 finally
@@ -140,13 +148,13 @@ namespace CQELight.DAL.MongoDb.Adapters
         {
             if (physicalDeletion)
             {
-                await CheckIfSessionIsStartedAsync().ConfigureAwait(false);
+                await CheckIfSessionIsStartedAsync();
                 var entityType = entity.GetType();
                 var deletionFilter = ExtractIdValue(entity).GetIdFilterFromIdValue<T>(entityType);
                 try
                 {
                     await parallelSafety.WaitAsync();
-                    await GetCollection<T>(entityType).DeleteOneAsync(deletionFilter).ConfigureAwait(false);
+                    await GetCollection<T>(entityType).DeleteOneAsync(deletionFilter);
                     actions++;
                 }
                 finally
@@ -195,10 +203,10 @@ namespace CQELight.DAL.MongoDb.Adapters
             try
             {
                 await parallelSafety.WaitAsync();
-                var result = await GetCollection<T>(entityType).ReplaceOneAsync(idFilter, entity).ConfigureAwait(false);
+                var result = await GetCollection<T>(entityType).ReplaceOneAsync(idFilter, entity);
                 if (result.ModifiedCount == 0)
                 {
-                    throw new InvalidOperationException($"Entity of type {typeof(T).FullName} with id value {idValue} cannot be updated as it doesn't currently exists within database. Insert it instead of update it.");
+                    logger?.LogWarning($"Entity of type {typeof(T).FullName} with id value {idValue} cannot be updated as it doesn't currently exists within database. Insert it instead of update it.");
                 }
                 actions += Convert.ToInt32(result.ModifiedCount);
             }
@@ -210,17 +218,20 @@ namespace CQELight.DAL.MongoDb.Adapters
 
         public async Task<int> SaveAsync()
         {
-            if (session != null) // nothing is writen
+            if (MongoDbContext.MongoClient.Cluster.Description.Type != ClusterType.Standalone)
             {
-                try
+                if (session != null) // nothing is writen
                 {
-                    await session.CommitTransactionAsync().ConfigureAwait(false);
-                    return actions;
-                }
-                catch
-                {
-                    await session.AbortTransactionAsync().ConfigureAwait(false);
-                    return 0;
+                    try
+                    {
+                        await session.CommitTransactionAsync().ConfigureAwait(false);
+                        return actions;
+                    }
+                    catch
+                    {
+                        await session.AbortTransactionAsync().ConfigureAwait(false);
+                        return 0;
+                    }
                 }
             }
             return 0;

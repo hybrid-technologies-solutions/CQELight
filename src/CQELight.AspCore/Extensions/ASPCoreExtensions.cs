@@ -58,6 +58,7 @@ namespace CQELight
             }
             var config = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
+                .AddEnvironmentVariables()
                 .AddJsonFile("appsettings.json", optional: false)
                 .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}.json", optional: true)
                 .Build();

@@ -1,22 +1,22 @@
 ﻿using CQELight.Abstractions.DDD;
 using CQELight.Abstractions.Events;
 using CQELight.Abstractions.Events.Interfaces;
+using CQELight.Abstractions.EventStore;
+using CQELight.Abstractions.EventStore.Interfaces;
 using CQELight.EventStore.Attributes;
 using CQELight.EventStore.EFCore.Common;
 using CQELight.EventStore.EFCore.Models;
+using CQELight.EventStore.Snapshots;
 using CQELight.TestFramework;
+using CQELight.Tools.Extensions;
 using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
+using Moq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using CQELight.Tools.Extensions;
 using Xunit;
-using CQELight.Abstractions.EventStore.Interfaces;
-using CQELight.Abstractions.EventStore;
-using Moq;
-using Microsoft.EntityFrameworkCore;
-using CQELight.EventStore.Snapshots;
 
 [assembly: CollectionBehavior(DisableTestParallelization = true)]
 
@@ -28,7 +28,7 @@ namespace CQELight.EventStore.EFCore.Integration.Tests
 
         private static bool s_Init;
 
-        private Mock<ISnapshotBehaviorProvider> _snapshotProviderMock;
+        private readonly Mock<ISnapshotBehaviorProvider> _snapshotProviderMock;
         public EFEventStoreTests()
         {
             _snapshotProviderMock = new Mock<ISnapshotBehaviorProvider>();
@@ -52,30 +52,41 @@ namespace CQELight.EventStore.EFCore.Integration.Tests
 
         private EFEventStoreOptions GetOptions(
             BufferInfo bufferInfo = null,
-            SnapshotEventsArchiveBehavior behavior = SnapshotEventsArchiveBehavior.Disabled)
+            SnapshotEventsArchiveBehavior behavior = SnapshotEventsArchiveBehavior.Disabled,
+            bool shouldPersisteNonAggregateEvt = true)
         {
             return new EFEventStoreOptions(
                 o => o.UseSqlite("Filename=Events_Test_Base.db"),
                 _snapshotProviderMock.Object,
                 bufferInfo,
                 behavior,
-                o => o.UseSqlite("Filename=Events_Test_Archive_Base.db"));
+                o => o.UseSqlite("Filename=Events_Test_Archive_Base.db"),
+                shouldPersisteNonAggregateEvt);
         }
 
         private DbContextOptions<EventStoreDbContext> GetBaseDbContextOptions()
-            => new DbContextOptionsBuilder<EventStoreDbContext>()
-                    .UseSqlite("Filename=Events_Test_Base.db")
-                    .Options;
+        {
+            return new DbContextOptionsBuilder<EventStoreDbContext>()
+                               .UseSqlite("Filename=Events_Test_Base.db")
+                               .Options;
+        }
+
         private DbContextOptions<ArchiveEventStoreDbContext> GetArchiveDbContextOptions()
-            => new DbContextOptionsBuilder<ArchiveEventStoreDbContext>()
-                    .UseSqlite("Filename=Events_Test_Archive_Base.db")
-                    .Options;
+        {
+            return new DbContextOptionsBuilder<ArchiveEventStoreDbContext>()
+                               .UseSqlite("Filename=Events_Test_Archive_Base.db")
+                               .Options;
+        }
 
         private EventStoreDbContext GetContext()
-            => new EventStoreDbContext(GetBaseDbContextOptions());
+        {
+            return new EventStoreDbContext(GetBaseDbContextOptions());
+        }
 
         private ArchiveEventStoreDbContext GetArchiveContext()
-            => new ArchiveEventStoreDbContext(GetArchiveDbContextOptions());
+        {
+            return new ArchiveEventStoreDbContext(GetArchiveDbContextOptions());
+        }
 
         private void DeleteAll()
         {
@@ -93,10 +104,12 @@ namespace CQELight.EventStore.EFCore.Integration.Tests
         }
 
         private Task StoreTestEventAsync(Guid aggId, Guid id, DateTime date)
-            => new EFEventStore(GetOptions()).StoreDomainEventAsync(new SampleEvent(aggId, id, date)
+        {
+            return new EFEventStore(GetOptions()).StoreDomainEventAsync(new SampleEvent(aggId, id, date)
             {
                 Data = "testData"
             });
+        }
 
         #region Nested class
 
@@ -141,6 +154,11 @@ namespace CQELight.EventStore.EFCore.Integration.Tests
         }
         public class AggDeleted : BaseDomainEvent
         {
+        }
+
+        public class NonAggEvent : BaseDomainEvent
+        {
+
         }
 
         #endregion
@@ -262,6 +280,54 @@ namespace CQELight.EventStore.EFCore.Integration.Tests
                     evt.EventTime.Should().BeSameDateAs(DateTime.Today);
                     evt.EventData.Should().NotBeNullOrWhiteSpace();
                     await ctx.Set<Event>().AsNoTracking().AllAsync(e => e.EventData.Contains("testData" + (e.Sequence - 1)));
+                }
+            }
+            finally
+            {
+                DeleteAll();
+            }
+        }
+
+        [Fact]
+        public async Task NonAggregateEvent_Shouldnt_Be_Persisted_If_User_Configure_It()
+        {
+            try
+            {
+                DeleteAll();
+                var store = new EFEventStore(GetOptions(shouldPersisteNonAggregateEvt: false));
+
+                await store.StoreDomainEventAsync(new NonAggEvent());
+
+                using (var ctx = GetContext())
+                {
+                    ctx.Set<Event>().AsNoTracking().Count().Should().Be(0);
+                }
+            }
+            finally
+            {
+                DeleteAll();
+            }
+        }
+
+        [Fact]
+        public async Task NonAggregateEvent_Should_Be_Persisted_If_User_Configure_It()
+        {
+            try
+            {
+                DeleteAll();
+                var store = new EFEventStore(GetOptions(shouldPersisteNonAggregateEvt: true));
+
+                await store.StoreDomainEventAsync(new NonAggEvent());
+
+                using (var ctx = GetContext())
+                {
+                    ctx.Set<Event>().AsNoTracking().Count().Should().Be(1);
+                    var evt = await ctx.Set<Event>().AsNoTracking().FirstOrDefaultAsync();
+                    evt.Should().NotBeNull();
+                    evt.AggregateIdType.Should().BeNullOrWhiteSpace();
+                    evt.AggregateType.Should().BeNullOrWhiteSpace();
+                    evt.HashedAggregateId.Should().NotHaveValue();
+                    evt.SerializedAggregateId.Should().BeNullOrWhiteSpace();
                 }
             }
             finally
@@ -501,7 +567,7 @@ namespace CQELight.EventStore.EFCore.Integration.Tests
 
         private class AggregateSnapshot : AggregateRoot<Guid>, IEventSourcedAggregate
         {
-            private AggregateSnapshotState _state = new AggregateSnapshotState();
+            private readonly AggregateSnapshotState _state = new AggregateSnapshotState();
             public int AggIncValue => _state.Increment;
 
             private class AggregateSnapshotState : AggregateState
@@ -514,11 +580,15 @@ namespace CQELight.EventStore.EFCore.Integration.Tests
                 }
 
                 private void AggregateSnapshotEventWhen(AggregateSnapshotEvent obj)
-                    => Increment++;
+                {
+                    Increment++;
+                }
             }
 
             public void RehydrateState(IEnumerable<IDomainEvent> events)
-                => _state.ApplyRange(events);
+            {
+                _state.ApplyRange(events);
+            }
         }
 
         [Fact]
@@ -842,7 +912,7 @@ namespace CQELight.EventStore.EFCore.Integration.Tests
 
         #region Snapshot behavior - Specific
 
-        class FirstEvent : BaseDomainEvent
+        private class FirstEvent : BaseDomainEvent
         {
             public FirstEvent(Guid aggId)
             {
@@ -850,7 +920,8 @@ namespace CQELight.EventStore.EFCore.Integration.Tests
                 AggregateType = typeof(BusinessAggregate);
             }
         }
-        class SecondEvent : BaseDomainEvent
+
+        private class SecondEvent : BaseDomainEvent
         {
             public SecondEvent(Guid aggId)
             {
@@ -858,7 +929,8 @@ namespace CQELight.EventStore.EFCore.Integration.Tests
                 AggregateType = typeof(BusinessAggregate);
             }
         }
-        class ThirdEvent : BaseDomainEvent
+
+        private class ThirdEvent : BaseDomainEvent
         {
             public ThirdEvent(Guid aggId)
             {
@@ -867,7 +939,7 @@ namespace CQELight.EventStore.EFCore.Integration.Tests
             }
         }
 
-        class BusinessState : AggregateState
+        private class BusinessState : AggregateState
         {
             public int CurrentState;
             public BusinessState()
@@ -883,7 +955,8 @@ namespace CQELight.EventStore.EFCore.Integration.Tests
 
             private void OnFirst(FirstEvent obj) { CurrentState = 1; }
         }
-        class BusinessAggregate : EventSourcedAggregate<Guid, BusinessState>
+
+        private class BusinessAggregate : EventSourcedAggregate<Guid, BusinessState>
         {
             public int CurrentState => State.CurrentState;
             public BusinessAggregate()
@@ -892,7 +965,7 @@ namespace CQELight.EventStore.EFCore.Integration.Tests
             }
         }
 
-        class SpecificSnapshotBehavior : ISnapshotBehavior
+        private class SpecificSnapshotBehavior : ISnapshotBehavior
         {
             public IEnumerable<IDomainEvent> GenerateSnapshot(AggregateState rehydratedAggregateState)
             {
@@ -904,7 +977,9 @@ namespace CQELight.EventStore.EFCore.Integration.Tests
             }
 
             public bool IsSnapshotNeeded(IDomainEvent @event)
-                => @event is ThirdEvent;
+            {
+                return @event is ThirdEvent;
+            }
         }
 
         [Fact]

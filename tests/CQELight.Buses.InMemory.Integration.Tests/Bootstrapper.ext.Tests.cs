@@ -11,6 +11,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
+[assembly: CollectionBehavior(DisableTestParallelization = true)]
+
 namespace CQELight.Buses.InMemory.Integration.Tests
 {
     public class BootstrapperExtensionTests : BaseUnitTestClass

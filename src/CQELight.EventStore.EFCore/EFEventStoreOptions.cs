@@ -33,6 +33,10 @@ namespace CQELight.EventStore.EFCore
         /// DbContext options for archive behavior.
         /// </summary>
         public DbContextOptions<ArchiveEventStoreDbContext>? ArchiveDbContextOptions { get; }
+        /// <summary>
+        /// Flag that defines if non aggregate events should be persisted.
+        /// </summary>
+        public bool ShouldPersistNonAggregateEvent { get; }
 
         #endregion
 
@@ -46,6 +50,7 @@ namespace CQELight.EventStore.EFCore
         /// <param name="bufferInfo">Buffer info to use. Disabled by default.</param>
         /// <param name="archiveBehavior">Behavior to adopt when creating a snapshot</param>
         /// <param name="archiveDbContextOptionsBuilderCfg">Configuration to apply to access archive events</param>
+        /// <param name="shouldPersistNonAggregateEvent">A flag that indicates if non aggregate event (events that doesn't have AggregateType nor AggregateId defined) should be saved</param>
         /// A value is needed if <paramref name="snapshotBehaviorProvider"/> is provided and
         /// <paramref name="archiveBehavior"/> is set to StoreToNewDatabase.
         /// </param>
@@ -54,7 +59,8 @@ namespace CQELight.EventStore.EFCore
             ISnapshotBehaviorProvider? snapshotBehaviorProvider = null,
             BufferInfo? bufferInfo = null,
             SnapshotEventsArchiveBehavior? archiveBehavior = null,
-            Action<DbContextOptionsBuilder<ArchiveEventStoreDbContext>>? archiveDbContextOptionsBuilderCfg = null)
+            Action<DbContextOptionsBuilder<ArchiveEventStoreDbContext>>? archiveDbContextOptionsBuilderCfg = null,
+            bool shouldPersistNonAggregateEvent = true)
         {
             if (mainDbContextOptionsBuilderCfg == null)
             {
@@ -78,6 +84,7 @@ namespace CQELight.EventStore.EFCore
                 ArchiveBehavior = archiveBehavior.Value;
                 ArchiveDbContextOptions = archiveDbContextOptionsBuilder.Options;
             }
+            ShouldPersistNonAggregateEvent = shouldPersistNonAggregateEvent;
         }
 
         #endregion

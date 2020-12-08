@@ -5,13 +5,13 @@
     <Version>1.2.2</Version>
     <Authors>Christophe Mommer</Authors>
     <Company>Hybrid Technologies Solutions</Company>
-    <Description>Implementation of CQELight abstractions with EF Core</Description>
+    <Description>Implementation of CQELight EventStore abstractions with MongoDb</Description>
     <Copyright>Christophe Mommer, Hybrid Technologies Solutions</Copyright>
     <PackageLicenseUrl></PackageLicenseUrl>
     <PackageProjectUrl>https://www.hybrid-technologies-solutions.com</PackageProjectUrl>
     <RepositoryUrl>https://github.com/cdie/CQELight</RepositoryUrl>
-    <PackageTags>entity-framework, ef-core, repository</PackageTags>
-    <PackageReleaseNotes>See concerned milestone on GitHub</PackageReleaseNotes>
+    <PackageTags>event-store, events, event, mongodb, mongodbcsharp</PackageTags>
+    <PackageReleaseNotes>See concerned milestone on GitHub</PackageReleaseNotes>   
     <PackageIconUrl></PackageIconUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
@@ -21,13 +21,14 @@
   </PropertyGroup>
 
   <ItemGroup Condition="'$(targetframework)'=='netstandard2.0'">
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="2.1.14" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="2.1.14" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="2.1.1" />
   </ItemGroup>
-
   <ItemGroup Condition="'$(targetframework)'=='netstandard2.1'">
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.10" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="3.1.10" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="3.1.10" />
+  </ItemGroup>
+  <ItemGroup>
+
+    <PackageReference Include="MongoDB.Driver" Version="2.11.2" />
   </ItemGroup>
 
   <ItemGroup>

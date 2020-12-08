@@ -24,6 +24,7 @@ namespace CQELight.EventStore.MongoDb
 
         private readonly ISnapshotBehaviorProvider? _snapshotBehaviorProvider;
         private readonly SnapshotEventsArchiveBehavior _archiveBehavior;
+        private bool shouldPersistNonAggregateEvents => EventStoreManager.Options.ShouldPersistNonAggregateEvent;
 
         #endregion
 
@@ -159,6 +160,10 @@ namespace CQELight.EventStore.MongoDb
         public async Task<Result> StoreDomainEventAsync(IDomainEvent @event)
         {
             if (@event.GetType().IsDefined(typeof(EventNotPersistedAttribute)))
+            {
+                return Result.Ok();
+            }
+            if(!EventStoreManager.Options.ShouldPersistNonAggregateEvent && (@event.AggregateId == null || @event.AggregateType == null))
             {
                 return Result.Ok();
             }

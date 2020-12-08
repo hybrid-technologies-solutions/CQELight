@@ -40,6 +40,7 @@ namespace CQELight.EventStore.MongoDb.Integration.Tests
                     .Bootstrapp();
                 s_Init = true;
             }
+            EventStoreManager.Options.ShouldPersistNonAggregateEvent = true;
             DeleteAll();
         }
 
@@ -107,6 +108,10 @@ namespace CQELight.EventStore.MongoDb.Integration.Tests
         {
         }
 
+        public class NonAggEvent : BaseDomainEvent
+        {
+        }
+
         #endregion
 
         #endregion
@@ -150,6 +155,40 @@ namespace CQELight.EventStore.MongoDb.Integration.Tests
             {
                 DeleteAll();
             }
+        }
+
+        [Fact]
+        public async Task NonAggregateEvent_Should_Be_Persisted_If_User_Configure_It()
+        {
+            try
+            {
+                EventStoreManager.Options.ShouldPersistNonAggregateEvent = true;
+                DeleteAll();
+                var store = new MongoDbEventStore();
+                await store.StoreDomainEventAsync(new NonAggEvent());
+
+                (await GetEventCollection().CountDocumentsAsync(FilterDefinition<IDomainEvent>.Empty).ConfigureAwait(false)).Should().Be(1);
+                var evt = await (await GetEventCollection().FindAsync(FilterDefinition<IDomainEvent>.Empty)).FirstOrDefaultAsync();
+                evt.Should().NotBeNull();
+
+                evt.AggregateType.Should().BeNull();
+                evt.AggregateId.Should().BeNull();
+            }
+            finally
+            {
+                DeleteAll();
+            }
+        }
+
+        [Fact]
+        public async Task NonAggregateEvent_Shouldnt_Be_Persisted_If_User_Configure_It()
+        {
+            EventStoreManager.Options.ShouldPersistNonAggregateEvent = false;
+            DeleteAll();
+            var store = new MongoDbEventStore();
+            await store.StoreDomainEventAsync(new NonAggEvent());
+
+            (await GetEventCollection().CountDocumentsAsync(FilterDefinition<IDomainEvent>.Empty).ConfigureAwait(false)).Should().Be(0);
         }
 
         #endregion

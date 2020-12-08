@@ -32,6 +32,10 @@ namespace CQELight.EventStore.MongoDb
         /// Password to access databases
         /// </summary>
         public string? Password { get; internal set; }
+        /// <summary>
+        /// Flag that defines if non aggregate events should be persisted.
+        /// </summary>
+        public bool ShouldPersistNonAggregateEvent { get; set; }
 
         #endregion
 
@@ -43,7 +47,8 @@ namespace CQELight.EventStore.MongoDb
         /// <param name="snapshotBehaviorProvider">Snapshot behavior provider.</param>
         /// <param name="snapshotEventsArchiveBehavior">Behavior for archive events after creating snapshot.</param>
         /// <param name="serversUrls">Collection of urls to use as server.</param>
-        public MongoEventStoreOptions(ISnapshotBehaviorProvider? snapshotBehaviorProvider,
+        public MongoEventStoreOptions(
+            ISnapshotBehaviorProvider? snapshotBehaviorProvider,
             SnapshotEventsArchiveBehavior snapshotEventsArchiveBehavior = SnapshotEventsArchiveBehavior.StoreToNewDatabase,
             params string[] serversUrls)
         {
@@ -66,11 +71,12 @@ namespace CQELight.EventStore.MongoDb
         /// <param name="snapshotBehaviorProvider">Snapshot behavior provider.</param>
         /// <param name="snapshotEventsArchiveBehavior">Behavior for archive events after creating snapshot.</param>
         /// <param name="serversUrls">Collection of urls to use as server.</param>
-        public MongoEventStoreOptions(string userName, string password,
+        public MongoEventStoreOptions(
+            string userName,
+            string password,
             ISnapshotBehaviorProvider? snapshotBehaviorProvider,
             SnapshotEventsArchiveBehavior snapshotEventsArchiveBehavior = SnapshotEventsArchiveBehavior.StoreToNewDatabase,
-            params string[] serversUrls)
-            : this(snapshotBehaviorProvider, snapshotEventsArchiveBehavior, serversUrls)
+            params string[] serversUrls) : this(snapshotBehaviorProvider, snapshotEventsArchiveBehavior, serversUrls)
         {
             if (string.IsNullOrWhiteSpace(userName))
             {

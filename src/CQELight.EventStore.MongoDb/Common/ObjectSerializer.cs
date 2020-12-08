@@ -15,19 +15,36 @@ namespace CQELight.EventStore.MongoDb.Common
     {
         #region Overriden methods
 
-        public override void Serialize(BsonSerializationContext context, BsonSerializationArgs args, object value)
-            => context.Writer.WriteString(new SerializedObject { Data = value.ToJson(), Type = value.GetType().AssemblyQualifiedName }.ToJson());
+        public override void Serialize(BsonSerializationContext context, BsonSerializationArgs args, object? value)
+        {
+            if (value != null)
+            {
+                context.Writer.WriteString(new SerializedObject { Data = value.ToJson(), Type = value.GetType().AssemblyQualifiedName }.ToJson());
+            }
+            else
+            {
+                context.Writer.WriteNull();
+            }
+        }
 
         public override object? Deserialize(BsonDeserializationContext context, BsonDeserializationArgs args)
         {
-            var objAsJson = context.Reader.ReadString();
-            if (!string.IsNullOrWhiteSpace(objAsJson))
+            try
             {
-                var serialized = objAsJson.FromJson<SerializedObject>();
-                if (!string.IsNullOrWhiteSpace(serialized?.Data))
+                var objAsJson = context.Reader.ReadString();
+                if (!string.IsNullOrWhiteSpace(objAsJson))
                 {
-                    return serialized.Data.FromJson(Type.GetType(serialized.Type));
+                    var serialized = objAsJson.FromJson<SerializedObject>();
+                    if (!string.IsNullOrWhiteSpace(serialized?.Data))
+                    {
+                        return serialized.Data.FromJson(Type.GetType(serialized.Type));
+                    }
                 }
+            }
+            catch
+            {
+                //if any error on reading, then null should be returned
+                context.Reader.ReadNull();
             }
             return null;
         }

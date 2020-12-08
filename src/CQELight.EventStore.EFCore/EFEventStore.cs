@@ -43,6 +43,7 @@ namespace CQELight.EventStore.EFCore
         private readonly SnapshotEventsArchiveBehavior _archiveBehavior;
         private readonly DbContextOptions<ArchiveEventStoreDbContext>? _archiveBehaviorDbContextOptions;
         private readonly DbContextOptions<EventStoreDbContext> _dbContextOptions;
+        private readonly bool shouldPersistNonAggregateEvents;
 
         #endregion
 
@@ -62,6 +63,7 @@ namespace CQELight.EventStore.EFCore
             _bufferInfo = options.BufferInfo;
             _archiveBehavior = options.ArchiveBehavior;
             _archiveBehaviorDbContextOptions = options.ArchiveDbContextOptions;
+            shouldPersistNonAggregateEvents = options.ShouldPersistNonAggregateEvent;
 
             if (_bufferInfo != null)
             {
@@ -203,12 +205,18 @@ namespace CQELight.EventStore.EFCore
         public IAsyncEnumerable<IDomainEvent> GetAllEventsByAggregateId<TAggregateType, TAggregateId>(TAggregateId id)
             where TAggregateType : AggregateRoot<TAggregateId>
             where TAggregateId : notnull
-            => GetAllEventsByAggregateId(typeof(TAggregateType), id);
+        {
+            return GetAllEventsByAggregateId(typeof(TAggregateType), id);
+        }
 
         public async Task<Result> StoreDomainEventAsync(IDomainEvent @event)
         {
             var evtType = @event.GetType();
             if (evtType.IsDefined(typeof(EventNotPersistedAttribute)))
+            {
+                return Result.Ok();
+            }
+            if (!shouldPersistNonAggregateEvents && (@event.AggregateId == null || @event.AggregateType == null))
             {
                 return Result.Ok();
             }
@@ -344,7 +352,9 @@ namespace CQELight.EventStore.EFCore
 
         public async Task<TAggregate> GetRehydratedAggregateAsync<TAggregate>(object aggregateUniqueId)
             where TAggregate : class, IEventSourcedAggregate
-            => (TAggregate)(await GetRehydratedAggregateAsync(aggregateUniqueId, typeof(TAggregate)).ConfigureAwait(false));
+        {
+            return (TAggregate)(await GetRehydratedAggregateAsync(aggregateUniqueId, typeof(TAggregate)).ConfigureAwait(false));
+        }
 
         #endregion
 
@@ -704,12 +714,14 @@ namespace CQELight.EventStore.EFCore
         }
 
         private List<Event> ExtractEventsFromChangeTracker(EventStoreDbContext ctx)
-            => ctx.ChangeTracker
-                    .Entries()
-                    .Where(e => e.State != EntityState.Deleted && e.State != EntityState.Detached && e.Entity is Event)
-                    .Select(e => (Event)e.Entity)
-                    .WhereNotNull()
-                    .ToList();
+        {
+            return ctx.ChangeTracker
+                               .Entries()
+                               .Where(e => e.State != EntityState.Deleted && e.State != EntityState.Detached && e.Entity is Event)
+                               .Select(e => (Event)e.Entity)
+                               .WhereNotNull()
+                               .ToList();
+        }
 
         #endregion
 

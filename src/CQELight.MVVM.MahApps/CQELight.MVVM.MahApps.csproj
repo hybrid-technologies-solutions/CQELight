@@ -32,7 +32,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="MahApps.Metro" Version="2.2.0" />
+    <PackageReference Include="MahApps.Metro" Version="2.4.3" />
   </ItemGroup>
   
   <ItemGroup Condition="'$(targetframework)'=='net461'">

@@ -26,7 +26,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(targetframework)'=='netstandard2.1'">
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="3.1.9" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="3.1.10" />
     <PackageReference Include="System.Linq.Async" Version="4.0.0" />
   </ItemGroup>
 

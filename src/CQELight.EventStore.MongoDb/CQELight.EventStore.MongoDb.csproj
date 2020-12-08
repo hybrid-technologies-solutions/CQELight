@@ -24,11 +24,11 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="2.1.1" />
   </ItemGroup>
   <ItemGroup Condition="'$(targetframework)'=='netstandard2.1'">
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="3.1.9" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="3.1.10" />
   </ItemGroup>
   <ItemGroup>
 
-    <PackageReference Include="MongoDB.Driver" Version="2.11.3" />
+    <PackageReference Include="MongoDB.Driver" Version="2.11.5" />
   </ItemGroup>
 
   <ItemGroup>

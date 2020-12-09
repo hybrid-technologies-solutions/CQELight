@@ -1,5 +1,3 @@
-
-
 variables:
   buildConfiguration: 'Release'
 
@@ -17,14 +15,6 @@ jobs:
     inputs: 
      packageType: 'sdk'
      version: 5.x
-  - task : DotNetCoreInstaller@1
-    inputs: 
-     packageType: 'sdk'
-     version: 3.1.x
-  - task : DotNetCoreInstaller@1
-    inputs: 
-     packageType: 'sdk'
-     version: 2.1.x
   - task: DockerCompose@0
     inputs:
       containerregistrytype: 'Azure Container Registry'
@@ -51,6 +41,10 @@ jobs:
   pool: 
     vmImage: 'windows-latest'
   steps:
+  - task : DotNetCoreInstaller@1
+    inputs: 
+     packageType: 'sdk'
+     version: 5.x
   - script: dotnet tool install --global --add-source https://registry.hybrid-technologies-solutions.com/repository/cqelight-prev/ --version 1.0.0-pre20191015162004 HTS_Packer
     displayName: 'dotnet install HTS_Packer tool'
   - task: DeleteFiles@1

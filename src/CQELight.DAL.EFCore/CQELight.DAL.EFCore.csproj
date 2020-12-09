@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;netstandard2.1;net5.0</TargetFrameworks>
     <Version>1.2.2</Version>
     <Authors>Christophe Mommer</Authors>
     <Company>Hybrid Technologies Solutions</Company>
@@ -30,6 +30,11 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="3.1.10" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(targetframework)'=='net5.0'">
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="5.0.1" />
+  </ItemGroup>
+  
   <ItemGroup>
     <ProjectReference Include="..\CQELight\CQELight.csproj" />
   </ItemGroup>

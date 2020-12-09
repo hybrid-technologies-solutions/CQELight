@@ -56,7 +56,7 @@ namespace CQELight.DAL.EFCore.Adapters
             => GetCore(filter, orderBy, includeDeleted)
 #if NETSTANDARD2_0
             .ToAsyncEnumerable();
-#elif NETSTANDARD2_1
+#elif NETSTANDARD2_1 || NET5_0
             .AsAsyncEnumerable();
 #endif
 

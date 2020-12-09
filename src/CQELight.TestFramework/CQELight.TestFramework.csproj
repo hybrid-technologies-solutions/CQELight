@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;netstandard2.1;net5.0</TargetFrameworks>
 
     <Version>1.2.2</Version>
     <Authors>Christophe Mommer</Authors>
@@ -28,6 +28,11 @@
   <ItemGroup Condition="'$(targetframework)'=='netstandard2.1'">
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="3.1.10" />
     <PackageReference Include="System.Linq.Async" Version="4.0.0" />
+  </ItemGroup>
+  
+  <ItemGroup Condition="'$(targetframework)'=='net5.0'">
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="5.0.0" />
+    <PackageReference Include="System.Linq.Async" Version="5.0.0" />
   </ItemGroup>
 
   <ItemGroup>

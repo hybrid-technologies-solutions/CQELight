@@ -37,7 +37,7 @@ namespace CQELight.DAL.MongoDb.Adapters
 
 #if NETSTANDARD2_0
         public IAsyncEnumerable<T> GetAsync<T>(Expression<Func<T, bool>>? filter = null, Expression<Func<T, object>>? orderBy = null, bool includeDeleted = false)
-#elif NETSTANDARD2_1
+#elif NETSTANDARD2_1 || NET5_0
         public async IAsyncEnumerable<T> GetAsync<T>(Expression<Func<T, bool>>? filter = null, Expression<Func<T, object>>? orderBy = null, bool includeDeleted = false)
 #endif
             where T : class
@@ -64,7 +64,7 @@ namespace CQELight.DAL.MongoDb.Adapters
             return (sortedResult ?? result)
                 .ToEnumerable()
                 .ToAsyncEnumerable();
-#elif NETSTANDARD2_1
+#elif NETSTANDARD2_1 || NET5_0
             foreach (var item in await (sortedResult ?? result).ToListAsync().ConfigureAwait(false))
             {
                 yield return item;

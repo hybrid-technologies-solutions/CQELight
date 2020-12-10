@@ -74,7 +74,7 @@ namespace CQELight.DAL.EFCore
             => GetCore(filter, orderBy, includeDeleted, includes)
 #if NETSTANDARD2_0
             .ToAsyncEnumerable();
-#elif NETSTANDARD2_1
+#elif NETSTANDARD2_1 || NET5_0
             .AsAsyncEnumerable();
 #endif
 
@@ -93,7 +93,11 @@ namespace CQELight.DAL.EFCore
             await _lock.WaitAsync().ConfigureAwait(false);
             try
             {
+#if NET5_0
+                _deleteSqlQueries.DoForEach(q => Context.Database.ExecuteSqlRaw(q));
+#else
                 _deleteSqlQueries.DoForEach(q => Context.Database.ExecuteSqlCommand(q));
+#endif
                 _deleteSqlQueries.Clear();
                 dbResults = await Context.SaveChangesAsync().ConfigureAwait(false);
             }
@@ -152,12 +156,17 @@ namespace CQELight.DAL.EFCore
             MarkForDelete(instance, physicalDeletion);
         }
 
-        #endregion
+#endregion
 
-        #region ISQLRepository
+#region ISQLRepository
 
         public Task<int> ExecuteSQLCommandAsync(string sql)
-             => Context.Database.ExecuteSqlCommandAsync(sql);
+             =>
+#if NET5_0
+            Context.Database.ExecuteSqlRawAsync(sql);
+#else
+            Context.Database.ExecuteSqlCommandAsync(sql);
+#endif
 
         public async Task<TResult> ExecuteScalarAsync<TResult>(string sql)
         {
@@ -174,9 +183,9 @@ namespace CQELight.DAL.EFCore
             }
         }
 
-        #endregion
+#endregion
 
-        #region protected virtual methods
+#region protected virtual methods
 
         protected virtual void MarkEntityForUpdate<TEntity>(TEntity entity)
             where TEntity : class, IPersistableEntity
@@ -279,9 +288,9 @@ namespace CQELight.DAL.EFCore
             }
         }
 
-        #endregion
+#endregion
 
-        #region Private methods
+#region Private methods
 
         private bool CannotNaviguate(NotNaviguableAttribute? navAttr)
         {
@@ -294,9 +303,9 @@ namespace CQELight.DAL.EFCore
                 );
         }
 
-        #endregion
+#endregion
 
-        #region IDisposable methods
+#region IDisposable methods
 
         protected override void Dispose(bool disposing)
         {
@@ -309,7 +318,7 @@ namespace CQELight.DAL.EFCore
             }
             this.Disposed = true;
         }
-        #endregion
+#endregion
 
     }
 }

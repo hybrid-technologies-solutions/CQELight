@@ -76,7 +76,7 @@ namespace CQELight.EventStore.EFCore
 
         #region IEventStore
 
-#if NETSTANDARD2_1
+#if NETSTANDARD2_1 || NET5_0
         public async IAsyncEnumerable<IDomainEvent> GetAllEventsByAggregateType(Type aggregateType)
         {
             using (var ctx = new EventStoreDbContext(_dbContextOptions))
@@ -340,7 +340,7 @@ namespace CQELight.EventStore.EFCore
             events = await
                  GetAllEventsByAggregateId(aggregateType, aggregateUniqueId)
                 .ToList().ConfigureAwait(false);
-#elif NETSTANDARD2_1
+#elif NETSTANDARD2_1 || NET5_0
             await foreach(var @event in GetAllEventsByAggregateId(aggregateType, aggregateUniqueId))
             {
                 events.Add(@event);
@@ -510,7 +510,7 @@ namespace CQELight.EventStore.EFCore
             events = await
                  GetAllEventsByAggregateId(aggregateType, aggregateId)
                 .ToList().ConfigureAwait(false);
-#elif NETSTANDARD2_1
+#elif NETSTANDARD2_1 || NET5_0
             await foreach (var @event in GetAllEventsByAggregateId(aggregateType, aggregateId))
             {
                 events.Add(@event);

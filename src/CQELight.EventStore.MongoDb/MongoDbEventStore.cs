@@ -84,7 +84,7 @@ namespace CQELight.EventStore.MongoDb
 
             return collection.Find(filter).Sort(Builders<IDomainEvent>.Sort.Ascending(nameof(IDomainEvent.Sequence))).ToEnumerable().ToAsyncEnumerable();
         }
-#elif NETSTANDARD2_1
+#elif NETSTANDARD2_1 || NET5_0
         public async IAsyncEnumerable<IDomainEvent> GetAllEventsByAggregateType(Type aggregateType)
         {
             var filterBuilder = Builders<IDomainEvent>.Filter;
@@ -256,7 +256,7 @@ namespace CQELight.EventStore.MongoDb
             List<IDomainEvent> events = new List<IDomainEvent>();
 #if NETSTANDARD2_0
             events = await GetAllEventsByAggregateId(aggregateType, aggregateUniqueId).ToList().ConfigureAwait(false);
-#elif NETSTANDARD2_1
+#elif NETSTANDARD2_1 || NET5_0
             await foreach(var @event in GetAllEventsByAggregateId(aggregateType, aggregateUniqueId))
             {
                 events.Add(@event);

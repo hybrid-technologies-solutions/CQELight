@@ -199,9 +199,9 @@ namespace CQELight.DAL.EFCore
                 propBuilder.HasDefaultValue(def);
                 Log($"Setting defaultValue of '{name}' to {def}.", true);
             }
-            if (column.IsDefined(typeof(IndexAttribute)))
+            if (column.IsDefined(typeof(CQELight.DAL.Attributes.IndexAttribute)))
             {
-                var idxInfos = column.GetCustomAttribute<IndexAttribute>();
+                var idxInfos = column.GetCustomAttribute<CQELight.DAL.Attributes.IndexAttribute>();
 
                 Log($"Creation of an index on column '{name}'", true);
                 var idx = builder.HasIndex(column.Name);

@@ -2,21 +2,9 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;netstandard2.1;net5.0</TargetFrameworks>
-    <Version>1.2.2</Version>
-    <Authors>Christophe Mommer</Authors>
-    <Company>Hybrid Technologies Solutions</Company>
     <Description>Implementation of CQELight abstractions for IoC with the Microsoft.Extensions.DependencyInjection package.</Description>
-    <Copyright>Christophe Mommer, Hybrid Technologies Solutions</Copyright>
-    <PackageProjectUrl>https://www.hybrid-technologies-solutions.com</PackageProjectUrl>
-    <PackageIconUrl></PackageIconUrl>
-    <RepositoryUrl>https://github.com/cdie/CQELight</RepositoryUrl>
     <PackageTags>ioc, microsoft extensions dependencyinjection</PackageTags>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageReleaseNotes>See concerned milestone on GitHub</PackageReleaseNotes>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <LangVersion>latest</LangVersion>
-    <Nullable>Enable</Nullable>
-    <PackageIcon>CQELight.png</PackageIcon>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(targetframework)'=='netstandard2.0'">
@@ -34,7 +22,11 @@
   <ItemGroup>
     <ProjectReference Include="..\CQELight\CQELight.csproj" />
   </ItemGroup>
-  
+
+  <PropertyGroup Condition="'$(TF_BUILD)' == 'true'">
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+
   <ItemGroup>
     <None Include="..\..\CQELight.png">
       <Pack>True</Pack>

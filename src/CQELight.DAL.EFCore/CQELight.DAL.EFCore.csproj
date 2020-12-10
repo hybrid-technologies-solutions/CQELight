@@ -2,22 +2,9 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;netstandard2.1;net5.0</TargetFrameworks>
-    <Version>1.2.2</Version>
-    <Authors>Christophe Mommer</Authors>
-    <Company>Hybrid Technologies Solutions</Company>
     <Description>Implementation of CQELight abstractions with EF Core</Description>
-    <Copyright>Christophe Mommer, Hybrid Technologies Solutions</Copyright>
-    <PackageLicenseUrl></PackageLicenseUrl>
-    <PackageProjectUrl>https://www.hybrid-technologies-solutions.com</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/cdie/CQELight</RepositoryUrl>
     <PackageTags>entity-framework, ef-core, repository</PackageTags>
-    <PackageReleaseNotes>See concerned milestone on GitHub</PackageReleaseNotes>
-    <PackageIconUrl></PackageIconUrl>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <LangVersion>latest</LangVersion>
-    <Nullable>Enable</Nullable>
-    <PackageIcon>CQELight.png</PackageIcon>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(targetframework)'=='netstandard2.0'">
@@ -38,6 +25,10 @@
   <ItemGroup>
     <ProjectReference Include="..\CQELight\CQELight.csproj" />
   </ItemGroup>
+
+  <PropertyGroup Condition="'$(TF_BUILD)' == 'true'">
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+  </PropertyGroup>
 
   <ItemGroup>
     <None Include="..\..\CQELight.png">

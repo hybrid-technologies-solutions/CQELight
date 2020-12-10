@@ -2,21 +2,9 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;netstandard2.1;net5.0</TargetFrameworks>
-    <Version>1.2.2</Version>
-    <Authors>Christophe Mommer</Authors>
-    <Company>Hybrid Technologies Solutions</Company>
     <Description>ASP Core extensions for using CQELight with ease.</Description>
-    <Copyright>Christophe Mommer, Hybrid Technologies Solutions</Copyright>
-    <PackageProjectUrl>https://www.hybrid-technologies-solutions.com</PackageProjectUrl>
-    <PackageIconUrl></PackageIconUrl>
-    <RepositoryUrl>https://github.com/cdie/CQELight</RepositoryUrl>
     <PackageTags>asp core, asp mvc</PackageTags>    
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageReleaseNotes>See concerned milestone on GitHub for informations</PackageReleaseNotes>    
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <LangVersion>latest</LangVersion>
-    <Nullable>Enable</Nullable>
-    <PackageIcon>CQELight.png</PackageIcon>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(targetframework)'=='netstandard2.0'">
@@ -48,8 +36,9 @@
       <PackagePath></PackagePath>
     </None>
   </ItemGroup>
-
-  <ItemGroup>
-  </ItemGroup>
+  
+  <PropertyGroup Condition="'$(TF_BUILD)' == 'true'">
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+  </PropertyGroup>
 
 </Project>

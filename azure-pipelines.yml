@@ -64,9 +64,6 @@ jobs:
 
   - script: dotnet tool install --global --add-source https://registry.hybrid-technologies-solutions.com/repository/cqelight-prev/ --version 1.0.0-pre20191015162004 HTS_Packer
     displayName: 'dotnet install HTS_Packer tool'
-
-  - script: dotnet build -c $(buildConfiguration) CQELight_Build.sln
-    displayName: 'dotnet build $(buildConfiguration)'
     
   - task: DeleteFiles@1
     inputs:

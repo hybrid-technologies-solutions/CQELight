@@ -1,7 +1,7 @@
 {
 	"major": "1",
-	"minor": "2",
-	"patch": "2",
+	"minor": "3",
+	"patch": "1",
 	"projects": [
 		"src/CQELight/CQELight.csproj",
 		"src/CQELight.TestFramework/CQELight.TestFramework.csproj",
@@ -17,6 +17,7 @@
 		"src/CQELight.Buses.AzureServiceBus/CQELight.Buses.AzureServiceBus.csproj",
 		"src/CQELight.AspCore/CQELight.AspCore.csproj",
 		"src/CQELight.EventStore.EFCore/CQELight.EventStore.EFCore.csproj",		
-		"src/CQELight.MVVM.XamarinForms/CQELight.MVVM.XamarinForms.csproj"
+		"src/CQELight.MVVM.XamarinForms/CQELight.MVVM.XamarinForms.csproj",		
+		"src/CQELight.MVVM.MahApps/CQELight.MVVM.MahApps.csproj"
 	]
 }

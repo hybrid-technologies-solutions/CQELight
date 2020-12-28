@@ -3,8 +3,7 @@ variables:
 
 trigger:
 - develop
-- feature/*
-- release/*
+- master
 
 jobs: 
 - job: 'Test'

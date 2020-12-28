@@ -32,7 +32,7 @@ jobs:
     displayName: 'dotnet test'
     inputs:
       command: 'test'
-      projects: '$(Build.SourcesDirectory)/tests/**/*.csproj'
+      projects: 'CQELight_CI.sln'
     continueOnError: true
   - task: DotNetCoreCLI@2
     displayName: 'CI tests' 

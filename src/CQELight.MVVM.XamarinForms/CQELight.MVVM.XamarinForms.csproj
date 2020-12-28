@@ -2,20 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <LangVersion>latest</LangVersion>
-    <Nullable>Enable</Nullable>
-    <Authors>Christophe MOMMER</Authors>
-    <Company>Hybrid Technologies Solutions</Company>
     <Description>Implementation of CQELight MVVM abstractions based on Xamarin Forms</Description>
-    <Copyright>Christophe Mommer, Hybrid Technologies Solutions</Copyright>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://www.hybrid-technologies-solutions.com</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/cdie/CQELight</RepositoryUrl>
     <PackageTags>xamarin, xamarin forms, mvvm</PackageTags>
-    <PackageIconUrl></PackageIconUrl>
-    <Version>1.2.2</Version>
-    <PackageIcon>CQELight.png</PackageIcon>
-    <PackageReleaseNotes>See concerned milestone on GitHub for informations</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
@@ -31,6 +19,10 @@
       <Generator>MSBuild:UpdateDesignTimeXaml</Generator>
     </EmbeddedResource>
   </ItemGroup>
+
+  <PropertyGroup Condition="'$(TF_BUILD)' == 'true'">
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+  </PropertyGroup>
 
   <ItemGroup>
     <None Include="..\..\CQELight.png">

@@ -2,22 +2,9 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;netstandard2.1;net5.0</TargetFrameworks>
-    <Version>1.2.2</Version>
-    <Authors>Christophe Mommer</Authors>
-    <Company>Hybrid Technologies Solutions</Company>
     <Description>CQELight.Buses.RabbitMQ provides an implementation of a client and a server for RabbitMQ message queuing, based on CQELight abstractions, to communicate throught RabbitMQ instance.</Description>
-    <Copyright>Christophe Mommer, Hybrid Technologies Solutions</Copyright>
-    <PackageLicenseUrl></PackageLicenseUrl>
-    <PackageProjectUrl>https://www.hybrid-technologies-solutions.com</PackageProjectUrl>
     <PackageTags>rabbitmq, rabbit-mq, messaging, cqelight, event</PackageTags>
-    <PackageReleaseNotes>See concerned milestone on GitHub</PackageReleaseNotes>
-    <PackageIconUrl></PackageIconUrl>
-    <RepositoryUrl>https://github.com/cdie/CQELight</RepositoryUrl>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <LangVersion>latest</LangVersion>
-    <Nullable>Enable</Nullable>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <PackageIcon>CQELight.png</PackageIcon>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(targetframework)'=='netstandard2.0'">
@@ -40,6 +27,10 @@
     <ProjectReference Include="..\CQELight.Buses.InMemory\CQELight.Buses.InMemory.csproj" />
     <ProjectReference Include="..\CQELight\CQELight.csproj" />
   </ItemGroup>
+
+  <PropertyGroup Condition="'$(TF_BUILD)' == 'true'">
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+  </PropertyGroup>
 
   <ItemGroup>
     <None Include="..\..\CQELight.png">

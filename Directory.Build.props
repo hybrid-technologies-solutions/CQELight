@@ -1,0 +1,19 @@
+<Project>
+ <PropertyGroup>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <DebugType>embedded</DebugType>
+    <Version>1.3.0</Version>
+	<Authors>Christophe Mommer</Authors>
+    <Company>Hybrid Technologies Solutions</Company>
+	<Copyright>Christophe Mommer, Hybrid Technologies Solutions</Copyright>
+	<PackageLicense>https://github.com/cdie/CQELight/blob/master/LICENCE</PackageLicense>
+	<PackageProjectUrl>https://www.hybrid-technologies-solutions.com</PackageProjectUrl>
+	<RepositoryUrl>https://github.com/cdie/CQELight</RepositoryUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <LangVersion>latest</LangVersion>
+    <Nullable>Enable</Nullable>
+    <PackageIcon>CQELight.png</PackageIcon>
+    <PackageReleaseNotes>See concerned milestone on GitHub</PackageReleaseNotes>
+ </PropertyGroup>
+</Project>

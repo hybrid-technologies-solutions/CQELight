@@ -2,22 +2,8 @@
 
   <PropertyGroup>
     <TargetFrameworks>net48;netcoreapp3.1</TargetFrameworks>
-    <Version>1.2.2</Version>
-    <Authors>Christophe MOMMER</Authors>
-    <Company>Hybrid Technologies Solutions</Company>
     <Description>Implementation of CQELight MVVM abstractions based on MahApps</Description>
-    <Copyright>Christophe Mommer, Hybrid Technologies Solutions</Copyright>
-    <PackageLicenseUrl></PackageLicenseUrl>
-    <PackageProjectUrl>https://www.hybrid-technologies-solutions.com</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/cdie/CQELight</RepositoryUrl>
-    <PackageReleaseNotes>See concerned milestone on GitHub for informations</PackageReleaseNotes>
     <PackageTags>mahapps, mvvm</PackageTags>
-    <LangVersion>latest</LangVersion>
-    <PackageReleaseNotes></PackageReleaseNotes>
-    <PackageIconUrl></PackageIconUrl>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <Nullable>Enable</Nullable>
-    <PackageIcon>CQELight.png</PackageIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -41,6 +27,10 @@
       <HintPath>C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.5\PresentationFramework.dll</HintPath>
     </Reference>
   </ItemGroup>
+  
+  <PropertyGroup Condition="'$(TF_BUILD)' == 'true'">
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+  </PropertyGroup>
   
   <ItemGroup>
     <None Include="..\..\CQELight.png">

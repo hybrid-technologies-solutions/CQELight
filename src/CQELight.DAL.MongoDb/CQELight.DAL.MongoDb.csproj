@@ -1,22 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;netstandard2.1;net5.0</TargetFrameworks>
-    
-    <Version>1.2.2</Version>
-    <Authors>Christophe Mommer</Authors>
-    <Company>Hybrid Technologies Solutions</Company>
+    <TargetFrameworks>netstandard2.0;netstandard2.1;net5.0</TargetFrameworks>   
     <Description>Implementation of CQELight DAL abstractions with MongoDb</Description>
-    <Copyright>Christophe Mommer, Hybrid Technologies Solutions</Copyright>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://www.hybrid-technologies-solutions.com</PackageProjectUrl>
-    <PackageIconUrl></PackageIconUrl>
-    <RepositoryUrl>https://github.com/cdie/CQELight</RepositoryUrl>
     <PackageTags>dal, mongodb, repository</PackageTags>
-    <PackageReleaseNotes>See concerned milestone on GitHub</PackageReleaseNotes>    
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <LangVersion>latest</LangVersion>
-    <PackageIcon>CQELight.png</PackageIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -26,6 +14,10 @@
   <ItemGroup>
     <ProjectReference Include="..\CQELight\CQELight.csproj" />
   </ItemGroup>
+
+  <PropertyGroup Condition="'$(TF_BUILD)' == 'true'">
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+  </PropertyGroup>
 
   <ItemGroup>
     <None Include="..\..\CQELight.png">

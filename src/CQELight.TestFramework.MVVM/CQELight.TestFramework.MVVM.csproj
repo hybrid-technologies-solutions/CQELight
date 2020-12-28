@@ -2,23 +2,14 @@
 
   <PropertyGroup>
     <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
-    <Version>1.2.2</Version>
-    <Nullable>Enable</Nullable>
-    <LangVersion>latest</LangVersion>
-    
-    <Authors>Christophe Mommer</Authors>
-    <Company>Hybrid Technologies Solutions</Company>
     <Description>Some test tools for specific MVVM needs</Description>
-    <Copyright>Christophe Mommer, Hybrid Technologies Solutions</Copyright>
-    <PackageProjectUrl>https://www.hybrid-technologies-solutions.com</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/cdie/CQELight</RepositoryUrl>
     <PackageTags>mvvm, unit testing</PackageTags>
-    <PackageIconUrl></PackageIconUrl>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageReleaseNotes>See concerned milestone on GitHub for informations</PackageReleaseNotes>
-    <PackageIcon>CQELight.png</PackageIcon>
   </PropertyGroup>
-
+  
+  <PropertyGroup Condition="'$(TF_BUILD)' == 'true'">
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+  </PropertyGroup>
+  
   <ItemGroup>
     <ProjectReference Include="..\CQELight.MVVM\CQELight.MVVM.csproj" />
     <ProjectReference Include="..\CQELight.TestFramework\CQELight.TestFramework.csproj" />
